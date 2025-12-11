@@ -24,8 +24,10 @@ import { z } from "zod";
 import { toolsImplementations } from "../../trpc/tools.impl";
 import { toolSearchService } from "../ai/tool-search.service";
 import { configService } from "../config.service";
+import { configImportService } from "./config-import.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { savedScriptService } from "../sandbox/saved-script.service";
+import { toolSetService } from "./tool-set.service";
 import { toonSerializer } from "../serializers/toon.serializer";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
@@ -40,6 +42,7 @@ import {
   ListToolsHandler,
   MetaMCPHandlerContext,
 } from "./metamcp-middleware/functional-middleware";
+import { createLoggingMiddleware } from "./metamcp-middleware/logging.functional";
 import {
   createToolOverridesCallToolMiddleware,
   createToolOverridesListToolsMiddleware,
@@ -222,6 +225,52 @@ export const createServer = async (
             },
           },
           required: ["name", "code"],
+        },
+      },
+      {
+        name: "save_tool_set",
+        description: "Save the currently loaded tools as a 'Tool Set' (Profile). This allows you to restore this working environment later.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "Name of the tool set (e.g., 'web_dev', 'data_analysis').",
+            },
+            description: {
+              type: "string",
+              description: "Description of the tool set.",
+            },
+          },
+          required: ["name"],
+        },
+      },
+      {
+        name: "load_tool_set",
+        description: "Load a previously saved Tool Set (Profile). This will add all tools in the set to your current context.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "Name of the tool set to load.",
+            },
+          },
+          required: ["name"],
+        },
+      },
+      {
+        name: "import_mcp_config",
+        description: "Import MCP servers from a JSON configuration file content (e.g., claude_desktop_config.json).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            configJson: {
+              type: "string",
+              description: "The content of the JSON configuration file.",
+            },
+          },
+          required: ["configJson"],
         },
       },
     ];
@@ -432,6 +481,85 @@ export const createServer = async (
         }
     }
 
+    if (name === "save_tool_set") {
+        const { name: setName, description } = args as { name: string; description?: string };
+        try {
+            const toolsToSave = Array.from(loadedTools);
+            if (toolsToSave.length === 0) {
+                return {
+                    content: [{ type: "text", text: `No tools currently loaded to save.` }],
+                    isError: true
+                };
+            }
+            const saved = await toolSetService.createToolSet(setName, toolsToSave, description);
+            return {
+                content: [{ type: "text", text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "load_tool_set") {
+        const { name: setName } = args as { name: string };
+        try {
+            const set = await toolSetService.getToolSet(setName);
+            if (!set) {
+                return {
+                    content: [{ type: "text", text: `Tool Set '${setName}' not found.` }],
+                    isError: true
+                };
+            }
+
+            // Add tools to loadedTools
+            let count = 0;
+            const missing = [];
+            for (const toolName of set.tools) {
+                if (toolToClient[toolName]) {
+                    loadedTools.add(toolName);
+                    count++;
+                } else {
+                    missing.push(toolName);
+                }
+            }
+
+            let msg = `Loaded ${count} tools from set '${setName}'.`;
+            if (missing.length > 0) {
+                msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
+            }
+
+            return {
+                content: [{ type: "text", text: msg }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to load tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "import_mcp_config") {
+        const { configJson } = args as { configJson: string };
+        try {
+            const result = await configImportService.importClaudeConfig(configJson);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`
+                }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Import failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
     if (name === "run_code") {
         const { code } = args as { code: string };
         try {
@@ -568,7 +696,7 @@ export const createServer = async (
       const { name, arguments: args, _meta } = request.params;
 
       // Meta Tools Logic
-      if (name === "search_tools" || name === "load_tool" || name === "save_script" || name.startsWith("script__")) {
+      if (name === "search_tools" || name === "load_tool" || name === "save_script" || name.startsWith("script__") || name === "save_tool_set" || name === "load_tool_set" || name === "import_mcp_config") {
           return _internalCallToolImpl(name, args, _meta);
       }
       else if (name === "run_code") {
@@ -600,6 +728,7 @@ export const createServer = async (
 
   // Compose the middleware
   recursiveCallToolHandler = compose(
+    createLoggingMiddleware({ enabled: true }),
     createFilterCallToolMiddleware({
       cacheEnabled: true,
       customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
