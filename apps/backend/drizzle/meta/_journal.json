@@ -85,6 +85,27 @@
       "when": 1763452681793,
       "tag": "0011_goofy_photon",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1765484876237,
+      "tag": "0012_watery_frog_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1765487073637,
+      "tag": "0013_fine_giant_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1765487351312,
+      "tag": "0014_cute_chimera",
+      "breakpoints": true
     }
   ]
 }

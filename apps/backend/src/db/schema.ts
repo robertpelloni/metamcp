@@ -16,6 +16,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const mcpServerTypeEnum = pgEnum(
@@ -118,6 +119,9 @@ export const toolsTable = pgTable(
         required?: string[];
       }>()
       .notNull(),
+    rich_description: text("rich_description"),
+    concise_description: text("concise_description"),
+    embedding: vector("embedding", { dimensions: 1536 }),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -130,6 +134,10 @@ export const toolsTable = pgTable(
   },
   (table) => [
     index("tools_mcp_server_uuid_idx").on(table.mcp_server_uuid),
+    index("tools_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
     unique("tools_unique_tool_name_per_server_idx").on(
       table.mcp_server_uuid,
       table.name,
@@ -467,5 +475,31 @@ export const oauthAccessTokensTable = pgTable(
     index("oauth_access_tokens_client_id_idx").on(table.client_id),
     index("oauth_access_tokens_user_id_idx").on(table.user_id),
     index("oauth_access_tokens_expires_at_idx").on(table.expires_at),
+  ],
+);
+
+export const savedScriptsTable = pgTable(
+  "saved_scripts",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    code: text("code").notNull(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("saved_scripts_user_id_idx").on(table.user_id),
+    unique("saved_scripts_name_user_idx").on(table.user_id, table.name),
+    sql`CONSTRAINT saved_scripts_name_regex_check CHECK (
+      name ~ '^[a-zA-Z0-9_-]+$'
+    )`,
   ],
 );

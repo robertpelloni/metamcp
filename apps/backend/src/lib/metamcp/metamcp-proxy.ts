@@ -22,7 +22,11 @@ import {
 import { z } from "zod";
 
 import { toolsImplementations } from "../../trpc/tools.impl";
+import { toolSearchService } from "../ai/tool-search.service";
 import { configService } from "../config.service";
+import { codeExecutorService } from "../sandbox/code-executor.service";
+import { savedScriptService } from "../sandbox/saved-script.service";
+import { toonSerializer } from "../serializers/toon.serializer";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
 import { mcpServerPool } from "./mcp-server-pool";
@@ -104,6 +108,10 @@ export const createServer = async (
   const promptToClient: Record<string, ConnectedClient> = {};
   const resourceToClient: Record<string, ConnectedClient> = {};
 
+  // Session-specific map of "loaded" tools that should be exposed to the client
+  // Key: toolName, Value: true
+  const loadedTools = new Set<string>();
+
   // Helper function to detect if a server is the same instance
   const isSameServerInstance = (
     params: { name?: string; url?: string | null },
@@ -138,318 +146,479 @@ export const createServer = async (
     sessionId,
   };
 
-  // Original List Tools Handler
+  // ----------------------------------------------------------------------
+  // Handler Implementations (Unwrapped)
+  // ----------------------------------------------------------------------
+
   const originalListToolsHandler: ListToolsHandler = async (
     request,
     context,
   ) => {
+    // 1. Meta Tools
+    const metaTools: Tool[] = [
+      {
+        name: "search_tools",
+        description: "Semantically search for available tools across all connected MCP servers. Use this to find tools for a specific task.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search query describing what you want to do (e.g., 'manage github issues', 'query database')",
+            },
+            limit: {
+              type: "number",
+              description: "Max number of results to return (default: 10)",
+            },
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "load_tool",
+        description: "Load a specific tool by name into your context so you can use it. Use the names found via search_tools.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "The full name of the tool to load (e.g., 'github__create_issue')",
+            },
+          },
+          required: ["name"],
+        },
+      },
+      {
+        name: "run_code",
+        description: "Execute TypeScript/JavaScript code in a secure sandbox. Use this to chain multiple tool calls, process data, or perform logic. You can call other tools from within this code using `await mcp.call('tool_name', args)`.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            code: {
+              type: "string",
+              description: "The TypeScript/JavaScript code to execute. Top-level await is supported.",
+            },
+          },
+          required: ["code"],
+        },
+      },
+      {
+        name: "save_script",
+        description: "Save a successful code snippet as a reusable tool (Saved Script). The script will be available as a tool in future sessions.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "The name of the new tool (must be unique, alphanumeric).",
+            },
+            description: {
+              type: "string",
+              description: "Description of what this script does.",
+            },
+            code: {
+              type: "string",
+              description: "The code to save.",
+            },
+          },
+          required: ["name", "code"],
+        },
+      },
+    ];
+
+    // 2. Saved Scripts
+    // Fetch user-defined saved scripts and expose them as tools
+    try {
+        const savedScripts = await savedScriptService.listScripts();
+        const scriptTools: Tool[] = savedScripts.map(script => ({
+            name: `script__${script.name}`,
+            description: `[Saved Script] ${script.description || "No description"}`,
+            inputSchema: {
+                type: "object",
+                properties: {}, // Scripts currently take no args
+                additionalProperties: true
+            }
+        }));
+        metaTools.push(...scriptTools);
+    } catch (e) {
+        console.error("Error fetching saved scripts", e);
+    }
+
     const serverParams = await getMcpServers(
       context.namespaceUuid,
       includeInactiveServers,
     );
-    const allTools: Tool[] = [];
 
-    // Track visited servers to detect circular references - reset on each call
     const visitedServers = new Set<string>();
-
-    // We'll filter servers during processing after getting sessions to check actual MCP server names
     const allServerEntries = Object.entries(serverParams);
+    const allAvailableTools: Tool[] = [];
 
     await Promise.allSettled(
       allServerEntries.map(async ([mcpServerUuid, params]) => {
-        // Skip if we've already visited this server to prevent circular references
-        if (visitedServers.has(mcpServerUuid)) {
-          return;
-        }
+        if (visitedServers.has(mcpServerUuid)) return;
+
         const session = await mcpServerPool.getSession(
-          context.sessionId,
-          mcpServerUuid,
-          params,
-          namespaceUuid,
+            context.sessionId,
+            mcpServerUuid,
+            params,
+            namespaceUuid,
         );
         if (!session) return;
 
-        // Now check for self-referencing using the actual MCP server name
         const serverVersion = session.client.getServerVersion();
         const actualServerName = serverVersion?.name || params.name || "";
         const ourServerName = `metamcp-unified-${namespaceUuid}`;
+        if (actualServerName === ourServerName) return;
+        if (isSameServerInstance(params, mcpServerUuid)) return;
 
-        if (actualServerName === ourServerName) {
-          console.log(
-            `Skipping self-referencing MetaMCP server: "${actualServerName}"`,
-          );
-          return;
-        }
-
-        // Check basic self-reference patterns
-        if (isSameServerInstance(params, mcpServerUuid)) {
-          return;
-        }
-
-        // Mark this server as visited
         visitedServers.add(mcpServerUuid);
 
         const capabilities = session.client.getServerCapabilities();
         if (!capabilities?.tools) return;
 
-        // Use name assigned by user, fallback to name from server
-        const serverName =
-          params.name || session.client.getServerVersion()?.name || "";
+        const serverName = params.name || session.client.getServerVersion()?.name || "";
 
         try {
-          // Paginated tool discovery - load all pages automatically
-          const allServerTools: Tool[] = [];
-          let cursor: string | undefined = undefined;
-          let hasMore = true;
+            const allServerTools: Tool[] = [];
+            let cursor: string | undefined = undefined;
+            let hasMore = true;
 
-          while (hasMore) {
-            const result: z.infer<typeof ListToolsResultSchema> =
-              await session.client.request(
-                {
-                  method: "tools/list",
-                  params: {
-                    cursor: cursor,
-                    _meta: request.params?._meta,
-                  },
-                },
-                ListToolsResultSchema,
-              );
-
-            if (result.tools && result.tools.length > 0) {
-              allServerTools.push(...result.tools);
+            while (hasMore) {
+                const result = await session.client.request(
+                    {
+                        method: "tools/list",
+                        params: { cursor, _meta: request.params?._meta }
+                    },
+                    ListToolsResultSchema
+                );
+                if (result.tools) allServerTools.push(...result.tools);
+                cursor = result.nextCursor;
+                hasMore = !!result.nextCursor;
             }
 
-            cursor = result.nextCursor;
-            hasMore = !!result.nextCursor;
-          }
+            if (allServerTools.length > 0) {
+                try {
+                    const toolsToSave = await filterOutOverrideTools(
+                        allServerTools,
+                        namespaceUuid,
+                        serverName
+                    );
+                    if (toolsToSave.length > 0) {
+                        await toolsImplementations.create({
+                            tools: toolsToSave,
+                            mcpServerUuid: mcpServerUuid,
+                        });
+                    }
+                } catch (e) {
+                    console.error("DB Save Error", e);
+                }
+            }
 
-          // Save original tools to database (before middleware processing)
-          // This ensures we only save the actual tool names, not override names
-          // Filter out tools that are overrides of existing tools to prevent duplicates
-          if (allServerTools.length > 0) {
-            try {
-              const toolsToSave = await filterOutOverrideTools(
-                allServerTools,
-                namespaceUuid,
-                serverName,
-              );
-
-              if (toolsToSave.length > 0) {
-                await toolsImplementations.create({
-                  tools: toolsToSave,
-                  mcpServerUuid: mcpServerUuid,
+            allServerTools.forEach(tool => {
+                const toolName = `${sanitizeName(serverName)}__${tool.name}`;
+                toolToClient[toolName] = session;
+                toolToServerUuid[toolName] = mcpServerUuid;
+                allAvailableTools.push({
+                    ...tool,
+                    name: toolName
                 });
-              }
-            } catch (dbError) {
-              console.error(
-                `Error saving tools to database for server ${serverName}:`,
-                dbError,
-              );
-            }
-          }
+            });
 
-          // Use original tools for client response (middleware will be applied later)
-          const toolsWithSource = allServerTools.map((tool) => {
-            const toolName = `${sanitizeName(serverName)}__${tool.name}`;
-            toolToClient[toolName] = session;
-            toolToServerUuid[toolName] = mcpServerUuid;
-
-            return {
-              ...tool,
-              name: toolName,
-              description: tool.description,
-            };
-          });
-
-          allTools.push(...toolsWithSource);
         } catch (error) {
-          console.error(`Error fetching tools from: ${serverName}`, error);
+            console.error(`Error fetching tools from ${serverName}:`, error);
         }
-      }),
+      })
     );
 
-    return { tools: allTools };
+    const resultTools = [...metaTools];
+
+    allAvailableTools.forEach(tool => {
+        if (loadedTools.has(tool.name)) {
+            resultTools.push(tool);
+        }
+    });
+
+    return { tools: resultTools };
   };
 
-  // Original Call Tool Handler
+  /**
+   * Internal implementation that does the actual work.
+   */
+  const _internalCallToolImpl = async (
+    name: string,
+    args: any,
+    meta?: any
+  ): Promise<CallToolResult> => {
+
+    // Check for TOON request
+    const useToon = meta?.toon === true || meta?.toon === "true";
+
+    const formatResult = (result: CallToolResult): CallToolResult => {
+        if (!useToon) return result;
+
+        // Attempt to compress JSON content
+        const newContent = result.content.map(item => {
+            if (item.type === "text") {
+                try {
+                    // Try to parse as JSON first
+                    const data = JSON.parse(item.text);
+                    const serialized = toonSerializer.serialize(data);
+                    return { ...item, text: serialized };
+                } catch (e) {
+                    // Not JSON, return as is
+                    return item;
+                }
+            }
+            return item;
+        });
+
+        return {
+            ...result,
+            content: newContent
+        };
+    };
+
+    // 1. Meta Tools
+    if (name === "search_tools") {
+      const { query, limit } = args as { query: string; limit?: number };
+      const results = await toolSearchService.searchTools(query, limit);
+      return formatResult({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      });
+    }
+
+    if (name === "load_tool") {
+      const { name: toolName } = args as { name: string };
+      if (toolToClient[toolName]) {
+        loadedTools.add(toolName);
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `Tool '${toolName}' loaded.`,
+                }
+            ]
+        };
+      } else {
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `Tool '${toolName}' not found.`,
+                },
+            ],
+            isError: true,
+        };
+      }
+    }
+
+    if (name === "save_script") {
+        const { name: scriptName, code, description } = args as { name: string; code: string; description?: string };
+        try {
+            const saved = await savedScriptService.saveScript(scriptName, code, description);
+            return {
+                content: [{ type: "text", text: `Script '${saved.name}' saved successfully.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save script: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "run_code") {
+        const { code } = args as { code: string };
+        try {
+            // RECURSION MAGIC: We pass the *wrapped* middleware handler to the sandbox.
+            const result = await codeExecutorService.executeCode(
+                code,
+                async (toolName, toolArgs) => {
+                    if (toolName === "run_code") {
+                        throw new Error("Cannot call run_code from within run_code");
+                    }
+                    // Call the fully wrapped handler!
+                    const res = await callToolWithMiddleware({
+                        method: "tools/call",
+                        params: {
+                            name: toolName,
+                            arguments: toolArgs,
+                            _meta: meta
+                        }
+                    }, handlerContext);
+
+                    return res;
+                }
+            );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Code execution failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    // 2. Saved Scripts execution
+    if (name.startsWith("script__")) {
+        const scriptName = name.replace("script__", "");
+        const script = await savedScriptService.getScript(scriptName);
+
+        if (script) {
+             try {
+                // Execute saved script using the SAME logic as run_code
+                const result = await codeExecutorService.executeCode(
+                    script.code,
+                    async (toolName, toolArgs) => {
+                        if (toolName === "run_code" || toolName.startsWith("script__")) {
+                            throw new Error("Recursion restricted in saved scripts");
+                        }
+                        const res = await callToolWithMiddleware({
+                            method: "tools/call",
+                            params: {
+                                name: toolName,
+                                arguments: toolArgs,
+                                _meta: meta
+                            }
+                        }, handlerContext);
+                        return res;
+                    }
+                );
+                return formatResult({
+                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+                });
+            } catch (error: any) {
+                return {
+                    content: [{ type: "text", text: `Saved script execution failed: ${error.message}` }],
+                    isError: true
+                };
+            }
+        }
+    }
+
+    // 3. Downstream Tools
+    const clientForTool = toolToClient[name];
+    if (!clientForTool) {
+       throw new Error(`Unknown tool: ${name}`);
+    }
+
+    const parsed = parseToolName(name);
+    if (!parsed) throw new Error(`Invalid tool name: ${name}`);
+
+    try {
+        const abortController = new AbortController();
+        const mcpRequestOptions: RequestOptions = {
+            signal: abortController.signal,
+            timeout: await configService.getMcpTimeout(),
+        };
+
+        const result = await clientForTool.client.request(
+            {
+                method: "tools/call",
+                params: {
+                    name: parsed.originalToolName,
+                    arguments: args || {},
+                    _meta: meta,
+                }
+            },
+            CompatibilityCallToolResultSchema,
+            mcpRequestOptions
+        );
+        return formatResult(result as CallToolResult);
+    } catch (error) {
+        console.error(`Error calling ${name}:`, error);
+        throw error;
+    }
+  };
+
   const originalCallToolHandler: CallToolHandler = async (
     request,
     _context,
   ) => {
-    const { name, arguments: args } = request.params;
-
-    // Parse the tool name using shared utility
-    const parsed = parseToolName(name);
-    if (!parsed) {
-      throw new Error(`Invalid tool name format: ${name}`);
-    }
-
-    const { serverName: serverPrefix, originalToolName } = parsed;
-
-    // Try to find the tool in pre-populated mappings first
-    let clientForTool = toolToClient[name];
-    let serverUuid = toolToServerUuid[name];
-
-    // If not found in mappings, dynamically find the server and route the call
-    if (!clientForTool || !serverUuid) {
-      try {
-        // Get all MCP servers for this namespace
-        const serverParams = await getMcpServers(
-          namespaceUuid,
-          includeInactiveServers,
-        );
-
-        // Find the server with the matching name prefix
-        for (const [mcpServerUuid, params] of Object.entries(serverParams)) {
-          const session = await mcpServerPool.getSession(
-            sessionId,
-            mcpServerUuid,
-            params,
-            namespaceUuid,
-          );
-
-          if (session) {
-            const capabilities = session.client.getServerCapabilities();
-            if (!capabilities?.tools) continue;
-
-            // Use name assigned by user, fallback to name from server
-            const serverName =
-              params.name || session.client.getServerVersion()?.name || "";
-
-            if (sanitizeName(serverName) === serverPrefix) {
-              // Found the server, now check if it has this tool with pagination
-              try {
-                let foundTool = false;
-                let cursor: string | undefined = undefined;
-                let hasMore = true;
-
-                while (hasMore && !foundTool) {
-                  const result: z.infer<typeof ListToolsResultSchema> =
-                    await session.client.request(
-                      {
-                        method: "tools/list",
-                        params: { cursor: cursor },
-                      },
-                      ListToolsResultSchema,
-                    );
-
-                  if (
-                    result.tools?.some(
-                      (tool: Tool) => tool.name === originalToolName,
-                    )
-                  ) {
-                    foundTool = true;
-                    // Tool exists, populate mappings for future use and use it
-                    clientForTool = session;
-                    serverUuid = mcpServerUuid;
-                    toolToClient[name] = session;
-                    toolToServerUuid[name] = mcpServerUuid;
-                    break;
-                  }
-
-                  cursor = result.nextCursor;
-                  hasMore = !!result.nextCursor;
-                }
-
-                if (foundTool) {
-                  break;
-                }
-              } catch (error) {
-                console.error(
-                  `Error checking tools for server ${serverName}:`,
-                  error,
-                );
-                continue;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error(`Error dynamically finding tool ${name}:`, error);
-      }
-    }
-
-    if (!clientForTool) {
-      throw new Error(`Unknown tool: ${name}`);
-    }
-
-    if (!serverUuid) {
-      throw new Error(`Server UUID not found for tool: ${name}`);
-    }
-
-    try {
-      const abortController = new AbortController();
-
-      // Get configurable timeout values
-      const resetTimeoutOnProgress =
-        await configService.getMcpResetTimeoutOnProgress();
-      const timeout = await configService.getMcpTimeout();
-      const maxTotalTimeout = await configService.getMcpMaxTotalTimeout();
-
-      const mcpRequestOptions: RequestOptions = {
-        signal: abortController.signal,
-        resetTimeoutOnProgress,
-        timeout,
-        maxTotalTimeout,
-      };
-      // Use the correct schema for tool calls
-      const result = await clientForTool.client.request(
-        {
-          method: "tools/call",
-          params: {
-            name: originalToolName,
-            arguments: args || {},
-            _meta: request.params._meta,
-          },
-        },
-        CompatibilityCallToolResultSchema,
-        mcpRequestOptions,
-      );
-
-      // Cast the result to CallToolResult type
-      return result as CallToolResult;
-    } catch (error) {
-      console.error(
-        `Error calling tool "${name}" through ${
-          clientForTool.client.getServerVersion()?.name || "unknown"
-        }:`,
-        error,
-      );
-      throw error;
-    }
+    const { name, arguments: args, _meta } = request.params;
+    return await _internalCallToolImpl(name, args, _meta);
   };
 
-  // Compose middleware with handlers - this is the Express-like functional approach
+  // ----------------------------------------------------------------------
+  // Middleware Composition
+  // ----------------------------------------------------------------------
+
   const listToolsWithMiddleware = compose(
     createToolOverridesListToolsMiddleware({
       cacheEnabled: true,
       persistentCacheOnListTools: true,
     }),
     createFilterListToolsMiddleware({ cacheEnabled: true }),
-    // Add more middleware here as needed
-    // createLoggingMiddleware(),
-    // createRateLimitingMiddleware(),
   )(originalListToolsHandler);
 
-  const callToolWithMiddleware = compose(
+  let recursiveCallToolHandler: CallToolHandler;
+
+  const wrappedCallToolHandler: CallToolHandler = async (request, context) => {
+      return recursiveCallToolHandler(request, context);
+  };
+
+  const implCallToolHandler: CallToolHandler = async (request, context) => {
+      const { name, arguments: args, _meta } = request.params;
+
+      // Meta Tools Logic
+      if (name === "search_tools" || name === "load_tool" || name === "save_script" || name.startsWith("script__")) {
+          return _internalCallToolImpl(name, args, _meta);
+      }
+      else if (name === "run_code") {
+           const { code } = args as { code: string };
+           try {
+               const result = await codeExecutorService.executeCode(code, async (tName, tArgs) => {
+                   if (tName === "run_code") throw new Error("Recursion detected");
+                   return recursiveCallToolHandler({
+                       method: "tools/call",
+                       params: { name: tName, arguments: tArgs, _meta }
+                   }, context);
+               });
+
+               // Toon formatting is handled inside _internalCallToolImpl or wrapper logic?
+               // Wait, _internalCallToolImpl handles formatting.
+               // The executeCode returns raw result. We need to wrap it.
+               // Actually _internalCallToolImpl handles "run_code" too in the main body (duplicate logic warning).
+
+               // Let's use _internalCallToolImpl for consistency, it has the logic.
+               return _internalCallToolImpl(name, args, _meta);
+
+           } catch (e: any) {
+               return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+           }
+      }
+
+      return _internalCallToolImpl(name, args, _meta);
+  };
+
+  // Compose the middleware
+  recursiveCallToolHandler = compose(
     createFilterCallToolMiddleware({
       cacheEnabled: true,
-      customErrorMessage: (toolName, reason) =>
-        `Access denied to tool "${toolName}": ${reason}`,
+      customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
     }),
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
-    // Add more middleware here as needed
-    // createAuditingMiddleware(),
-    // createAuthorizationMiddleware(),
-  )(originalCallToolHandler);
+  )(implCallToolHandler);
 
-  // Set up the handlers with middleware
+  // Also expose callToolWithMiddleware for internal uses if needed,
+  // but we should reuse recursiveCallToolHandler as the primary entry point
+  const callToolWithMiddleware = recursiveCallToolHandler;
+
+
+  // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {
     return await listToolsWithMiddleware(request, handlerContext);
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    return await callToolWithMiddleware(request, handlerContext);
+    return await recursiveCallToolHandler(request, handlerContext);
   });
 
   // Get Prompt Handler
