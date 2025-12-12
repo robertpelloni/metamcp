@@ -24,6 +24,14 @@
 
 **MetaMCP** is a MCP proxy that lets you dynamically aggregate MCP servers into a unified MCP server, and apply middlewares. MetaMCP itself is a MCP server so it can be easily plugged into **ANY** MCP clients.
 
+**New Features**:
+- **Progressive Tool Disclosure**: Expose only meta-tools (`search_tools`, `load_tool`, `run_code`) to minimize context usage.
+- **Semantic Tool Search**: "Tool RAG" using embeddings and `pgvector` to find relevant tools.
+- **Code Mode**: Securely execute TypeScript/JavaScript code in a sandbox to chain multiple tool calls.
+- **Traffic Inspection**: Persistent logging of tool calls, arguments, and results ("Mcpshark").
+- **Saved Scripts & Tool Sets**: Persist useful scripts and tool profiles.
+- **Config Import**: Easily import existing `claude_desktop_config.json` files.
+
 ![MetaMCP Diagram](metamcp.svg)
 
 ---
@@ -40,8 +48,10 @@ English | [中文](./README_cn.md)
   - [🏷️ **MetaMCP Namespace**](#️-metamcp-namespace)
   - [🌐 **MetaMCP Endpoint**](#-metamcp-endpoint)
   - [⚙️ **Middleware**](#️-middleware)
-  - [🔍 **Inspector**](#-inspector)
+  - [🔍 **Inspector (Mcpshark)**](#-inspector-mcpshark)
   - [✏️ **Tool Overrides \& Annotations**](#️-tool-overrides--annotations)
+  - [⚡ **Code Mode & Tool Chaining**](#-code-mode--tool-chaining)
+  - [📂 **Saved Scripts & Tool Sets**](#-saved-scripts--tool-sets)
 - [🚀 Quick Start](#-quick-start)
   - [🐳 Run with Docker Compose (Recommended)](#-run-with-docker-compose-recommended)
   - [📦 Build development environment with Dev Containers (VSCode/Cursor)](#-build-development-environment-with-dev-containers-vscodecursor)
@@ -73,9 +83,10 @@ English | [中文](./README_cn.md)
 
 ## 🎯 Use Cases
 - 🏷️ **Group MCP servers into namespaces, host them as meta-MCPs, and assign public endpoints** (SSE or Streamable HTTP), with auth. One-click to switch a namespace for an endpoint.
--  🎯 **Pick tools you only need when remixing MCP servers.** Apply other **pluggable middleware** around observability, security, etc. (coming soon)
--  🔍 **Use as enhanced MCP inspector** with saved server configs, and inspect your MetaMCP endpoints in house to see if it works or not.
--  🔍 **Use as Elasticsearch for MCP tool selection** (coming soon)
+- 🎯 **Pick tools you only need when remixing MCP servers.** Apply other **pluggable middleware** around observability, security, etc. (coming soon)
+- 🔍 **Use as enhanced MCP inspector** with saved server configs, and inspect your MetaMCP endpoints in house to see if it works or not.
+- 🔍 **Use as Elasticsearch for MCP tool selection** (Semantic Search / Tool RAG).
+- ⚡ **Use Code Mode** to allow agents to write scripts that chain multiple tools together, reducing round-trips and token costs.
 
 Generally developers can use MetaMCP as **infrastructure** to host dynamically composed MCP servers through a unified endpoint, and build agents on top of it.
 
@@ -133,16 +144,28 @@ DATABASE_URL=${DB_CONNECTION_STRING}
 ### ⚙️ **Middleware**
 - Intercepts and transforms MCP requests and responses at namespace level
 - **Built-in example**: "Filter inactive tools" - optimizes tool context for LLMs
-- **Future ideas**: tool logging, error traces, validation, scanning
+- **Logging Middleware**: Persists all request/response data to Postgres for inspection.
 
-### 🔍 **Inspector**
-Similar to the official MCP inspector, but with **saved server configs** - MetaMCP automatically creates configurations so you can debug MetaMCP endpoints immediately.
+### 🔍 **Inspector (Mcpshark)**
+- Similar to the official MCP inspector, but with **saved server configs**.
+- **Live Logs**: View real-time and historical tool calls, arguments, results, and errors.
+- Inspect structured data for debugging complex agent interactions.
 
 ### ✏️ **Tool Overrides & Annotations**
 - Open a namespace → **Tools** tab to see every tool coming from connected MCP servers.
 - Each saved tool can be expanded and edited inline: update the display **name/title/description** or provide a JSON blob with namespace-specific annotations (for example `{ "annotations": { "readOnlyHint": false } }`).
 - Badges in the table ("Overridden", "Annotations") show which tools currently have custom metadata. Hover them to read a tooltip describing what was overridden.
 - Annotation overrides are merged with whatever the upstream MCP server returns, so you can safely add custom UI hints without losing provider metadata.
+
+### ⚡ **Code Mode & Tool Chaining**
+- **MetaMCP Hub** exposes a `run_code` tool that accepts TypeScript/JavaScript.
+- The code runs in a secure sandbox (`isolated-vm`).
+- Scripts can call other available MCP tools using `await mcp.call('tool_name', args)`.
+- **Recursive Routing**: Tool calls from inside the sandbox flow back through the MetaMCP middleware stack, ensuring logging, authentication, and policy enforcement apply to every sub-call.
+
+### 📂 **Saved Scripts & Tool Sets**
+- **Saved Scripts**: Persist successful `run_code` snippets as reusable tools (e.g., `script__daily_report`).
+- **Tool Sets**: Save your current configuration of loaded tools as a profile (e.g., "Web Dev Profile") and restore it later with `load_tool_set`.
 
 ## 🚀 Quick Start
 
@@ -154,6 +177,7 @@ Clone repo, prepare `.env`, and start with docker compose:
 git clone https://github.com/metatool-ai/metamcp.git
 cd metamcp
 cp example.env .env
+# Edit .env to add OPENAI_API_KEY if you want semantic search features
 docker compose up -d
 ```
 
@@ -394,28 +418,30 @@ sequenceDiagram
     participant MetaMCP as MetaMCP Server
     participant MCPServers as Installed MCP Servers
 
-    MCPClient ->> MetaMCP: Request list tools
+    MCPClient ->> MetaMCP: Request list tools (Progressive Disclosure)
+    MetaMCP ->> MCPClient: Return [search_tools, load_tool, run_code]
 
-    loop For each listed MCP Server
-        MetaMCP ->> MCPServers: Request list_tools
-        MCPServers ->> MetaMCP: Return list of tools
-    end
+    MCPClient ->> MetaMCP: Call search_tools(query)
+    MetaMCP ->> MetaMCP: Semantic search in DB
+    MetaMCP ->> MCPClient: Return matching tools
 
-    MetaMCP ->> MetaMCP: Aggregate tool lists & apply middleware
-    MetaMCP ->> MCPClient: Return aggregated list of tools
+    MCPClient ->> MetaMCP: Call load_tool(name)
+    MetaMCP ->> MetaMCP: Add tool to session allowlist
+    MetaMCP ->> MCPClient: Confirmed
 
-    MCPClient ->> MetaMCP: Call tool
-    MetaMCP ->> MCPServers: call_tool to target MCP Server
-    MCPServers ->> MetaMCP: Return tool response
-    MetaMCP ->> MCPClient: Return tool response
+    MCPClient ->> MetaMCP: Call tool (direct)
+    MetaMCP ->> MCPServers: Proxy call
+    MCPServers ->> MetaMCP: Return result
+    MetaMCP ->> MetaMCP: Log to DB (Mcpshark)
+    MetaMCP ->> MCPClient: Return result
 ```
 
 ## 🗺️ Roadmap
 
 **Potential next steps:**
 
-- [ ] 🔌 Headless Admin API access
-- [ ] 🔍 Dynamically apply search rules on MetaMCP endpoints
+- [x] 🔌 Headless Admin API access (Code Mode/Saved Scripts)
+- [x] 🔍 Dynamically apply search rules on MetaMCP endpoints (Semantic Search)
 - [ ] 🛠️ More middlewares
 - [ ] 💬 Chat/Agent Playground
 - [ ] 🧪 Testing & Evaluation for MCP tool selection optimization
