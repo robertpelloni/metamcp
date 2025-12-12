@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  FileCode,
   FileTerminal,
   Key,
+  Layers,
   Link as LinkIcon,
   Package,
   Search,
@@ -49,6 +51,16 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:mcpServers"),
     url: getLocalizedPath("/mcp-servers", locale),
     icon: Server,
+  },
+  {
+    title: t("navigation:savedScripts"),
+    url: getLocalizedPath("/scripts", locale),
+    icon: FileCode,
+  },
+  {
+    title: t("navigation:toolSets"),
+    url: getLocalizedPath("/tool-sets", locale),
+    icon: Layers,
   },
   {
     title: t("navigation:metamcpNamespaces"),
