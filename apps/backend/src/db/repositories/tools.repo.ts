@@ -5,6 +5,7 @@ import {
 } from "@repo/zod-types";
 import { and, eq, notInArray, sql } from "drizzle-orm";
 
+import { toolSearchService } from "../../lib/ai/tool-search.service";
 import { db } from "../index";
 import { toolsTable } from "../schema";
 
@@ -40,6 +41,7 @@ export class ToolsRepository {
     }));
 
     // Batch insert all tools with upsert
+    const results = await db
     const result = await db
       .insert(toolsTable)
       .values(toolsToInsert)
@@ -53,6 +55,20 @@ export class ToolsRepository {
       })
       .returning();
 
+    // Async update embeddings for all upserted tools
+    // We do this in the background to not block the request
+    Promise.allSettled(
+      results.map((tool) =>
+        toolSearchService.updateToolEmbedding(tool.uuid).catch((err) => {
+          console.error(
+            `Failed to update embedding for tool ${tool.name} (${tool.uuid}):`,
+            err,
+          );
+        }),
+      ),
+    );
+
+    return results;
     return result;
   }
 

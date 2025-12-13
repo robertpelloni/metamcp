@@ -16,6 +16,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const mcpServerTypeEnum = pgEnum(
@@ -122,6 +123,7 @@ export const toolsTable = pgTable(
         required?: string[];
       }>()
       .notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -134,6 +136,10 @@ export const toolsTable = pgTable(
   },
   (table) => [
     index("tools_mcp_server_uuid_idx").on(table.mcp_server_uuid),
+    index("tools_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
     unique("tools_unique_tool_name_per_server_idx").on(
       table.mcp_server_uuid,
       table.name,
