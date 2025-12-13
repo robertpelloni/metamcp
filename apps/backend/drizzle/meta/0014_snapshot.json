@@ -1,6 +1,6 @@
 {
-  "id": "944d7096-ed8d-4164-8e86-a85b694e4075",
-  "prevId": "3c8fdc64-07ec-40a6-b784-5989fe669cb8",
+  "id": "4b71cd14-2dd1-406d-b6c9-86282535cbf6",
+  "prevId": "70c1e766-f4d0-4d9f-b518-beca940bd0af",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -506,13 +506,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "headers": {
-          "name": "headers",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
         },
         "user_id": {
           "name": "user_id",
@@ -1491,6 +1484,103 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.saved_scripts": {
+      "name": "saved_scripts",
+      "schema": "",
+      "columns": {
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "saved_scripts_user_id_idx": {
+          "name": "saved_scripts_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "saved_scripts_user_id_users_id_fk": {
+          "name": "saved_scripts_user_id_users_id_fk",
+          "tableFrom": "saved_scripts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "saved_scripts_name_user_idx": {
+          "name": "saved_scripts_name_user_idx",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.sessions": {
       "name": "sessions",
       "schema": "",
@@ -1604,6 +1694,18 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
+        },
+        "rich_description": {
+          "name": "rich_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concise_description": {
+          "name": "concise_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "embedding": {
           "name": "embedding",

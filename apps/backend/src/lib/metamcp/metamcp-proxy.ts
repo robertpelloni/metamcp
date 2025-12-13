@@ -24,6 +24,11 @@ import { z } from "zod";
 import { toolsImplementations } from "../../trpc/tools.impl";
 import { toolSearchService } from "../ai/tool-search.service";
 import { configService } from "../config.service";
+import { configImportService } from "./config-import.service";
+import { codeExecutorService } from "../sandbox/code-executor.service";
+import { savedScriptService } from "../sandbox/saved-script.service";
+import { toolSetService } from "./tool-set.service";
+import { toonSerializer } from "../serializers/toon.serializer";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
@@ -39,6 +44,7 @@ import {
   ListToolsHandler,
   MetaMCPHandlerContext,
 } from "./metamcp-middleware/functional-middleware";
+import { createLoggingMiddleware } from "./metamcp-middleware/logging.functional";
 import {
   createToolOverridesCallToolMiddleware,
   createToolOverridesListToolsMiddleware,
@@ -153,6 +159,7 @@ export const createServer = async (
     request,
     context,
   ) => {
+    // 1. Meta Tools
     // 1. Always include the "Meta" tools
     const metaTools: Tool[] = [
       {
@@ -201,6 +208,94 @@ export const createServer = async (
           required: ["code"],
         },
       },
+      {
+        name: "save_script",
+        description: "Save a successful code snippet as a reusable tool (Saved Script). The script will be available as a tool in future sessions.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "The name of the new tool (must be unique, alphanumeric).",
+            },
+            description: {
+              type: "string",
+              description: "Description of what this script does.",
+            },
+            code: {
+              type: "string",
+              description: "The code to save.",
+            },
+          },
+          required: ["name", "code"],
+        },
+      },
+      {
+        name: "save_tool_set",
+        description: "Save the currently loaded tools as a 'Tool Set' (Profile). This allows you to restore this working environment later.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "Name of the tool set (e.g., 'web_dev', 'data_analysis').",
+            },
+            description: {
+              type: "string",
+              description: "Description of the tool set.",
+            },
+          },
+          required: ["name"],
+        },
+      },
+      {
+        name: "load_tool_set",
+        description: "Load a previously saved Tool Set (Profile). This will add all tools in the set to your current context.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description: "Name of the tool set to load.",
+            },
+          },
+          required: ["name"],
+        },
+      },
+      {
+        name: "import_mcp_config",
+        description: "Import MCP servers from a JSON configuration file content (e.g., claude_desktop_config.json).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            configJson: {
+              type: "string",
+              description: "The content of the JSON configuration file.",
+            },
+          },
+          required: ["configJson"],
+        },
+      },
+    ];
+
+    // 2. Saved Scripts
+    // Fetch user-defined saved scripts and expose them as tools
+    try {
+        const savedScripts = await savedScriptService.listScripts();
+        const scriptTools: Tool[] = savedScripts.map(script => ({
+            name: `script__${script.name}`,
+            description: `[Saved Script] ${script.description || "No description"}`,
+            inputSchema: {
+                type: "object",
+                properties: {}, // Scripts currently take no args
+                additionalProperties: true
+            }
+        }));
+        metaTools.push(...scriptTools);
+    } catch (e) {
+        console.error("Error fetching saved scripts", e);
+    }
+
     ];
 
     console.log("[DEBUG-TOOLS] 🔍 tools/list called for namespace:", namespaceUuid);
@@ -301,6 +396,16 @@ export const createServer = async (
                     name: toolName
                 });
             });
+
+            allServerTools.forEach(tool => {
+                const toolName = `${sanitizeName(serverName)}__${tool.name}`;
+                toolToClient[toolName] = session;
+                toolToServerUuid[toolName] = mcpServerUuid;
+                allAvailableTools.push({
+                    ...tool,
+                    name: toolName
+                });
+            });
             cursor = result.nextCursor;
             hasMore = !!result.nextCursor;
           }
@@ -369,10 +474,40 @@ export const createServer = async (
     args: any,
     meta?: any
   ): Promise<CallToolResult> => {
+
+    // Check for TOON request
+    const useToon = meta?.toon === true || meta?.toon === "true";
+
+    const formatResult = (result: CallToolResult): CallToolResult => {
+        if (!useToon) return result;
+
+        // Attempt to compress JSON content
+        const newContent = result.content.map(item => {
+            if (item.type === "text") {
+                try {
+                    // Try to parse as JSON first
+                    const data = JSON.parse(item.text);
+                    const serialized = toonSerializer.serialize(data);
+                    return { ...item, text: serialized };
+                } catch (e) {
+                    // Not JSON, return as is
+                    return item;
+                }
+            }
+            return item;
+        });
+
+        return {
+            ...result,
+            content: newContent
+        };
+    };
+
     // 1. Meta Tools
     if (name === "search_tools") {
       const { query, limit } = args as { query: string; limit?: number };
       const results = await toolSearchService.searchTools(query, limit);
+      return formatResult({
       return {
         content: [
           {
@@ -380,6 +515,7 @@ export const createServer = async (
             text: JSON.stringify(results, null, 2),
           },
         ],
+      });
       };
     }
 
@@ -408,6 +544,100 @@ export const createServer = async (
       }
     }
 
+    if (name === "save_script") {
+        const { name: scriptName, code, description } = args as { name: string; code: string; description?: string };
+        try {
+            const saved = await savedScriptService.saveScript(scriptName, code, description);
+            return {
+                content: [{ type: "text", text: `Script '${saved.name}' saved successfully.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save script: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "save_tool_set") {
+        const { name: setName, description } = args as { name: string; description?: string };
+        try {
+            const toolsToSave = Array.from(loadedTools);
+            if (toolsToSave.length === 0) {
+                return {
+                    content: [{ type: "text", text: `No tools currently loaded to save.` }],
+                    isError: true
+                };
+            }
+            const saved = await toolSetService.createToolSet(setName, toolsToSave, description);
+            return {
+                content: [{ type: "text", text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "load_tool_set") {
+        const { name: setName } = args as { name: string };
+        try {
+            const set = await toolSetService.getToolSet(setName);
+            if (!set) {
+                return {
+                    content: [{ type: "text", text: `Tool Set '${setName}' not found.` }],
+                    isError: true
+                };
+            }
+
+            // Add tools to loadedTools
+            let count = 0;
+            const missing = [];
+            for (const toolName of set.tools) {
+                if (toolToClient[toolName]) {
+                    loadedTools.add(toolName);
+                    count++;
+                } else {
+                    missing.push(toolName);
+                }
+            }
+
+            let msg = `Loaded ${count} tools from set '${setName}'.`;
+            if (missing.length > 0) {
+                msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
+            }
+
+            return {
+                content: [{ type: "text", text: msg }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to load tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "import_mcp_config") {
+        const { configJson } = args as { configJson: string };
+        try {
+            const result = await configImportService.importClaudeConfig(configJson);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`
+                }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Import failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
     if (name === "run_code") {
         const { code } = args as { code: string };
         try {
@@ -427,6 +657,7 @@ export const createServer = async (
                         params: {
                             name: toolName,
                             arguments: toolArgs,
+                            _meta: meta
                             _meta: meta // Propagate meta if available (e.g. tracing IDs)
                         }
                     }, handlerContext);
@@ -434,6 +665,9 @@ export const createServer = async (
                     return res;
                 }
             );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
             return {
                 content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
             };
@@ -445,6 +679,44 @@ export const createServer = async (
         }
     }
 
+    // 2. Saved Scripts execution
+    if (name.startsWith("script__")) {
+        const scriptName = name.replace("script__", "");
+        const script = await savedScriptService.getScript(scriptName);
+
+        if (script) {
+             try {
+                // Execute saved script using the SAME logic as run_code
+                const result = await codeExecutorService.executeCode(
+                    script.code,
+                    async (toolName, toolArgs) => {
+                        if (toolName === "run_code" || toolName.startsWith("script__")) {
+                            throw new Error("Recursion restricted in saved scripts");
+                        }
+                        const res = await callToolWithMiddleware({
+                            method: "tools/call",
+                            params: {
+                                name: toolName,
+                                arguments: toolArgs,
+                                _meta: meta
+                            }
+                        }, handlerContext);
+                        return res;
+                    }
+                );
+                return formatResult({
+                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+                });
+            } catch (error: any) {
+                return {
+                    content: [{ type: "text", text: `Saved script execution failed: ${error.message}` }],
+                    isError: true
+                };
+            }
+        }
+    }
+
+    // 3. Downstream Tools
     // 2. Downstream Tools
     const clientForTool = toolToClient[name];
     if (!clientForTool) {
@@ -473,6 +745,7 @@ export const createServer = async (
             CompatibilityCallToolResultSchema,
             mcpRequestOptions
         );
+        return formatResult(result as CallToolResult);
         return result as CallToolResult;
     } catch (error) {
         console.error(`Error calling ${name}:`, error);
@@ -504,6 +777,49 @@ export const createServer = async (
     createFilterListToolsMiddleware({ cacheEnabled: true }),
   )(originalListToolsHandler);
 
+  let recursiveCallToolHandler: CallToolHandler;
+
+  const wrappedCallToolHandler: CallToolHandler = async (request, context) => {
+      return recursiveCallToolHandler(request, context);
+  };
+
+  const implCallToolHandler: CallToolHandler = async (request, context) => {
+      const { name, arguments: args, _meta } = request.params;
+
+      // Meta Tools Logic
+      if (name === "search_tools" || name === "load_tool" || name === "save_script" || name.startsWith("script__") || name === "save_tool_set" || name === "load_tool_set" || name === "import_mcp_config") {
+          return _internalCallToolImpl(name, args, _meta);
+      }
+      else if (name === "run_code") {
+           const { code } = args as { code: string };
+           try {
+               const result = await codeExecutorService.executeCode(code, async (tName, tArgs) => {
+                   if (tName === "run_code") throw new Error("Recursion detected");
+                   return recursiveCallToolHandler({
+                       method: "tools/call",
+                       params: { name: tName, arguments: tArgs, _meta }
+                   }, context);
+               });
+
+               // Toon formatting is handled inside _internalCallToolImpl or wrapper logic?
+               // Wait, _internalCallToolImpl handles formatting.
+               // The executeCode returns raw result. We need to wrap it.
+               // Actually _internalCallToolImpl handles "run_code" too in the main body (duplicate logic warning).
+
+               // Let's use _internalCallToolImpl for consistency, it has the logic.
+               return _internalCallToolImpl(name, args, _meta);
+
+           } catch (e: any) {
+               return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+           }
+      }
+
+      return _internalCallToolImpl(name, args, _meta);
+  };
+
+  // Compose the middleware
+  recursiveCallToolHandler = compose(
+    createLoggingMiddleware({ enabled: true }),
   // We define this variable *before* using it in the internal handler above?
   // No, JS hoisting of 'var' or function declarations works, but `const` does not hoist.
   // We need to be careful with the circular dependency of `callToolWithMiddleware` being used inside `_internalCallToolImpl`.
@@ -515,10 +831,14 @@ export const createServer = async (
   const callToolWithMiddleware = compose(
     createFilterCallToolMiddleware({
       cacheEnabled: true,
-      customErrorMessage: (toolName, reason) =>
-        `Access denied to tool "${toolName}": ${reason}`,
+      customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
     }),
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
+  )(implCallToolHandler);
+
+  // Also expose callToolWithMiddleware for internal uses if needed,
+  // but we should reuse recursiveCallToolHandler as the primary entry point
+  const callToolWithMiddleware = recursiveCallToolHandler;
   )(originalCallToolHandler);
 
   // Assign it for the closure to capture (Wait, const is not mutable re-assignment, but the object _internalCallToolImpl captured... wait.)

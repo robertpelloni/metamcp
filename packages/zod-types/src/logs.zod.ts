@@ -3,10 +3,18 @@ import { z } from "zod";
 export const MetaMcpLogEntrySchema = z.object({
   id: z.string(),
   timestamp: z.date(),
-  serverName: z.string(),
+  serverName: z.string().optional(), // Now derived from tool_name prefix or similar
   level: z.enum(["error", "info", "warn"]),
-  message: z.string(),
-  error: z.string().optional(),
+  message: z.string(), // Summary: "Called tool X"
+  error: z.string().nullable().optional(),
+
+  // New structured fields
+  toolName: z.string().optional(),
+  arguments: z.record(z.unknown()).optional(),
+  result: z.record(z.unknown()).optional(),
+  durationMs: z.string().optional(),
+  sessionId: z.string().optional(),
+  parentCallUuid: z.string().nullable().optional(),
 });
 
 export const GetLogsRequestSchema = z.object({

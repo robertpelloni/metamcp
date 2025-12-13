@@ -35,7 +35,7 @@ export class ToolSearchService {
         .select({
           uuid: toolsTable.uuid,
           name: toolsTable.name,
-          description: toolsTable.description,
+          description: sql<string>`COALESCE(${toolsTable.concise_description}, ${toolsTable.description})`,
           mcpServerUuid: toolsTable.mcp_server_uuid,
           similarity,
         })
@@ -64,11 +64,17 @@ export class ToolSearchService {
       throw new Error(`Tool with UUID ${toolUuid} not found`);
     }
 
-    const searchText = embeddingService.generateToolSearchText({
-      name: tool.name,
-      description: tool.description,
-      toolSchema: tool.toolSchema,
-    });
+    // Use rich description if available, otherwise generate default search text
+    let searchText: string;
+    if (tool.rich_description) {
+      searchText = tool.rich_description;
+    } else {
+      searchText = embeddingService.generateToolSearchText({
+        name: tool.name,
+        description: tool.description,
+        toolSchema: tool.toolSchema,
+      });
+    }
 
     const embedding = await embeddingService.generateEmbedding(searchText);
 
