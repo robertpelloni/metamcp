@@ -59,8 +59,25 @@ services:
     networks:
       - metamcp-network
 
+  mcpshark:
+    image: node:20-slim
+    container_name: mcp-shark
+    working_dir: /app
+    command: npx -y @mcp-shark/mcp-shark --host 0.0.0.0 --port 9851 --ui-port 9853
+    ports:
+      - "9851:9851" # Server
+      - "9853:9853" # UI
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - mcpshark_data:/root/.mcp-shark
+    networks:
+      - metamcp-network
+
 volumes:
   postgres_data:
+    driver: local
+  mcpshark_data:
     driver: local
 
 networks:

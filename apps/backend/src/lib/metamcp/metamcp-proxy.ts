@@ -23,8 +23,8 @@ import { z } from "zod";
 
 import { toolsImplementations } from "../../trpc/tools.impl";
 import { toolSearchService } from "../ai/tool-search.service";
-import { configService } from "../config.service";
 import { configImportService } from "./config-import.service";
+import { configService } from "../config.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { savedScriptService } from "../sandbox/saved-script.service";
 import { toolSetService } from "./tool-set.service";
@@ -390,6 +390,21 @@ export const createServer = async (
     return { tools: resultTools };
   };
 
+  // ----------------------------------------------------------------------
+  // Middleware Composition
+  // ----------------------------------------------------------------------
+
+  const listToolsWithMiddleware = compose(
+    createToolOverridesListToolsMiddleware({
+      cacheEnabled: true,
+      persistentCacheOnListTools: true,
+    }),
+    createFilterListToolsMiddleware({ cacheEnabled: true }),
+  )(originalListToolsHandler);
+
+  // We define the handler variable first to allow cyclic reference inside the implementation
+  let recursiveCallToolHandler: CallToolHandler;
+
   /**
    * Internal implementation that does the actual work.
    */
@@ -564,6 +579,8 @@ export const createServer = async (
         const { code } = args as { code: string };
         try {
             // RECURSION MAGIC: We pass the *wrapped* middleware handler to the sandbox.
+            // This ensures that when the sandbox calls 'mcp.call', it goes through
+            // the full middleware stack (logging, auditing, etc.) just like a request from the client.
             const result = await codeExecutorService.executeCode(
                 code,
                 async (toolName, toolArgs) => {
@@ -571,7 +588,7 @@ export const createServer = async (
                         throw new Error("Cannot call run_code from within run_code");
                     }
                     // Call the fully wrapped handler!
-                    const res = await callToolWithMiddleware({
+                    const res = await recursiveCallToolHandler({
                         method: "tools/call",
                         params: {
                             name: toolName,
@@ -608,7 +625,7 @@ export const createServer = async (
                         if (toolName === "run_code" || toolName.startsWith("script__")) {
                             throw new Error("Recursion restricted in saved scripts");
                         }
-                        const res = await callToolWithMiddleware({
+                        const res = await recursiveCallToolHandler({
                             method: "tools/call",
                             params: {
                                 name: toolName,
@@ -666,64 +683,12 @@ export const createServer = async (
     }
   };
 
-  const originalCallToolHandler: CallToolHandler = async (
+  const implCallToolHandler: CallToolHandler = async (
     request,
     _context,
   ) => {
     const { name, arguments: args, _meta } = request.params;
     return await _internalCallToolImpl(name, args, _meta);
-  };
-
-  // ----------------------------------------------------------------------
-  // Middleware Composition
-  // ----------------------------------------------------------------------
-
-  const listToolsWithMiddleware = compose(
-    createToolOverridesListToolsMiddleware({
-      cacheEnabled: true,
-      persistentCacheOnListTools: true,
-    }),
-    createFilterListToolsMiddleware({ cacheEnabled: true }),
-  )(originalListToolsHandler);
-
-  let recursiveCallToolHandler: CallToolHandler;
-
-  const wrappedCallToolHandler: CallToolHandler = async (request, context) => {
-      return recursiveCallToolHandler(request, context);
-  };
-
-  const implCallToolHandler: CallToolHandler = async (request, context) => {
-      const { name, arguments: args, _meta } = request.params;
-
-      // Meta Tools Logic
-      if (name === "search_tools" || name === "load_tool" || name === "save_script" || name.startsWith("script__") || name === "save_tool_set" || name === "load_tool_set" || name === "import_mcp_config") {
-          return _internalCallToolImpl(name, args, _meta);
-      }
-      else if (name === "run_code") {
-           const { code } = args as { code: string };
-           try {
-               const result = await codeExecutorService.executeCode(code, async (tName, tArgs) => {
-                   if (tName === "run_code") throw new Error("Recursion detected");
-                   return recursiveCallToolHandler({
-                       method: "tools/call",
-                       params: { name: tName, arguments: tArgs, _meta }
-                   }, context);
-               });
-
-               // Toon formatting is handled inside _internalCallToolImpl or wrapper logic?
-               // Wait, _internalCallToolImpl handles formatting.
-               // The executeCode returns raw result. We need to wrap it.
-               // Actually _internalCallToolImpl handles "run_code" too in the main body (duplicate logic warning).
-
-               // Let's use _internalCallToolImpl for consistency, it has the logic.
-               return _internalCallToolImpl(name, args, _meta);
-
-           } catch (e: any) {
-               return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
-           }
-      }
-
-      return _internalCallToolImpl(name, args, _meta);
   };
 
   // Compose the middleware
@@ -735,11 +700,6 @@ export const createServer = async (
     }),
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
-
-  // Also expose callToolWithMiddleware for internal uses if needed,
-  // but we should reuse recursiveCallToolHandler as the primary entry point
-  const callToolWithMiddleware = recursiveCallToolHandler;
-
 
   // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {
