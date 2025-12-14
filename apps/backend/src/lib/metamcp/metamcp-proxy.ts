@@ -23,6 +23,7 @@ import { z } from "zod";
 
 import { toolsImplementations } from "../../trpc/tools.impl";
 import { toolSearchService } from "../ai/tool-search.service";
+import { agentService } from "../ai/agent.service";
 import { configImportService } from "./config-import.service";
 import { configService } from "../config.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
@@ -203,6 +204,20 @@ export const createServer = async (
             },
           },
           required: ["code"],
+        },
+      },
+      {
+        name: "run_agent",
+        description: "Run an autonomous AI agent to perform a task. The agent will analyze your request, find relevant tools, write its own code, and execute it.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            task: {
+              type: "string",
+              description: "The natural language description of the task (e.g., 'Find the latest issue in repo X and summarize it').",
+            },
+          },
+          required: ["task"],
         },
       },
       {
@@ -584,8 +599,8 @@ export const createServer = async (
             const result = await codeExecutorService.executeCode(
                 code,
                 async (toolName, toolArgs) => {
-                    if (toolName === "run_code") {
-                        throw new Error("Cannot call run_code from within run_code");
+                    if (toolName === "run_code" || toolName === "run_agent") {
+                        throw new Error("Cannot call run_code/run_agent from within sandbox");
                     }
                     // Call the fully wrapped handler!
                     const res = await recursiveCallToolHandler({
@@ -606,6 +621,37 @@ export const createServer = async (
         } catch (error: any) {
             return {
                 content: [{ type: "text", text: `Code execution failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "run_agent") {
+        const { task } = args as { task: string };
+        try {
+            const result = await agentService.runAgent(
+                task,
+                async (toolName, toolArgs) => {
+                    if (toolName === "run_code" || toolName === "run_agent") {
+                         throw new Error("Recursive agent calls restricted.");
+                    }
+                    const res = await recursiveCallToolHandler({
+                        method: "tools/call",
+                        params: {
+                            name: toolName,
+                            arguments: toolArgs,
+                            _meta: meta
+                        }
+                    }, handlerContext);
+                    return res;
+                }
+            );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Agent execution failed: ${error.message}` }],
                 isError: true
             };
         }
