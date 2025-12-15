@@ -1,4 +1,5 @@
 import ivm from "isolated-vm";
+import { configService } from "../config.service";
 
 // Type definition for the sandbox tool call function
 type SandboxCallTool = (name: string, args: any) => Promise<any>;
@@ -16,7 +17,8 @@ export class CodeExecutorService {
     callToolCallback: SandboxCallTool,
     timeoutMs: number = 30000,
   ): Promise<any> {
-    const isolate = new ivm.Isolate({ memoryLimit: 128 });
+    const memoryLimit = configService.getCodeExecutionMemoryLimit();
+    const isolate = new ivm.Isolate({ memoryLimit });
     const context = await isolate.createContext();
     const jail = context.global;
 

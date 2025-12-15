@@ -114,7 +114,18 @@ export const createServer = async (
 
   // Session-specific map of "loaded" tools that should be exposed to the client
   // Key: toolName, Value: true
+  // Limited to 200 items to prevent unbounded growth in long sessions
   const loadedTools = new Set<string>();
+  const MAX_LOADED_TOOLS = 200;
+
+  const addToLoadedTools = (name: string) => {
+    if (loadedTools.size >= MAX_LOADED_TOOLS && !loadedTools.has(name)) {
+      // Remove the first item (oldest) if limit reached - effectively a FIFO eviction
+      const first = loadedTools.values().next().value;
+      if (first) loadedTools.delete(first);
+    }
+    loadedTools.add(name);
+  };
 
   // Helper function to detect if a server is the same instance
   const isSameServerInstance = (
@@ -406,19 +417,24 @@ export const createServer = async (
   };
 
   // ----------------------------------------------------------------------
-  // Middleware Composition
+  // Middleware Composition & Recursive Handling
   // ----------------------------------------------------------------------
 
-  const listToolsWithMiddleware = compose(
-    createToolOverridesListToolsMiddleware({
-      cacheEnabled: true,
-      persistentCacheOnListTools: true,
-    }),
-    createFilterListToolsMiddleware({ cacheEnabled: true }),
-  )(originalListToolsHandler);
+  // We need a mechanism to allow _internalCallToolImpl to call the *final composed function* (recursiveCallToolHandler).
+  // However, recursiveCallToolHandler is composed *using* a handler that calls _internalCallToolImpl.
+  // This creates a circular dependency:
+  // recursiveCallToolHandler -> middleware -> internalHandler -> recursiveCallToolHandler
 
-  // We define the handler variable first to allow cyclic reference inside the implementation
-  let recursiveCallToolHandler: CallToolHandler;
+  // To solve this cleanly, we use a mutable reference pattern.
+  let recursiveCallToolHandlerRef: CallToolHandler | null = null;
+
+  // The "delegate" handler simply calls whatever function is currently in the reference.
+  const delegateHandler: CallToolHandler = async (request, context) => {
+    if (!recursiveCallToolHandlerRef) {
+        throw new Error("Handler not initialized");
+    }
+    return recursiveCallToolHandlerRef(request, context);
+  };
 
   /**
    * Internal implementation that does the actual work.
@@ -474,7 +490,7 @@ export const createServer = async (
     if (name === "load_tool") {
       const { name: toolName } = args as { name: string };
       if (toolToClient[toolName]) {
-        loadedTools.add(toolName);
+        addToLoadedTools(toolName);
         return {
             content: [
                 {
@@ -549,7 +565,7 @@ export const createServer = async (
             const missing = [];
             for (const toolName of set.tools) {
                 if (toolToClient[toolName]) {
-                    loadedTools.add(toolName);
+                    addToLoadedTools(toolName);
                     count++;
                 } else {
                     missing.push(toolName);
@@ -593,7 +609,7 @@ export const createServer = async (
     if (name === "run_code") {
         const { code } = args as { code: string };
         try {
-            // RECURSION MAGIC: We pass the *wrapped* middleware handler to the sandbox.
+            // RECURSION MAGIC: We pass the *delegate* handler to the sandbox.
             // This ensures that when the sandbox calls 'mcp.call', it goes through
             // the full middleware stack (logging, auditing, etc.) just like a request from the client.
             const result = await codeExecutorService.executeCode(
@@ -602,8 +618,8 @@ export const createServer = async (
                     if (toolName === "run_code" || toolName === "run_agent") {
                         throw new Error("Cannot call run_code/run_agent from within sandbox");
                     }
-                    // Call the fully wrapped handler!
-                    const res = await recursiveCallToolHandler({
+                    // Call the delegate handler which points to the composed stack
+                    const res = await delegateHandler({
                         method: "tools/call",
                         params: {
                             name: toolName,
@@ -619,8 +635,16 @@ export const createServer = async (
                 content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
             });
         } catch (error: any) {
+            const errorInfo = {
+                message: error?.message || String(error),
+                name: error?.name || "Error",
+                stack: error?.stack || undefined,
+            };
             return {
-                content: [{ type: "text", text: `Code execution failed: ${error.message}` }],
+                content: [{
+                    type: "text",
+                    text: `Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
+                }],
                 isError: true
             };
         }
@@ -635,7 +659,7 @@ export const createServer = async (
                     if (toolName === "run_code" || toolName === "run_agent") {
                          throw new Error("Recursive agent calls restricted.");
                     }
-                    const res = await recursiveCallToolHandler({
+                    const res = await delegateHandler({
                         method: "tools/call",
                         params: {
                             name: toolName,
@@ -650,8 +674,16 @@ export const createServer = async (
                 content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
             });
         } catch (error: any) {
+            const errorInfo = {
+                message: error?.message || String(error),
+                name: error?.name || "Error",
+                stack: error?.stack || undefined,
+            };
             return {
-                content: [{ type: "text", text: `Agent execution failed: ${error.message}` }],
+                content: [{
+                    type: "text",
+                    text: `Agent Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
+                }],
                 isError: true
             };
         }
@@ -671,7 +703,7 @@ export const createServer = async (
                         if (toolName === "run_code" || toolName.startsWith("script__")) {
                             throw new Error("Recursion restricted in saved scripts");
                         }
-                        const res = await recursiveCallToolHandler({
+                        const res = await delegateHandler({
                             method: "tools/call",
                             params: {
                                 name: toolName,
@@ -686,8 +718,16 @@ export const createServer = async (
                     content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
                 });
             } catch (error: any) {
+                 const errorInfo = {
+                    message: error?.message || String(error),
+                    name: error?.name || "Error",
+                    stack: error?.stack || undefined,
+                };
                 return {
-                    content: [{ type: "text", text: `Saved script execution failed: ${error.message}` }],
+                    content: [{
+                        type: "text",
+                        text: `Script Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
+                    }],
                     isError: true
                 };
             }
@@ -738,7 +778,9 @@ export const createServer = async (
   };
 
   // Compose the middleware
-  recursiveCallToolHandler = compose(
+  // The composed handler calls implCallToolHandler, which calls _internalCallToolImpl,
+  // which might call delegateHandler, which calls recursiveCallToolHandlerRef (this composed stack).
+  recursiveCallToolHandlerRef = compose(
     createLoggingMiddleware({ enabled: true }),
     createFilterCallToolMiddleware({
       cacheEnabled: true,
@@ -747,13 +789,24 @@ export const createServer = async (
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
 
+
+  const listToolsWithMiddleware = compose(
+    createToolOverridesListToolsMiddleware({
+      cacheEnabled: true,
+      persistentCacheOnListTools: true,
+    }),
+    createFilterListToolsMiddleware({ cacheEnabled: true }),
+  )(originalListToolsHandler);
+
+
   // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {
     return await listToolsWithMiddleware(request, handlerContext);
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    return await recursiveCallToolHandler(request, handlerContext);
+    if (!recursiveCallToolHandlerRef) throw new Error("Handler not initialized");
+    return await recursiveCallToolHandlerRef(request, handlerContext);
   });
 
   // Get Prompt Handler
