@@ -479,6 +479,21 @@ export const createServer = async (
     return { tools: resultTools };
   };
 
+  // ----------------------------------------------------------------------
+  // Middleware Composition
+  // ----------------------------------------------------------------------
+
+  const listToolsWithMiddleware = compose(
+    createToolOverridesListToolsMiddleware({
+      cacheEnabled: true,
+      persistentCacheOnListTools: true,
+    }),
+    createFilterListToolsMiddleware({ cacheEnabled: true }),
+  )(originalListToolsHandler);
+
+  // We define the handler variable first to allow cyclic reference inside the implementation
+  let recursiveCallToolHandler: CallToolHandler;
+
   /**
    * Internal implementation that does the actual work.
    * We extract this so we can have a wrapped version for external calls,
@@ -667,7 +682,7 @@ export const createServer = async (
                     }
 
                     // Call the fully wrapped handler!
-                    const res = await callToolWithMiddleware({
+                    const res = await recursiveCallToolHandler({
                         method: "tools/call",
                         params: {
                             name: toolName,
@@ -708,7 +723,7 @@ export const createServer = async (
                         if (toolName === "run_code" || toolName.startsWith("script__")) {
                             throw new Error("Recursion restricted in saved scripts");
                         }
-                        const res = await callToolWithMiddleware({
+                        const res = await recursiveCallToolHandler({
                             method: "tools/call",
                             params: {
                                 name: toolName,
@@ -772,7 +787,7 @@ export const createServer = async (
     return { tools: allTools };
   };
 
-  const originalCallToolHandler: CallToolHandler = async (
+  const implCallToolHandler: CallToolHandler = async (
     request,
     _context,
   ) => {
@@ -1169,6 +1184,7 @@ export const createServer = async (
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
 
+/*
 
   // Also expose callToolWithMiddleware for internal uses if needed,
   // but we should reuse recursiveCallToolHandler as the primary entry point
@@ -1243,7 +1259,7 @@ export const createServer = async (
     }),
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
-
+*/
 
   // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {
