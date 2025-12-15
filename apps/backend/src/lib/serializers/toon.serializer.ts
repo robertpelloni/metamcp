@@ -32,6 +32,7 @@ export class ToonSerializer {
     // check if array of objects
     const first = arr[0];
     if (typeof first === 'object' && first !== null && !Array.isArray(first)) {
+      const keys = Object.keys(first);
       // Check if all items have roughly same keys
       const isUniform = arr.every(item =>
         typeof item === 'object' && item !== null && !Array.isArray(item)

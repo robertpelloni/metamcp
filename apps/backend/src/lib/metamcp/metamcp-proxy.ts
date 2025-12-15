@@ -171,7 +171,6 @@ export const createServer = async (
     context,
   ) => {
     // 1. Meta Tools
-    // 1. Always include the "Meta" tools
     const metaTools: Tool[] = [
       {
         name: "search_tools",
@@ -321,10 +320,6 @@ export const createServer = async (
         console.error("Error fetching saved scripts", e);
     }
 
-    //];
-
-    //console.log("[DEBUG-TOOLS] 🔍 tools/list called for namespace:", namespaceUuid);
-    //const startTime = performance.now();
     const serverParams = await getMcpServers(
       context.namespaceUuid,
       includeInactiveServers,
@@ -340,13 +335,6 @@ export const createServer = async (
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
 
-        console.log(`[DEBUG-TOOLS] 🔧 Server: ${params.name || mcpServerUuid}`);
-        
-        // Skip if we've already visited this server to prevent circular references
-        if (visitedServers.has(mcpServerUuid)) {
-          console.log(`[DEBUG-TOOLS] ⏭️  Skipping already visited: ${params.name}`);
-          return;
-        }
         const session = await mcpServerPool.getSession(
             context.sessionId,
             mcpServerUuid,
@@ -375,11 +363,6 @@ export const createServer = async (
             const allServerTools: Tool[] = [];
             let cursor: string | undefined = undefined;
             let hasMore = true;
-          // Paginated tool discovery - load all pages automatically
-          const allServerTools: Tool[] = [];
-          let cursor: string | undefined = undefined;
-          let hasMore = true;
-          const toolFetchStart = performance.now();
 
             while (hasMore) {
                 const result = await session.client.request(
@@ -412,16 +395,6 @@ export const createServer = async (
                 }
             }
 
-            //allServerTools.forEach(tool => {
-            //    const toolName = `${sanitizeName(serverName)}__${tool.name}`;
-            //    toolToClient[toolName] = session;
-            //    toolToServerUuid[toolName] = mcpServerUuid;
-            //    allAvailableTools.push({
-            //        ...tool,
-            //        name: toolName
-            //    });
-            //});
-
             allServerTools.forEach(tool => {
                 const toolName = `${sanitizeName(serverName)}__${tool.name}`;
                 toolToClient[toolName] = session;
@@ -431,46 +404,6 @@ export const createServer = async (
                     name: toolName
                 });
             });
-            cursor = result.nextCursor;
-            hasMore = !!result.nextCursor;
-          }
-          
-          console.log(`[DEBUG-TOOLS] ⏱️  Fetched ${allServerTools.length} tools from ${serverName} in ${(performance.now() - toolFetchStart).toFixed(2)}ms`);
-
-          // Save original tools to database (before middleware processing)
-          // This ensures we only save the actual tool names, not override names
-          // Filter out tools that are overrides of existing tools to prevent duplicates
-          try {
-            // PERFORMANCE OPTIMIZATION: Check hash FIRST to avoid expensive operations
-            const toolNames = allServerTools.map((tool) => tool.name);
-            const hasChanged = toolsSyncCache.hasChanged(mcpServerUuid, toolNames);
-            
-            console.log(`[DEBUG-TOOLS] 🔍 Hash check for ${serverName}: ${hasChanged ? 'CHANGED' : 'UNCHANGED'}`);
-
-            if (hasChanged) {
-              const toolsToSave = await filterOutOverrideTools(
-                allServerTools,
-                namespaceUuid,
-                serverName,
-              );
-
-              if (toolsToSave.length > 0) {
-                // Update cache
-                toolsSyncCache.update(mcpServerUuid, toolNames);
-                
-                // Sync with cleanup
-                await toolsImplementations.sync({
-                  tools: toolsToSave,
-                  mcpServerUuid: mcpServerUuid,
-                });
-              }
-            }
-          } catch (dbError) {
-            console.error(
-              `Error syncing tools to database for server ${serverName}:`,
-              dbError,
-            );
-          }
 
         } catch (error) {
             console.error(`Error fetching tools from ${serverName}:`, error);
@@ -479,7 +412,6 @@ export const createServer = async (
     );
 
     const resultTools = [...metaTools];
-
 
     allAvailableTools.forEach(tool => {
         if (loadedTools.has(tool.name)) {
@@ -509,322 +441,6 @@ export const createServer = async (
     }
     return recursiveCallToolHandlerRef(request, context);
   };
-
-  /**
-   * Internal implementation that does the actual work.
-   * We extract this so we can have a wrapped version for external calls,
-   * but also call it internally if needed (though we prefer the wrapped one).
-   */
-  const _internalCallToolImpl = async (
-    name: string,
-    args: any,
-    meta?: any
-  ): Promise<CallToolResult> => {
-
-    // Check for TOON request
-    const useToon = meta?.toon === true || meta?.toon === "true";
-
-    const formatResult = (result: CallToolResult): CallToolResult => {
-        if (!useToon) return result;
-
-        // Attempt to compress JSON content
-        const newContent = result.content.map(item => {
-            if (item.type === "text") {
-                try {
-                    // Try to parse as JSON first
-                    const data = JSON.parse(item.text);
-                    const serialized = toonSerializer.serialize(data);
-                    return { ...item, text: serialized };
-                } catch (e) {
-                    // Not JSON, return as is
-                    return item;
-                }
-            }
-            return item;
-        });
-
-        return {
-            ...result,
-            content: newContent
-        };
-    };
-
-    // 1. Meta Tools
-    if (name === "search_tools") {
-      const { query, limit } = args as { query: string; limit?: number };
-      const results = await toolSearchService.searchTools(query, limit);
-      return formatResult({
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(results, null, 2),
-          },
-        ],
-      });
-      };
-    }
-
-    if (name === "load_tool") {
-      const { name: toolName } = args as { name: string };
-      if (toolToClient[toolName]) {
-        loadedTools.add(toolName);
-        return {
-            content: [
-                {
-                    type: "text",
-                    text: `Tool '${toolName}' loaded.`,
-                }
-            ]
-        };
-      } else {
-        return {
-            content: [
-                {
-                    type: "text",
-                    text: `Tool '${toolName}' not found.`,
-                },
-            ],
-            isError: true,
-        };
-      }
-    }
-
-    if (name === "save_script") {
-        const { name: scriptName, code, description } = args as { name: string; code: string; description?: string };
-        try {
-            const saved = await savedScriptService.saveScript(scriptName, code, description);
-            return {
-                content: [{ type: "text", text: `Script '${saved.name}' saved successfully.` }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Failed to save script: ${error.message}` }],
-                isError: true
-            };
-        }
-    }
-
-    if (name === "save_tool_set") {
-        const { name: setName, description } = args as { name: string; description?: string };
-        try {
-            const toolsToSave = Array.from(loadedTools);
-            if (toolsToSave.length === 0) {
-                return {
-                    content: [{ type: "text", text: `No tools currently loaded to save.` }],
-                    isError: true
-                };
-            }
-            const saved = await toolSetService.createToolSet(setName, toolsToSave, description);
-            return {
-                content: [{ type: "text", text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.` }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Failed to save tool set: ${error.message}` }],
-                isError: true
-            };
-        }
-    }
-
-    if (name === "load_tool_set") {
-        const { name: setName } = args as { name: string };
-        try {
-            const set = await toolSetService.getToolSet(setName);
-            if (!set) {
-                return {
-                    content: [{ type: "text", text: `Tool Set '${setName}' not found.` }],
-                    isError: true
-                };
-            }
-
-            // Add tools to loadedTools
-            let count = 0;
-            const missing = [];
-            for (const toolName of set.tools) {
-                if (toolToClient[toolName]) {
-                    loadedTools.add(toolName);
-                    count++;
-                } else {
-                    missing.push(toolName);
-                }
-            }
-
-            let msg = `Loaded ${count} tools from set '${setName}'.`;
-            if (missing.length > 0) {
-                msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
-            }
-
-            return {
-                content: [{ type: "text", text: msg }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Failed to load tool set: ${error.message}` }],
-                isError: true
-            };
-        }
-    }
-
-    if (name === "import_mcp_config") {
-        const { configJson } = args as { configJson: string };
-        try {
-            const result = await configImportService.importClaudeConfig(configJson);
-            return {
-                content: [{
-                    type: "text",
-                    text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`
-                }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Import failed: ${error.message}` }],
-                isError: true
-            };
-        }
-    }
-
-    if (name === "run_code") {
-        const { code } = args as { code: string };
-        try {
-            // RECURSION MAGIC: We pass the *wrapped* middleware handler to the sandbox.
-            // This ensures that when the sandbox calls 'mcp.call', it goes through
-            // the full middleware stack (logging, auditing, etc.) just like a request from the client.
-            const result = await codeExecutorService.executeCode(
-                code,
-                async (toolName, toolArgs) => {
-                    if (toolName === "run_code") {
-                        throw new Error("Cannot call run_code from within run_code");
-                    }
-
-                    // Call the fully wrapped handler!
-                    const res = await recursiveCallToolHandler({
-                        method: "tools/call",
-                        params: {
-                            name: toolName,
-                            arguments: toolArgs,
-                            _meta: meta
-                            _meta: meta // Propagate meta if available (e.g. tracing IDs)
-                        }
-                    }, handlerContext);
-
-                    return res;
-                }
-            );
-            return formatResult({
-                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-            });
-            return {
-                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Code execution failed: ${error.message}` }],
-                isError: true
-            };
-        }
-    }
-
-    // 2. Saved Scripts execution
-    if (name.startsWith("script__")) {
-        const scriptName = name.replace("script__", "");
-        const script = await savedScriptService.getScript(scriptName);
-
-        if (script) {
-             try {
-                // Execute saved script using the SAME logic as run_code
-                const result = await codeExecutorService.executeCode(
-                    script.code,
-                    async (toolName, toolArgs) => {
-                        if (toolName === "run_code" || toolName.startsWith("script__")) {
-                            throw new Error("Recursion restricted in saved scripts");
-                        }
-                        const res = await recursiveCallToolHandler({
-                            method: "tools/call",
-                            params: {
-                                name: toolName,
-                                arguments: toolArgs,
-                                _meta: meta
-                            }
-                        }, handlerContext);
-                        return res;
-                    }
-                );
-                return formatResult({
-                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-                });
-            } catch (error: any) {
-                return {
-                    content: [{ type: "text", text: `Saved script execution failed: ${error.message}` }],
-                    isError: true
-                };
-            }
-        }
-    }
-
-    // 3. Downstream Tools
-    // 2. Downstream Tools
-    const clientForTool = toolToClient[name];
-    if (!clientForTool) {
-       throw new Error(`Unknown tool: ${name}`);
-    }
-
-    const parsed = parseToolName(name);
-    if (!parsed) throw new Error(`Invalid tool name: ${name}`);
-
-    try {
-        const abortController = new AbortController();
-        const mcpRequestOptions: RequestOptions = {
-            signal: abortController.signal,
-            timeout: await configService.getMcpTimeout(),
-        };
-
-        const result = await clientForTool.client.request(
-            {
-                method: "tools/call",
-                params: {
-                    name: parsed.originalToolName,
-                    arguments: args || {},
-                    _meta: meta,
-                }
-            },
-            CompatibilityCallToolResultSchema,
-            mcpRequestOptions
-        );
-        return formatResult(result as CallToolResult);
-        return result as CallToolResult;
-    } catch (error) {
-        console.error(`Error calling ${name}:`, error);
-        throw error;
-    }
-    const totalTime = performance.now() - startTime;
-    console.log(`[DEBUG-TOOLS] ✅ tools/list completed in ${totalTime.toFixed(2)}ms, returning ${allTools.length} tools`);
-    
-    return { tools: allTools };
-  };
-
-  const implCallToolHandler: CallToolHandler = async (
-    request,
-    _context,
-  ) => {
-    const { name, arguments: args, _meta } = request.params;
-    return await _internalCallToolImpl(name, args, _meta);
-  };
-
-  // ----------------------------------------------------------------------
-  // Middleware Composition
-  // ----------------------------------------------------------------------
-
-  const listToolsWithMiddleware = compose(
-    createToolOverridesListToolsMiddleware({
-      cacheEnabled: true,
-      persistentCacheOnListTools: true,
-    }),
-    createFilterListToolsMiddleware({ cacheEnabled: true }),
-  )(originalListToolsHandler);
-
-  // We define the handler variable first to allow cyclic reference inside the implementation
-  let recursiveCallToolHandler: CallToolHandler;
 
   /**
    * Internal implementation that does the actual work.
@@ -1165,44 +781,6 @@ export const createServer = async (
   ) => {
     const { name, arguments: args, _meta } = request.params;
     return await _internalCallToolImpl(name, args, _meta);
-  let recursiveCallToolHandler: CallToolHandler;
-
-  const wrappedCallToolHandler: CallToolHandler = async (request, context) => {
-      return recursiveCallToolHandler(request, context);
-  };
-
-  const implCallToolHandler: CallToolHandler = async (request, context) => {
-      const { name, arguments: args, _meta } = request.params;
-
-      // Meta Tools Logic
-      if (name === "search_tools" || name === "load_tool" || name === "save_script" || name.startsWith("script__") || name === "save_tool_set" || name === "load_tool_set" || name === "import_mcp_config") {
-          return _internalCallToolImpl(name, args, _meta);
-      }
-      else if (name === "run_code") {
-           const { code } = args as { code: string };
-           try {
-               const result = await codeExecutorService.executeCode(code, async (tName, tArgs) => {
-                   if (tName === "run_code") throw new Error("Recursion detected");
-                   return recursiveCallToolHandler({
-                       method: "tools/call",
-                       params: { name: tName, arguments: tArgs, _meta }
-                   }, context);
-               });
-
-               // Toon formatting is handled inside _internalCallToolImpl or wrapper logic?
-               // Wait, _internalCallToolImpl handles formatting.
-               // The executeCode returns raw result. We need to wrap it.
-               // Actually _internalCallToolImpl handles "run_code" too in the main body (duplicate logic warning).
-
-               // Let's use _internalCallToolImpl for consistency, it has the logic.
-               return _internalCallToolImpl(name, args, _meta);
-
-           } catch (e: any) {
-               return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
-           }
-      }
-
-      return _internalCallToolImpl(name, args, _meta);
   };
 
   // Compose the middleware
@@ -1210,15 +788,6 @@ export const createServer = async (
   // which might call delegateHandler, which calls recursiveCallToolHandlerRef (this composed stack).
   recursiveCallToolHandlerRef = compose(
     createLoggingMiddleware({ enabled: true }),
-  // We define this variable *before* using it in the internal handler above?
-  // No, JS hoisting of 'var' or function declarations works, but `const` does not hoist.
-  // We need to be careful with the circular dependency of `callToolWithMiddleware` being used inside `_internalCallToolImpl`.
-  //
-  // Solution: We create a mutable reference or a lazy getter for the middleware stack.
-
-  let _lazyCallToolWithMiddleware: CallToolHandler | null = null;
-
-  const callToolWithMiddleware = compose(
     createFilterCallToolMiddleware({
       cacheEnabled: true,
       customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
@@ -1235,82 +804,6 @@ export const createServer = async (
     createFilterListToolsMiddleware({ cacheEnabled: true }),
   )(originalListToolsHandler);
 
-/*
-
-  // Also expose callToolWithMiddleware for internal uses if needed,
-  // but we should reuse recursiveCallToolHandler as the primary entry point
-  const callToolWithMiddleware = recursiveCallToolHandler;
-  )(originalCallToolHandler);
-
-  // Assign it for the closure to capture (Wait, const is not mutable re-assignment, but the object _internalCallToolImpl captured... wait.)
-  // The `originalCallToolHandler` calls `_internalCallToolImpl`.
-  // `_internalCallToolImpl` calls `callToolWithMiddleware`.
-  // `callToolWithMiddleware` calls `originalCallToolHandler`.
-  // This is a cycle.
-
-  // To break the cycle and allow the recursion:
-  // We need `_internalCallToolImpl` to call the *final composed function*.
-  // But the composed function is created *after* `_internalCallToolImpl` is defined (lexically).
-  //
-  // We can use a wrapper function that calls the `callToolWithMiddleware` variable,
-  // relying on the fact that the variable will be defined by the time the code actually runs.
-  // BUT `const` has TDZ (Temporal Dead Zone).
-  //
-  // Refactor strategy:
-  // 1. Define `callToolWithMiddleware` as a `let` placeholder.
-  // 2. Define `originalCallToolHandler` which calls the `let` variable for recursion.
-  // 3. Update the `let` variable with the composed middleware.
-
-  // Re-defining the structure to handle recursion correctly:
-
-  let recursiveCallToolHandler: CallToolHandler;
-
-  const wrappedCallToolHandler: CallToolHandler = async (request, context) => {
-      // This function delegates to the middleware stack, which eventually calls originalCallToolHandler
-      return recursiveCallToolHandler(request, context);
-  };
-
-  const implCallToolHandler: CallToolHandler = async (request, context) => {
-      const { name, arguments: args, _meta } = request.params;
-
-      // Meta Tools Logic
-      if (name === "search_tools") {
-          return _internalCallToolImpl(name, args, _meta);
-      }
-      else if (name === "load_tool") {
-          return _internalCallToolImpl(name, args, _meta);
-      }
-      else if (name === "run_code") {
-          // Special handling for run_code recursion
-           const { code } = args as { code: string };
-           try {
-               const result = await codeExecutorService.executeCode(code, async (tName, tArgs) => {
-                   if (tName === "run_code") throw new Error("Recursion detected");
-                   // Call the TOP of the middleware stack
-                   return recursiveCallToolHandler({
-                       method: "tools/call",
-                       params: { name: tName, arguments: tArgs, _meta }
-                   }, context);
-               });
-               return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-           } catch (e: any) {
-               return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
-           }
-      }
-
-      // Default Logic
-      return _internalCallToolImpl(name, args, _meta);
-  };
-
-  // Compose the middleware
-  recursiveCallToolHandler = compose(
-    createFilterCallToolMiddleware({
-      cacheEnabled: true,
-      customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
-    }),
-    createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
-  )(implCallToolHandler);
-*/
 
   // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {

@@ -507,13 +507,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "headers": {
-          "name": "headers",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",

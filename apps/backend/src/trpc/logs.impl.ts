@@ -18,18 +18,11 @@ export const logsImplementations = {
     try {
       const limit = input.limit || 100;
 
-      // Build query with user_id filter if user is authenticated
-      const baseQuery = db
+      const logs = await db
         .select()
         .from(toolCallLogsTable)
-        .orderBy(desc(toolCallLogsTable.created_at));
-
-      // Filter by user_id if user is authenticated
-      const logs = context?.user?.id
-        ? await baseQuery
-            .where(eq(toolCallLogsTable.user_id, context.user.id))
-            .limit(limit)
-        : await baseQuery.limit(limit);
+        .orderBy(desc(toolCallLogsTable.created_at))
+        .limit(limit);
 
       // Map to Zod schema format
       const formattedLogs = logs.map(log => {
@@ -71,13 +64,7 @@ export const logsImplementations = {
 
   clearLogs: async (context?: { user?: { id: string } }): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
     try {
-      // Only clear logs for the authenticated user
-      if (context?.user?.id) {
-        await db.delete(toolCallLogsTable).where(eq(toolCallLogsTable.user_id, context.user.id));
-      } else {
-        // If no user context, don't delete anything (security measure)
-        throw new Error("User authentication required to clear logs");
-      }
+      await db.delete(toolCallLogsTable);
 
       return {
         success: true as const,
