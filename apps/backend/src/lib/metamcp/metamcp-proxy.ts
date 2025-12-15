@@ -38,6 +38,7 @@ import {
   createFilterCallToolMiddleware,
   createFilterListToolsMiddleware,
 } from "./metamcp-middleware/filter-tools.functional";
+import { createPolicyMiddleware } from "./metamcp-middleware/policy.functional";
 import {
   CallToolHandler,
   compose,
@@ -228,6 +229,10 @@ export const createServer = async (
               type: "string",
               description: "The natural language description of the task (e.g., 'Find the latest issue in repo X and summarize it').",
             },
+            policyId: {
+                type: "string",
+                description: "Optional UUID of a Policy to restrict the agent's tool access.",
+            }
           },
           required: ["task"],
         },
@@ -657,24 +662,29 @@ export const createServer = async (
     }
 
     if (name === "run_agent") {
-        const { task } = args as { task: string };
+        const { task, policyId } = args as { task: string; policyId?: string };
         try {
             const result = await agentService.runAgent(
                 task,
-                async (toolName, toolArgs) => {
+                async (toolName, toolArgs, meta) => {
                     if (toolName === "run_code" || toolName === "run_agent") {
                          throw new Error("Recursive agent calls restricted.");
                     }
+
+                    // Inject policyId into meta if provided
+                    const callMeta = { ...meta, ...(policyId ? { policyId } : {}) };
+
                     const res = await delegateHandler({
                         method: "tools/call",
                         params: {
                             name: toolName,
                             arguments: toolArgs,
-                            _meta: meta
+                            _meta: callMeta
                         }
                     }, handlerContext);
                     return res;
-                }
+                },
+                policyId
             );
             return formatResult({
                 content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
@@ -788,6 +798,7 @@ export const createServer = async (
   // which might call delegateHandler, which calls recursiveCallToolHandlerRef (this composed stack).
   recursiveCallToolHandlerRef = compose(
     createLoggingMiddleware({ enabled: true }),
+    createPolicyMiddleware({ enabled: true }), // Add Policy Middleware
     createFilterCallToolMiddleware({
       cacheEnabled: true,
       customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,

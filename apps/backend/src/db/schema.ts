@@ -569,3 +569,37 @@ export const toolSetItemsTable = pgTable(
     unique("tool_set_items_unique_idx").on(table.tool_set_uuid, table.tool_name),
   ],
 );
+
+export const policiesTable = pgTable(
+  "policies",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    // Stores a list of allowed tool patterns (e.g. ["github__*", "postgres__read_*"])
+    // If empty, policy denies everything by default (strict).
+    rules: jsonb("rules")
+      .$type<{
+        allow: string[];
+        deny?: string[];
+      }>()
+      .notNull()
+      .default(sql`'{"allow": []}'::jsonb`),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("policies_user_id_idx").on(table.user_id),
+    unique("policies_name_user_idx").on(table.user_id, table.name),
+    sql`CONSTRAINT policies_name_regex_check CHECK (
+      name ~ '^[a-zA-Z0-9_-]+$'
+    )`,
+  ],
+);

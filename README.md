@@ -99,16 +99,6 @@ A MCP server configuration that tells MetaMCP how to start a MCP server.
     3. Execute the script in the sandbox.
 - This effectively turns any MCP client into a coding agent.
 
-### ⚡ **Code Mode & Tool Chaining**
-- **MetaMCP Hub** exposes a `run_code` tool that accepts TypeScript/JavaScript.
-- The code runs in a secure sandbox (`isolated-vm`).
-- Scripts can call other available MCP tools using `await mcp.call('tool_name', args)`.
-- **Recursive Routing**: Tool calls from inside the sandbox flow back through the MetaMCP middleware stack, ensuring logging, authentication, and policy enforcement apply to every sub-call.
-
-### 📂 **Saved Scripts & Tool Sets**
-- **Saved Scripts**: Persist successful `run_code` snippets as reusable tools (e.g., `script__daily_report`).
-- **Tool Sets**: Save your current configuration of loaded tools as a profile (e.g., "Web Dev Profile") and restore it later with `load_tool_set`.
-
 ## 🚀 Quick Start
 
 ### **🐳 Run with Docker Compose (Recommended)**
@@ -143,6 +133,14 @@ pnpm dev
 
 Ensure your `.env` file points to your local Postgres instance (`DATABASE_URL`).
 
+## 🏗️ Architecture
+
+- **Frontend**: Next.js
+- **Backend**: Express.js with tRPC, hosting MCPs through TS SDK and internal proxy
+- **Auth**: Better Auth
+- **Structure**: Standalone monorepo with Turborepo and Docker publishing
+
+### 📊 Sequence Diagram
 
 ```mermaid
 sequenceDiagram

@@ -23,10 +23,12 @@ export class AgentService {
    *
    * @param task The natural language task description
    * @param callToolCallback The callback to execute tools (passed from proxy)
+   * @param policyId Optional policy ID to restrict the agent
    */
   async runAgent(
     task: string,
-    callToolCallback: (name: string, args: any, meta?: any) => Promise<any>
+    callToolCallback: (name: string, args: any, meta?: any) => Promise<any>,
+    policyId?: string
   ): Promise<any> {
     const client = this.getClient();
 
@@ -49,6 +51,8 @@ Your goal is to complete the following task: "${task}"
 
 You have access to the following tools (via the 'mcp' object):
 ${toolsContext}
+
+${policyId ? "NOTE: You are running under a restricted security policy. Access to tools outside your allowed scope will fail." : ""}
 
 INSTRUCTIONS:
 1. Analyze the task and available tools.
