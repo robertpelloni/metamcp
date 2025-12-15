@@ -12,6 +12,7 @@ import {
   SearchCode,
   Server,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -40,6 +41,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
+import packageJson from "../../../package.json";
 
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
@@ -62,6 +64,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:toolSets"),
     url: getLocalizedPath("/tool-sets", locale),
     icon: Layers,
+  },
+  {
+    title: "Policies", // TODO: Add translation key
+    url: getLocalizedPath("/policies", locale),
+    icon: ShieldCheck,
   },
   {
     title: t("navigation:metamcpNamespaces"),
@@ -132,7 +139,7 @@ function UserInfoFooter() {
             <LanguageSwitcher />
             <ThemeToggle />
           </div>
-          <p className="text-xs text-muted-foreground">v2.4.22</p>
+          <p className="text-xs text-muted-foreground">v{packageJson.version}</p>
         </div>
         <Separator />
         {user && (
