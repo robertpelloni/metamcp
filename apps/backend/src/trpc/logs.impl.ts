@@ -13,6 +13,7 @@ import { parseToolName } from "../lib/metamcp/tool-name-parser";
 export const logsImplementations = {
   getLogs: async (
     input: z.infer<typeof GetLogsRequestSchema>,
+    context?: { user?: { id: string } },
   ): Promise<z.infer<typeof GetLogsResponseSchema>> => {
     try {
       const limit = input.limit || 100;
@@ -61,7 +62,7 @@ export const logsImplementations = {
     }
   },
 
-  clearLogs: async (): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
+  clearLogs: async (context?: { user?: { id: string } }): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
     try {
       await db.delete(toolCallLogsTable);
 
