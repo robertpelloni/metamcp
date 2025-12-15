@@ -33,6 +33,7 @@ import { toonSerializer } from "../serializers/toon.serializer";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
 import { mcpServerPool } from "./mcp-server-pool";
+import { toolsSyncCache } from "./tools-sync-cache";
 import {
   createFilterCallToolMiddleware,
   createFilterListToolsMiddleware,
@@ -333,6 +334,8 @@ export const createServer = async (
     const allServerEntries = Object.entries(serverParams);
     const allAvailableTools: Tool[] = [];
 
+    console.log(`[DEBUG-TOOLS] 📋 Processing ${allServerEntries.length} servers`);
+    
     await Promise.allSettled(
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
@@ -343,7 +346,10 @@ export const createServer = async (
             params,
             namespaceUuid,
         );
-        if (!session) return;
+        if (!session) {
+          console.log(`[DEBUG-TOOLS] ❌ No session for: ${params.name}`);
+          return;
+        }
 
         const serverVersion = session.client.getServerVersion();
         const actualServerName = serverVersion?.name || params.name || "";
