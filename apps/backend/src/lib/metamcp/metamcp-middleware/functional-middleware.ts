@@ -9,6 +9,7 @@ import {
 export interface MetaMCPHandlerContext {
   namespaceUuid: string;
   sessionId: string;
+  userId?: string; // User ID for access control and logging
 }
 
 // Handler function types
