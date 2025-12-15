@@ -41,6 +41,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
+import packageJson from "../../../package.json";
 
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
@@ -138,7 +139,7 @@ function UserInfoFooter() {
             <LanguageSwitcher />
             <ThemeToggle />
           </div>
-          <p className="text-xs text-muted-foreground">v2.4.17</p>
+          <p className="text-xs text-muted-foreground">v{packageJson.version}</p>
         </div>
         <Separator />
         {user && (
