@@ -5,6 +5,8 @@ import { createLogsRouter } from "./logs";
 import { createMcpServersRouter } from "./mcp-servers";
 import { createNamespacesRouter } from "./namespaces";
 import { createOAuthRouter } from "./oauth";
+import { createSavedScriptsRouter } from "./saved-scripts";
+import { createToolSetsRouter } from "./tool-sets";
 import { createToolsRouter } from "./tools";
 
 export { createMcpServersRouter };
@@ -14,6 +16,9 @@ export { createOAuthRouter };
 export { createToolsRouter };
 export { createApiKeysRouter };
 export { createConfigRouter };
+export { createLogsRouter };
+export { createSavedScriptsRouter };
+export { createToolSetsRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -24,6 +29,8 @@ export const createFrontendRouter = (implementations: {
   apiKeys: Parameters<typeof createApiKeysRouter>[0];
   config: Parameters<typeof createConfigRouter>[0];
   logs: Parameters<typeof createLogsRouter>[0];
+  savedScripts: Parameters<typeof createSavedScriptsRouter>[0];
+  toolSets: Parameters<typeof createToolSetsRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -34,5 +41,7 @@ export const createFrontendRouter = (implementations: {
     apiKeys: createApiKeysRouter(implementations.apiKeys),
     config: createConfigRouter(implementations.config),
     logs: createLogsRouter(implementations.logs),
+    savedScripts: createSavedScriptsRouter(implementations.savedScripts),
+    toolSets: createToolSetsRouter(implementations.toolSets),
   };
 };

@@ -306,6 +306,23 @@ export function createFilterCallToolMiddleware(
       // Extract tool name and server info from the request
       const toolName = request.params.name;
 
+      // Check for dynamic tool whitelist in _meta (from Agent/Subagent context)
+      // This supports "Subagent" isolation where a runtime list of tools is enforced
+      const allowedTools = request.params._meta?.allowedTools as string[] | undefined;
+      if (allowedTools && Array.isArray(allowedTools)) {
+          // Meta tools are always allowed if they are in the list OR if we decide meta tools bypass this?
+          // For safety, the agent setup should explicitly include meta tools if needed,
+          // or we treat them as special.
+          // However, usually we want the agent to use specific tools.
+          // Let's enforce strictness.
+          if (!allowedTools.includes(toolName)) {
+              return {
+                  content: [{ type: "text", text: `Access denied: Tool '${toolName}' is not in the allowed tools list for this agent.` }],
+                  isError: true
+              };
+          }
+      }
+
       // We need to get serverUuid somehow - this would need to be passed through context
       // For now, let's extract it from the tool name format
       const parsed = parseToolName(toolName);
