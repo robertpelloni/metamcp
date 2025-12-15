@@ -519,6 +519,9 @@ export const toolCallLogsTable = pgTable(
     error: text("error"),
     duration_ms:  text("duration_ms"), // storing as text to avoid bigint issues for now, or integer
     parent_call_uuid: uuid("parent_call_uuid"), // Self-reference for nested calls
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -527,6 +530,7 @@ export const toolCallLogsTable = pgTable(
     index("tool_call_logs_session_id_idx").on(table.session_id),
     index("tool_call_logs_parent_call_uuid_idx").on(table.parent_call_uuid),
     index("tool_call_logs_created_at_idx").on(table.created_at),
+    index("tool_call_logs_user_id_idx").on(table.user_id),
   ],
 );
 

@@ -3,6 +3,8 @@ import { ConfigKey, ConfigKeyEnum } from "@repo/zod-types";
 import { configRepo } from "../db/repositories/config.repo";
 
 export const configService = {
+  // ... existing methods ...
+
   async isSignupDisabled(): Promise<boolean> {
     const config = await configRepo.getConfig(
       ConfigKeyEnum.Enum.DISABLE_SIGNUP,
@@ -171,4 +173,31 @@ export const configService = {
 
     return providers;
   },
+
+  /**
+   * Get the memory limit for Code Mode execution in MB.
+   * Defaults to 128MB.
+   */
+  getCodeExecutionMemoryLimit(): number {
+    const envVal = process.env.CODE_EXECUTION_MEMORY_LIMIT;
+    if (envVal) {
+        const parsed = parseInt(envVal, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+            return parsed;
+        }
+    }
+    return 128;
+  },
+
+  /**
+   * Validate that OPENAI_API_KEY is present if required features are enabled.
+   * Logs a warning if not present.
+   */
+  validateOpenAiKey(): void {
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn(
+        "WARN: OPENAI_API_KEY is not set. Semantic Search and Autonomous Agent features will not work."
+      );
+    }
+  }
 };

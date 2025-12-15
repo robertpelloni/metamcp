@@ -1,5 +1,4 @@
 import { McpServerTypeEnum } from "@repo/zod-types";
-import { z } from "zod";
 
 import { mcpServersRepository } from "../../db/repositories/mcp-servers.repo";
 

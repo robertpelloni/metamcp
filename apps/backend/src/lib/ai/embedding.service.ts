@@ -1,7 +1,5 @@
 import OpenAI from "openai";
 
-import { configService } from "../config.service";
-
 export class EmbeddingService {
   private openai: OpenAI | null = null;
   private model = "text-embedding-3-small";
@@ -10,7 +8,7 @@ export class EmbeddingService {
     if (!this.openai) {
       const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
-        throw new Error("OPENAI_API_KEY is not set");
+        throw new Error("OPENAI_API_KEY is not set. Please configure it in .env to use Semantic Search.");
       }
       this.openai = new OpenAI({ apiKey });
     }

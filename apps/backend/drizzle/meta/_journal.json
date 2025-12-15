@@ -124,8 +124,15 @@
     {
       "idx": 17,
       "version": "7",
+      "when": 1734246125000,
+      "tag": "0017_add_user_id_to_tool_call_logs",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
       "when": 1764122318274,
-      "tag": "0017_crazy_white_queen",
+      "tag": "0018_crazy_white_queen",
       "breakpoints": true
     }
   ]

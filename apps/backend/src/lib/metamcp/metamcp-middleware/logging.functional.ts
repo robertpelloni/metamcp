@@ -38,6 +38,7 @@ export function createLoggingMiddleware(options?: {
         error: error ? String(error) : null,
         duration_ms: String(duration),
         parent_call_uuid: parentCallUuid,
+        user_id: context.userId || null,
       }).catch(err => {
           console.error("Failed to persist tool call log:", err);
       });
