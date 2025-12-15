@@ -19,17 +19,17 @@ export const logsImplementations = {
       const limit = input.limit || 100;
 
       // Build query with user_id filter if user is authenticated
-      let query = db
+      const baseQuery = db
         .select()
         .from(toolCallLogsTable)
         .orderBy(desc(toolCallLogsTable.created_at));
 
       // Filter by user_id if user is authenticated
-      if (context?.user?.id) {
-        query = query.where(eq(toolCallLogsTable.user_id, context.user.id)) as any;
-      }
-
-      const logs = await query.limit(limit);
+      const logs = context?.user?.id
+        ? await baseQuery
+            .where(eq(toolCallLogsTable.user_id, context.user.id))
+            .limit(limit)
+        : await baseQuery.limit(limit);
 
       // Map to Zod schema format
       const formattedLogs = logs.map(log => {
