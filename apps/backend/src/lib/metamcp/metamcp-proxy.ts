@@ -23,13 +23,13 @@ import { z } from "zod";
 
 import { toolsImplementations } from "../../trpc/tools.impl";
 import { toolSearchService } from "../ai/tool-search.service";
-import { configService } from "../config.service";
+import { agentService } from "../ai/agent.service";
 import { configImportService } from "./config-import.service";
+import { configService } from "../config.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { savedScriptService } from "../sandbox/saved-script.service";
 import { toolSetService } from "./tool-set.service";
 import { toonSerializer } from "../serializers/toon.serializer";
-import { codeExecutorService } from "../sandbox/code-executor.service";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
 import { mcpServerPool } from "./mcp-server-pool";
@@ -209,6 +209,20 @@ export const createServer = async (
         },
       },
       {
+        name: "run_agent",
+        description: "Run an autonomous AI agent to perform a task. The agent will analyze your request, find relevant tools, write its own code, and execute it.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            task: {
+              type: "string",
+              description: "The natural language description of the task (e.g., 'Find the latest issue in repo X and summarize it').",
+            },
+          },
+          required: ["task"],
+        },
+      },
+      {
         name: "save_script",
         description: "Save a successful code snippet as a reusable tool (Saved Script). The script will be available as a tool in future sessions.",
         inputSchema: {
@@ -296,10 +310,10 @@ export const createServer = async (
         console.error("Error fetching saved scripts", e);
     }
 
-    ];
+    //];
 
-    console.log("[DEBUG-TOOLS] 🔍 tools/list called for namespace:", namespaceUuid);
-    const startTime = performance.now();
+    //console.log("[DEBUG-TOOLS] 🔍 tools/list called for namespace:", namespaceUuid);
+    //const startTime = performance.now();
     const serverParams = await getMcpServers(
       context.namespaceUuid,
       includeInactiveServers,
@@ -387,15 +401,15 @@ export const createServer = async (
                 }
             }
 
-            allServerTools.forEach(tool => {
-                const toolName = `${sanitizeName(serverName)}__${tool.name}`;
-                toolToClient[toolName] = session;
-                toolToServerUuid[toolName] = mcpServerUuid;
-                allAvailableTools.push({
-                    ...tool,
-                    name: toolName
-                });
-            });
+            //allServerTools.forEach(tool => {
+            //    const toolName = `${sanitizeName(serverName)}__${tool.name}`;
+            //    toolToClient[toolName] = session;
+            //    toolToServerUuid[toolName] = mcpServerUuid;
+            //    allAvailableTools.push({
+            //        ...tool,
+            //        name: toolName
+            //    });
+            //});
 
             allServerTools.forEach(tool => {
                 const toolName = `${sanitizeName(serverName)}__${tool.name}`;
@@ -454,6 +468,7 @@ export const createServer = async (
     );
 
     const resultTools = [...metaTools];
+
 
     allAvailableTools.forEach(tool => {
         if (loadedTools.has(tool.name)) {
@@ -777,6 +792,324 @@ export const createServer = async (
     createFilterListToolsMiddleware({ cacheEnabled: true }),
   )(originalListToolsHandler);
 
+  // We define the handler variable first to allow cyclic reference inside the implementation
+  let recursiveCallToolHandler: CallToolHandler;
+
+  /**
+   * Internal implementation that does the actual work.
+   */
+  const _internalCallToolImpl = async (
+    name: string,
+    args: any,
+    meta?: any
+  ): Promise<CallToolResult> => {
+
+    // Check for TOON request
+    const useToon = meta?.toon === true || meta?.toon === "true";
+
+    const formatResult = (result: CallToolResult): CallToolResult => {
+        if (!useToon) return result;
+
+        // Attempt to compress JSON content
+        const newContent = result.content.map(item => {
+            if (item.type === "text") {
+                try {
+                    // Try to parse as JSON first
+                    const data = JSON.parse(item.text);
+                    const serialized = toonSerializer.serialize(data);
+                    return { ...item, text: serialized };
+                } catch (e) {
+                    // Not JSON, return as is
+                    return item;
+                }
+            }
+            return item;
+        });
+
+        return {
+            ...result,
+            content: newContent
+        };
+    };
+
+    // 1. Meta Tools
+    if (name === "search_tools") {
+      const { query, limit } = args as { query: string; limit?: number };
+      const results = await toolSearchService.searchTools(query, limit);
+      return formatResult({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      });
+    }
+
+    if (name === "load_tool") {
+      const { name: toolName } = args as { name: string };
+      if (toolToClient[toolName]) {
+        loadedTools.add(toolName);
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `Tool '${toolName}' loaded.`,
+                }
+            ]
+        };
+      } else {
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `Tool '${toolName}' not found.`,
+                },
+            ],
+            isError: true,
+        };
+      }
+    }
+
+    if (name === "save_script") {
+        const { name: scriptName, code, description } = args as { name: string; code: string; description?: string };
+        try {
+            const saved = await savedScriptService.saveScript(scriptName, code, description);
+            return {
+                content: [{ type: "text", text: `Script '${saved.name}' saved successfully.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save script: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "save_tool_set") {
+        const { name: setName, description } = args as { name: string; description?: string };
+        try {
+            const toolsToSave = Array.from(loadedTools);
+            if (toolsToSave.length === 0) {
+                return {
+                    content: [{ type: "text", text: `No tools currently loaded to save.` }],
+                    isError: true
+                };
+            }
+            const saved = await toolSetService.createToolSet(setName, toolsToSave, description);
+            return {
+                content: [{ type: "text", text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "load_tool_set") {
+        const { name: setName } = args as { name: string };
+        try {
+            const set = await toolSetService.getToolSet(setName);
+            if (!set) {
+                return {
+                    content: [{ type: "text", text: `Tool Set '${setName}' not found.` }],
+                    isError: true
+                };
+            }
+
+            // Add tools to loadedTools
+            let count = 0;
+            const missing = [];
+            for (const toolName of set.tools) {
+                if (toolToClient[toolName]) {
+                    loadedTools.add(toolName);
+                    count++;
+                } else {
+                    missing.push(toolName);
+                }
+            }
+
+            let msg = `Loaded ${count} tools from set '${setName}'.`;
+            if (missing.length > 0) {
+                msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
+            }
+
+            return {
+                content: [{ type: "text", text: msg }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to load tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "import_mcp_config") {
+        const { configJson } = args as { configJson: string };
+        try {
+            const result = await configImportService.importClaudeConfig(configJson);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`
+                }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Import failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "run_code") {
+        const { code } = args as { code: string };
+        try {
+            // RECURSION MAGIC: We pass the *wrapped* middleware handler to the sandbox.
+            // This ensures that when the sandbox calls 'mcp.call', it goes through
+            // the full middleware stack (logging, auditing, etc.) just like a request from the client.
+            const result = await codeExecutorService.executeCode(
+                code,
+                async (toolName, toolArgs) => {
+                    if (toolName === "run_code" || toolName === "run_agent") {
+                        throw new Error("Cannot call run_code/run_agent from within sandbox");
+                    }
+                    // Call the fully wrapped handler!
+                    const res = await recursiveCallToolHandler({
+                        method: "tools/call",
+                        params: {
+                            name: toolName,
+                            arguments: toolArgs,
+                            _meta: meta
+                        }
+                    }, handlerContext);
+
+                    return res;
+                }
+            );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Code execution failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "run_agent") {
+        const { task } = args as { task: string };
+        try {
+            const result = await agentService.runAgent(
+                task,
+                async (toolName, toolArgs) => {
+                    if (toolName === "run_code" || toolName === "run_agent") {
+                         throw new Error("Recursive agent calls restricted.");
+                    }
+                    const res = await recursiveCallToolHandler({
+                        method: "tools/call",
+                        params: {
+                            name: toolName,
+                            arguments: toolArgs,
+                            _meta: meta
+                        }
+                    }, handlerContext);
+                    return res;
+                }
+            );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Agent execution failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    // 2. Saved Scripts execution
+    if (name.startsWith("script__")) {
+        const scriptName = name.replace("script__", "");
+        const script = await savedScriptService.getScript(scriptName);
+
+        if (script) {
+             try {
+                // Execute saved script using the SAME logic as run_code
+                const result = await codeExecutorService.executeCode(
+                    script.code,
+                    async (toolName, toolArgs) => {
+                        if (toolName === "run_code" || toolName.startsWith("script__")) {
+                            throw new Error("Recursion restricted in saved scripts");
+                        }
+                        const res = await recursiveCallToolHandler({
+                            method: "tools/call",
+                            params: {
+                                name: toolName,
+                                arguments: toolArgs,
+                                _meta: meta
+                            }
+                        }, handlerContext);
+                        return res;
+                    }
+                );
+                return formatResult({
+                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+                });
+            } catch (error: any) {
+                return {
+                    content: [{ type: "text", text: `Saved script execution failed: ${error.message}` }],
+                    isError: true
+                };
+            }
+        }
+    }
+
+    // 3. Downstream Tools
+    const clientForTool = toolToClient[name];
+    if (!clientForTool) {
+       throw new Error(`Unknown tool: ${name}`);
+    }
+
+    const parsed = parseToolName(name);
+    if (!parsed) throw new Error(`Invalid tool name: ${name}`);
+
+    try {
+        const abortController = new AbortController();
+        const mcpRequestOptions: RequestOptions = {
+            signal: abortController.signal,
+            timeout: await configService.getMcpTimeout(),
+        };
+
+        const result = await clientForTool.client.request(
+            {
+                method: "tools/call",
+                params: {
+                    name: parsed.originalToolName,
+                    arguments: args || {},
+                    _meta: meta,
+                }
+            },
+            CompatibilityCallToolResultSchema,
+            mcpRequestOptions
+        );
+        return formatResult(result as CallToolResult);
+    } catch (error) {
+        console.error(`Error calling ${name}:`, error);
+        throw error;
+    }
+  };
+
+  const implCallToolHandler: CallToolHandler = async (
+    request,
+    _context,
+  ) => {
+    const { name, arguments: args, _meta } = request.params;
+    return await _internalCallToolImpl(name, args, _meta);
   let recursiveCallToolHandler: CallToolHandler;
 
   const wrappedCallToolHandler: CallToolHandler = async (request, context) => {
@@ -835,6 +1168,7 @@ export const createServer = async (
     }),
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
+
 
   // Also expose callToolWithMiddleware for internal uses if needed,
   // but we should reuse recursiveCallToolHandler as the primary entry point

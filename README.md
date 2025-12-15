@@ -27,6 +27,7 @@
 **New Features**:
 - **Progressive Tool Disclosure**: Expose only meta-tools (`search_tools`, `load_tool`, `run_code`) to minimize context usage.
 - **Semantic Tool Search**: "Tool RAG" using embeddings and `pgvector` to find relevant tools.
+- **Code Mode & Autonomous Agents**: Securely execute TypeScript/JavaScript code in a sandbox. Use `run_agent` for autonomous task execution (text-to-code).
 - **Code Mode**: Securely execute TypeScript/JavaScript code in a sandbox to chain multiple tool calls.
 - **Traffic Inspection**: Persistent logging of tool calls, arguments, and results ("Mcpshark").
 - **Saved Scripts & Tool Sets**: Persist useful scripts and tool profiles.
@@ -51,35 +52,18 @@ English | [中文](./README_cn.md)
   - [🔍 **Inspector (Mcpshark)**](#-inspector-mcpshark)
   - [✏️ **Tool Overrides \& Annotations**](#️-tool-overrides--annotations)
   - [⚡ **Code Mode & Tool Chaining**](#-code-mode--tool-chaining)
+  - [🤖 **Autonomous Agents**](#-autonomous-agents)
   - [📂 **Saved Scripts & Tool Sets**](#-saved-scripts--tool-sets)
 - [🚀 Quick Start](#-quick-start)
   - [🐳 Run with Docker Compose (Recommended)](#-run-with-docker-compose-recommended)
   - [📦 Build development environment with Dev Containers (VSCode/Cursor)](#-build-development-environment-with-dev-containers-vscodecursor)
   - [💻 Local Development](#-local-development)
+  - [🔧 Running Without Docker](#-running-without-docker)
 - [🔌 MCP Protocol Compatibility](#-mcp-protocol-compatibility)
 - [🔗 Connect to MetaMCP](#-connect-to-metamcp)
-  - [📝 E.g., Cursor via mcp.json](#-eg-cursor-via-mcpjson)
-  - [🖥️ Connecting Claude Desktop and Other STDIO-only Clients](#️-connecting-claude-desktop-and-other-stdio-only-clients)
-  - [🔧 API Key Auth Troubleshooting](#-api-key-auth-troubleshooting)
-- [❄️ Cold Start Problem and Custom Dockerfile](#️-cold-start-problem-and-custom-dockerfile)
 - [🔐 Authentication](#-authentication)
-- [🔗 OpenID Connect (OIDC) Provider Support](#-openid-connect-oidc-provider-support)
-  - [🛠️ **Configuration**](#️-configuration)
-  - [🏢 **Supported Providers**](#-supported-providers)
-  - [🔒 **Security Features**](#-security-features)
-  - [📱 **Usage**](#-usage)
-- [⚙️ Registration Controls](#️-registration-controls)
-  - [🎛️ **Available Controls**](#️-available-controls)
-  - [🏢 **Enterprise Use Cases**](#-enterprise-use-cases)
-  - [🛠️ **Configuration**](#️-configuration-1)
-- [🌐 Custom Deployment and SSE conf for Nginx](#-custom-deployment-and-sse-conf-for-nginx)
 - [🏗️ Architecture](#️-architecture)
-  - [📊 Sequence Diagram](#-sequence-diagram)
-- [🗺️ Roadmap](#️-roadmap)
-- [🌐 i18n](#-i18n)
 - [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🙏 Credits](#-credits)
 
 ## 🎯 Use Cases
 - 🏷️ **Group MCP servers into namespaces, host them as meta-MCPs, and assign public endpoints** (SSE or Streamable HTTP), with auth. One-click to switch a namespace for an endpoint.
@@ -87,6 +71,7 @@ English | [中文](./README_cn.md)
 - 🔍 **Use as enhanced MCP inspector** with saved server configs, and inspect your MetaMCP endpoints in house to see if it works or not.
 - 🔍 **Use as Elasticsearch for MCP tool selection** (Semantic Search / Tool RAG).
 - ⚡ **Use Code Mode** to allow agents to write scripts that chain multiple tools together, reducing round-trips and token costs.
+- 🤖 **Run Autonomous Agents** to solve complex tasks by self-generating code and discovering tools.
 
 Generally developers can use MetaMCP as **infrastructure** to host dynamically composed MCP servers through a unified endpoint, and build agents on top of it.
 
@@ -107,8 +92,20 @@ A MCP server configuration that tells MetaMCP how to start a MCP server.
 }
 ```
 
-#### 🔐 **Environment Variables & Secrets (STDIO MCP Servers)**
+### ⚡ **Code Mode & Tool Chaining**
+- **MetaMCP Hub** exposes a `run_code` tool that accepts TypeScript/JavaScript.
+- The code runs in a secure sandbox (`isolated-vm`).
+- Scripts can call other available MCP tools using `await mcp.call('tool_name', args)`.
+- **Recursive Routing**: Tool calls from inside the sandbox flow back through the MetaMCP middleware stack, ensuring logging, authentication, and policy enforcement apply to every sub-call.
 
+### 🤖 **Autonomous Agents**
+- **MetaMCP Hub** exposes a `run_agent` tool.
+- Pass a natural language task description (e.g., "Find the latest issue in repo X and summarize it").
+- The agent will:
+    1. Semantically search for relevant tools.
+    2. Write a script to solve the problem.
+    3. Execute the script in the sandbox.
+- This effectively turns any MCP client into a coding agent.
 For **STDIO MCP servers**, MetaMCP supports three ways to handle environment variables and secrets:
 
 **1. Raw Values** - Direct string values (not recommended for secrets):
@@ -181,6 +178,121 @@ cp example.env .env
 docker compose up -d
 ```
 
+### **💻 Local Development**
+
+Still recommend running postgres through docker for easy setup:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+### **🔧 Running Without Docker**
+
+If you prefer to run MetaMCP directly on your machine (e.g., if you already have Postgres running), you can use the setup script:
+
+```bash
+./scripts/setup-local.sh
+pnpm dev
+```
+
+Ensure your `.env` file points to your local Postgres instance (`DATABASE_URL`).
+
+## 🏗️ Architecture
+
+- **Frontend**: Next.js
+- **Backend**: Express.js with tRPC, hosting MCPs through TS SDK and internal proxy
+- **Auth**: Better Auth
+- **Structure**: Standalone monorepo with Turborepo and Docker publishing
+
+### 📊 Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant MCPClient as MCP Client (e.g., Claude Desktop)
+    participant MetaMCP as MetaMCP Server
+    participant MCPServers as Installed MCP Servers
+
+    MCPClient ->> MetaMCP: Call run_agent("Fix bug in repo")
+    MetaMCP ->> MetaMCP: Semantic search for tools
+    MetaMCP ->> MetaMCP: LLM generates code
+    MetaMCP ->> MetaMCP: Execute code in Sandbox
+    loop Execution
+        MetaMCP ->> MCPServers: Proxy tool calls
+        MCPServers ->> MetaMCP: Result
+    end
+    MetaMCP ->> MCPClient: Final Result
+```
+
+    MCPClient ->> MetaMCP: Request list tools (Progressive Disclosure)
+    MetaMCP ->> MCPClient: Return [search_tools, load_tool, run_code]
+
+    MCPClient ->> MetaMCP: Call search_tools(query)
+    MetaMCP ->> MetaMCP: Semantic search in DB
+    MetaMCP ->> MCPClient: Return matching tools
+
+    MCPClient ->> MetaMCP: Call load_tool(name)
+    MetaMCP ->> MetaMCP: Add tool to session allowlist
+    MetaMCP ->> MCPClient: Confirmed
+
+    MCPClient ->> MetaMCP: Call tool (direct)
+    MetaMCP ->> MCPServers: Proxy call
+    MCPServers ->> MetaMCP: Return result
+    MetaMCP ->> MetaMCP: Log to DB (Mcpshark)
+    MetaMCP ->> MCPClient: Return result
+```
+
+## 🗺️ Roadmap
+
+**Potential next steps:**
+
+- [x] 🔌 Headless Admin API access (Code Mode/Saved Scripts)
+- [x] 🔍 Dynamically apply search rules on MetaMCP endpoints (Semantic Search)
+- [ ] 🛠️ More middlewares
+- [ ] 💬 Chat/Agent Playground
+- [ ] 🧪 Testing & Evaluation for MCP tool selection optimization
+- [ ] ⚡ Dynamically generate MCP servers
+
+## 🌐 i18n
+
+See [README-i18n.md](README-i18n.md)
+
+Currently en and zh locale are supported, but welcome contributions.
+
+## 🤝 Contributing
+
+We welcome contributions! See details at **[CONTRIBUTING.md](CONTRIBUTING.md)**
+
+## 📄 License
+
+**MIT**
+
+
+
+  - [📝 E.g., Cursor via mcp.json](#-eg-cursor-via-mcpjson)
+  - [🖥️ Connecting Claude Desktop and Other STDIO-only Clients](#️-connecting-claude-desktop-and-other-stdio-only-clients)
+  - [🔧 API Key Auth Troubleshooting](#-api-key-auth-troubleshooting)
+- [❄️ Cold Start Problem and Custom Dockerfile](#️-cold-start-problem-and-custom-dockerfile)
+- [🔐 Authentication](#-authentication)
+- [🔗 OpenID Connect (OIDC) Provider Support](#-openid-connect-oidc-provider-support)
+  - [🛠️ **Configuration**](#️-configuration)
+  - [🏢 **Supported Providers**](#-supported-providers)
+  - [🔒 **Security Features**](#-security-features)
+  - [📱 **Usage**](#-usage)
+- [⚙️ Registration Controls](#️-registration-controls)
+  - [🎛️ **Available Controls**](#️-available-controls)
+  - [🏢 **Enterprise Use Cases**](#-enterprise-use-cases)
+  - [🛠️ **Configuration**](#️-configuration-1)
+- [🌐 Custom Deployment and SSE conf for Nginx](#-custom-deployment-and-sse-conf-for-nginx)
+- [🏗️ Architecture](#️-architecture)
+  - [📊 Sequence Diagram](#-sequence-diagram)
+- [🗺️ Roadmap](#️-roadmap)
+- [🌐 i18n](#-i18n)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🙏 Credits](#-credits)
+
+
 If you modify APP_URL env vars, make sure you only access from the APP_URL, because MetaMCP enforces CORS policy on the URL, so no other URL is accessible.
 
 Note that the pg volume name may collide with your other pg dockers, which is global, consider rename it in `docker-compose.yml`:
@@ -214,15 +326,6 @@ VSCode will open the Dev Containers project in a new window, where it will build
 Wait some minutes, depending on the internet connection or computer performance, it may take from a few minutes to tens of minutes, you can click on the Progress Bar in the bottom right corner to view a live log where you will be able to check unusual stuck.
 <img width="732" height="173" alt="image" src="https://github.com/user-attachments/assets/6e5752f8-7353-4a8f-b489-c13daef6700e" />
 
-
-### **💻 Local Development**
-
-Still recommend running postgres through docker for easy setup:
-
-```bash
-pnpm install
-pnpm dev
-```
 
 ## 🔌 MCP Protocol Compatibility
 
@@ -401,65 +504,9 @@ If you want to deploy it to a online service or a VPS, a instance of at least 2G
 
 Since MCP leverages SSE for long connection, if you are using reverse proxy like nginx, please refer to an example setup [nginx.conf.example](nginx.conf.example)
 
-## 🏗️ Architecture
-
-- **Frontend**: Next.js
-- **Backend**: Express.js with tRPC, hosting MCPs through TS SDK and internal proxy
-- **Auth**: Better Auth
-- **Structure**: Standalone monorepo with Turborepo and Docker publishing
-
-### 📊 Sequence Diagram
 
 *Note: Prompts and resources follow similar patterns to tools.*
 
-```mermaid
-sequenceDiagram
-    participant MCPClient as MCP Client (e.g., Claude Desktop)
-    participant MetaMCP as MetaMCP Server
-    participant MCPServers as Installed MCP Servers
-
-    MCPClient ->> MetaMCP: Request list tools (Progressive Disclosure)
-    MetaMCP ->> MCPClient: Return [search_tools, load_tool, run_code]
-
-    MCPClient ->> MetaMCP: Call search_tools(query)
-    MetaMCP ->> MetaMCP: Semantic search in DB
-    MetaMCP ->> MCPClient: Return matching tools
-
-    MCPClient ->> MetaMCP: Call load_tool(name)
-    MetaMCP ->> MetaMCP: Add tool to session allowlist
-    MetaMCP ->> MCPClient: Confirmed
-
-    MCPClient ->> MetaMCP: Call tool (direct)
-    MetaMCP ->> MCPServers: Proxy call
-    MCPServers ->> MetaMCP: Return result
-    MetaMCP ->> MetaMCP: Log to DB (Mcpshark)
-    MetaMCP ->> MCPClient: Return result
-```
-
-## 🗺️ Roadmap
-
-**Potential next steps:**
-
-- [x] 🔌 Headless Admin API access (Code Mode/Saved Scripts)
-- [x] 🔍 Dynamically apply search rules on MetaMCP endpoints (Semantic Search)
-- [ ] 🛠️ More middlewares
-- [ ] 💬 Chat/Agent Playground
-- [ ] 🧪 Testing & Evaluation for MCP tool selection optimization
-- [ ] ⚡ Dynamically generate MCP servers
-
-## 🌐 i18n
-
-See [README-i18n.md](README-i18n.md)
-
-Currently en and zh locale are supported, but welcome contributions.
-
-## 🤝 Contributing
-
-We welcome contributions! See details at **[CONTRIBUTING.md](CONTRIBUTING.md)**
-
-## 📄 License
-
-**MIT**
 
 Would appreciate if you mentioned with back links if your projects use the code.
 

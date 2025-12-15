@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ExternalLink,
   FileCode,
   FileTerminal,
   Key,
@@ -201,6 +202,22 @@ export default function SidebarLayout({
                   </SidebarMenuItem>
                 ))}
                 <LiveLogsMenuItem />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>External Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="http://localhost:9853" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink />
+                      <span>MCP Shark</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

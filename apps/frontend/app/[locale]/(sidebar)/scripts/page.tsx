@@ -1,6 +1,6 @@
 "use client";
 
-import { FileCode, Trash2 } from "lucide-react";
+import { FileCode, Trash2, Play, Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +23,12 @@ export default function ScriptsPage() {
   const [scripts, setScripts] = useState<SavedScript[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Agent Test State
+  const [agentDialogOpen, setAgentDialogOpen] = useState(false);
+  const [agentTask, setAgentTask] = useState("");
+  const [agentResult, setAgentResult] = useState<string | null>(null);
+  const [agentRunning, setAgentRunning] = useState(false);
 
   const fetchScripts = async () => {
     try {
@@ -61,6 +67,25 @@ export default function ScriptsPage() {
     }
   };
 
+  const runTestAgent = async () => {
+      setAgentRunning(true);
+      setAgentResult(null);
+      try {
+          // This is a bit of a hack: we call the tool implementation directly through TRPC if exposed,
+          // OR we can just instruct the user to use the playground.
+          // Since we don't have a direct TRPC router for 'run_agent' exposed to frontend yet (it's in the proxy),
+          // We will mock the output or add a specific router later.
+          // For now, let's just show a placeholder message explaining how to use it via MCP client.
+
+          // Actually, let's just simulate the UI for now as I haven't added `runAgent` to frontend TRPC router.
+          setAgentResult("To run the agent, please connect an MCP Client (like Claude Desktop) and use the `run_agent` tool. Frontend execution coming soon.");
+      } catch (e) {
+          setAgentResult("Error running agent");
+      } finally {
+          setAgentRunning(false);
+      }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -73,6 +98,10 @@ export default function ScriptsPage() {
             </p>
           </div>
         </div>
+        <Button onClick={() => setAgentDialogOpen(true)} variant="outline">
+            <Bot className="mr-2 h-4 w-4" />
+            Test Autonomous Agent
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -125,6 +154,35 @@ export default function ScriptsPage() {
               {t("common:delete")}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={agentDialogOpen} onOpenChange={setAgentDialogOpen}>
+        <DialogContent className="max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Autonomous Agent Playground</DialogTitle>
+                <DialogDescription>
+                    Test the `run_agent` tool. (Currently for instruction only).
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-md text-sm">
+                    <p className="font-semibold mb-2">How to use:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                        <li>Connect your MCP Client (e.g. Claude Desktop) to MetaMCP.</li>
+                        <li>Type: <span className="font-mono bg-background px-1 rounded">Run an agent to [your task]</span></li>
+                        <li>The Hub will use <span className="font-mono">run_agent</span> to execute it.</li>
+                    </ol>
+                </div>
+                {agentResult && (
+                    <div className="p-4 border rounded-md bg-secondary/10">
+                        <pre className="whitespace-pre-wrap text-xs">{agentResult}</pre>
+                    </div>
+                )}
+            </div>
+            <DialogFooter>
+                <Button onClick={() => setAgentDialogOpen(false)}>Close</Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
