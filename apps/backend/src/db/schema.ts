@@ -16,6 +16,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const mcpServerTypeEnum = pgEnum(
@@ -118,6 +119,9 @@ export const toolsTable = pgTable(
         required?: string[];
       }>()
       .notNull(),
+    rich_description: text("rich_description"),
+    concise_description: text("concise_description"),
+    embedding: vector("embedding", { dimensions: 1536 }),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -130,6 +134,10 @@ export const toolsTable = pgTable(
   },
   (table) => [
     index("tools_mcp_server_uuid_idx").on(table.mcp_server_uuid),
+    index("tools_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
     unique("tools_unique_tool_name_per_server_idx").on(
       table.mcp_server_uuid,
       table.name,
@@ -467,5 +475,127 @@ export const oauthAccessTokensTable = pgTable(
     index("oauth_access_tokens_client_id_idx").on(table.client_id),
     index("oauth_access_tokens_user_id_idx").on(table.user_id),
     index("oauth_access_tokens_expires_at_idx").on(table.expires_at),
+  ],
+);
+
+export const savedScriptsTable = pgTable(
+  "saved_scripts",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    code: text("code").notNull(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("saved_scripts_user_id_idx").on(table.user_id),
+    unique("saved_scripts_name_user_idx").on(table.user_id, table.name),
+    sql`CONSTRAINT saved_scripts_name_regex_check CHECK (
+      name ~ '^[a-zA-Z0-9_-]+$'
+    )`,
+  ],
+);
+
+export const toolCallLogsTable = pgTable(
+  "tool_call_logs",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    session_id: text("session_id").notNull(),
+    tool_name: text("tool_name").notNull(),
+    arguments: jsonb("arguments").$type<Record<string, unknown>>(),
+    result: jsonb("result").$type<Record<string, unknown>>(),
+    error: text("error"),
+    duration_ms:  text("duration_ms"), // storing as text to avoid bigint issues for now, or integer
+    parent_call_uuid: uuid("parent_call_uuid"), // Self-reference for nested calls
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_call_logs_session_id_idx").on(table.session_id),
+    index("tool_call_logs_parent_call_uuid_idx").on(table.parent_call_uuid),
+    index("tool_call_logs_created_at_idx").on(table.created_at),
+  ],
+);
+
+export const toolSetsTable = pgTable(
+  "tool_sets",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_sets_user_id_idx").on(table.user_id),
+    unique("tool_sets_name_user_idx").on(table.user_id, table.name),
+  ],
+);
+
+export const toolSetItemsTable = pgTable(
+  "tool_set_items",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    tool_set_uuid: uuid("tool_set_uuid")
+      .notNull()
+      .references(() => toolSetsTable.uuid, { onDelete: "cascade" }),
+    tool_name: text("tool_name").notNull(), // Storing name because tools are dynamic/discovered
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_set_items_tool_set_uuid_idx").on(table.tool_set_uuid),
+    unique("tool_set_items_unique_idx").on(table.tool_set_uuid, table.tool_name),
+  ],
+);
+
+export const policiesTable = pgTable(
+  "policies",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    // Stores a list of allowed tool patterns (e.g. ["github__*", "postgres__read_*"])
+    // If empty, policy denies everything by default (strict).
+    rules: jsonb("rules")
+      .$type<{
+        allow: string[];
+        deny?: string[];
+      }>()
+      .notNull()
+      .default(sql`'{"allow": []}'::jsonb`),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("policies_user_id_idx").on(table.user_id),
+    unique("policies_name_user_idx").on(table.user_id, table.name),
+    sql`CONSTRAINT policies_name_regex_check CHECK (
+      name ~ '^[a-zA-Z0-9_-]+$'
+    )`,
   ],
 );
