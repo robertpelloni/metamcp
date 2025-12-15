@@ -1,14 +1,18 @@
 "use client";
 
 import {
+  ExternalLink,
+  FileCode,
   FileTerminal,
   Key,
+  Layers,
   Link as LinkIcon,
   Package,
   Search,
   SearchCode,
   Server,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,6 +53,21 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:mcpServers"),
     url: getLocalizedPath("/mcp-servers", locale),
     icon: Server,
+  },
+  {
+    title: t("navigation:savedScripts"),
+    url: getLocalizedPath("/scripts", locale),
+    icon: FileCode,
+  },
+  {
+    title: t("navigation:toolSets"),
+    url: getLocalizedPath("/tool-sets", locale),
+    icon: Layers,
+  },
+  {
+    title: "Policies", // TODO: Add translation key
+    url: getLocalizedPath("/policies", locale),
+    icon: ShieldCheck,
   },
   {
     title: t("navigation:metamcpNamespaces"),
@@ -189,6 +208,22 @@ export default function SidebarLayout({
                   </SidebarMenuItem>
                 ))}
                 <LiveLogsMenuItem />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>External Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="http://localhost:9853" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink />
+                      <span>MCP Shark</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
