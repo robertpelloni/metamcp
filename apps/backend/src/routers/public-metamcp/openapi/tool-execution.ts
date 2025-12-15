@@ -11,7 +11,7 @@ export const executeToolWithMiddleware = async (
   res: express.Response,
   toolArguments: Record<string, unknown>,
 ) => {
-  const { namespaceUuid } = req;
+  const { namespaceUuid, apiKeyUserId, oauthUserId } = req;
   const toolName = req.params.tool_name;
 
   try {
@@ -25,9 +25,12 @@ export const executeToolWithMiddleware = async (
     // Use deterministic session ID for OpenAPI endpoints
     const sessionId = `openapi_${namespaceUuid}`;
 
+    // Determine userId from either API key or OAuth
+    const userId = apiKeyUserId || oauthUserId;
+
     // Create middleware-enabled handlers
     const { handlerContext, callToolWithMiddleware } =
-      createMiddlewareEnabledHandlers(sessionId, namespaceUuid);
+      createMiddlewareEnabledHandlers(sessionId, namespaceUuid, userId);
 
     // Use middleware-enabled call tool handler
     const callToolRequest: CallToolRequest = {

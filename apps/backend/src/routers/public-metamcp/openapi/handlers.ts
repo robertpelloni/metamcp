@@ -192,11 +192,13 @@ export const createOriginalCallToolHandler = (): CallToolHandler => {
 export const createMiddlewareEnabledHandlers = (
   sessionId: string,
   namespaceUuid: string,
+  userId?: string,
 ) => {
   // Create the handler context
   const handlerContext: MetaMCPHandlerContext = {
     namespaceUuid,
     sessionId,
+    userId,
   };
 
   // Create original handlers

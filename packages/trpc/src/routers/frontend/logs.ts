@@ -14,8 +14,9 @@ export const createLogsRouter = (
   implementations: {
     getLogs: (
       input: z.infer<typeof GetLogsRequestSchema>,
+      context?: { user?: { id: string } },
     ) => Promise<z.infer<typeof GetLogsResponseSchema>>;
-    clearLogs: () => Promise<z.infer<typeof ClearLogsResponseSchema>>;
+    clearLogs: (context?: { user?: { id: string } }) => Promise<z.infer<typeof ClearLogsResponseSchema>>;
   },
 ) =>
   router({
@@ -23,14 +24,14 @@ export const createLogsRouter = (
     get: protectedProcedure
       .input(GetLogsRequestSchema)
       .output(GetLogsResponseSchema)
-      .query(async ({ input }) => {
-        return await implementations.getLogs(input);
+      .query(async ({ input, ctx }) => {
+        return await implementations.getLogs(input, { user: ctx.user });
       }),
 
     // Protected: Clear all logs
     clear: protectedProcedure
       .output(ClearLogsResponseSchema)
-      .mutation(async () => {
-        return await implementations.clearLogs();
+      .mutation(async ({ ctx }) => {
+        return await implementations.clearLogs({ user: ctx.user });
       }),
   });
