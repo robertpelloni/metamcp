@@ -2,6 +2,8 @@ import OpenAI from "openai";
 
 import { toolSearchService } from "./tool-search.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
+import { policyService } from "../access-control/policy.service";
+import { memoryService } from "./memory.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
@@ -33,14 +35,43 @@ export class AgentService {
     const client = this.getClient();
 
     // 1. Context Retrieval
-    // We search for relevant tools based on the task
-    const searchResults = await toolSearchService.searchTools(task, 15);
+    // A. Search for relevant tools
+    let searchResults = await toolSearchService.searchTools(task, 15);
+
+    // Filter by Policy if active
+    if (policyId) {
+        try {
+            const policy = await policyService.getPolicy(policyId);
+            if (policy) {
+                searchResults = searchResults.filter(t =>
+                    policyService.evaluateAccess(policy, t.name)
+                );
+                console.log(`[Agent] Filtered tools by policy '${policy.name}'. Remaining: ${searchResults.length}`);
+            } else {
+                console.warn(`[Agent] Policy ID ${policyId} not found. Proceeding with full access context (enforcement will still apply).`);
+            }
+        } catch (e) {
+            console.error("[Agent] Error applying policy filter:", e);
+        }
+    }
+
+    // B. Search for relevant memories (Context RAG)
+    let memoryContext = "";
+    try {
+        const memories = await memoryService.searchMemory(task, 5, 0.6); // Higher threshold for relevance
+        if (memories.length > 0) {
+            memoryContext = "RELEVANT MEMORIES:\n" + memories.map(m => `- ${m.content}`).join("\n");
+            console.log(`[Agent] Found ${memories.length} relevant memories.`);
+        }
+    } catch (error) {
+        console.warn("[Agent] Failed to search memories:", error);
+    }
+
     const toolsContext = searchResults.map(t =>
         `- ${t.name}: ${t.description}`
     ).join("\n");
 
     if (searchResults.length === 0) {
-        // Fallback if no tools found? Or just proceed?
         console.warn("[Agent] No tools found for task via search.");
     }
 
@@ -48,6 +79,8 @@ export class AgentService {
     const prompt = `
 You are an autonomous AI agent running in a secure Code Execution Sandbox.
 Your goal is to complete the following task: "${task}"
+
+${memoryContext ? memoryContext + "\n" : ""}
 
 You have access to the following tools (via the 'mcp' object):
 ${toolsContext}
@@ -85,6 +118,11 @@ Generate ONLY the code. No markdown formatting.
         ],
         temperature: 0,
     });
+
+    // Log Token Usage
+    if (completion.usage) {
+        console.log(`[Agent] Token Usage - Prompt: ${completion.usage.prompt_tokens}, Completion: ${completion.usage.completion_tokens}, Total: ${completion.usage.total_tokens}`);
+    }
 
     const code = completion.choices[0].message.content?.replace(/```typescript|```js|```/g, "").trim();
 
