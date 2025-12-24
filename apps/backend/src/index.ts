@@ -2,6 +2,7 @@ import express from "express";
 
 import { auth } from "./auth";
 import { mcpConfigWatcherService } from "./lib/mcp-config-watcher.service";
+import { schedulerService } from "./lib/scheduler/scheduler.service";
 import { initializeIdleServers } from "./lib/startup";
 import mcpProxyRouter from "./routers/mcp-proxy";
 import oauthRouter from "./routers/oauth";
@@ -102,6 +103,7 @@ app.listen(12009, async () => {
   await new Promise((resolve) => setTimeout(resolve, 3000)).then(async () => {
     await initializeIdleServers();
     await mcpConfigWatcherService.start();
+    await schedulerService.start();
   });
 });
 

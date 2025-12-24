@@ -599,3 +599,58 @@ export const policiesTable = pgTable(
     )`,
   ],
 );
+
+export const memoriesTable = pgTable(
+  "memories",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    content: text("content").notNull(),
+    tags: text("tags").array().default(sql`'{}'::text[]`),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("memories_user_id_idx").on(table.user_id),
+    index("memories_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
+  ],
+);
+
+export const scheduledTasksTable = pgTable(
+  "scheduled_tasks",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    cron: text("cron").notNull(),
+    task_type: text("task_type").notNull(), // 'script' or 'agent'
+    payload: jsonb("payload").$type<{
+      scriptName?: string;
+      agentTask?: string;
+      policyId?: string;
+    }>().notNull(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    is_active: boolean("is_active").notNull().default(true),
+    last_run: timestamp("last_run", { withTimezone: true }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("scheduled_tasks_user_id_idx").on(table.user_id),
+    index("scheduled_tasks_is_active_idx").on(table.is_active),
+  ],
+);

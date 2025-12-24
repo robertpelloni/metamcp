@@ -127,6 +127,20 @@
       "when": 1765810431220,
       "tag": "0017_giant_sauron",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1766569007185,
+      "tag": "0018_cool_lady_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1766569780177,
+      "tag": "0019_pink_raider",
+      "breakpoints": true
     }
   ]
 }

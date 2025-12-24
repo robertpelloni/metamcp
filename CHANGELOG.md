@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.0] - 2025-12-15
+
+### Added
+- **Task Scheduler**: New `scheduled_tasks` table and `SchedulerService` to run Agents or Scripts on a cron schedule. Added `schedule_task` meta-tool.
+- **Long-Term Memory**: New `memories` table and `MemoryService` using `pgvector` for saving/searching text content. Added `save_memory` and `search_memory` meta-tools.
+- **Policy Discovery**: Added `list_policies` meta-tool so Agents can discover available security scopes for sub-task delegation.
+- **Agent Evolution**: Updated Agent System Prompt to be aware of its new Scheduling, Memory, and Sub-Agent capabilities.
+
+### Changed
+- **Proxy**: Refactored `metamcp-proxy.ts` to include the new meta-tools.
+- **Database**: Added `memories` and `scheduled_tasks` tables.
+
 ## [3.1.0] - 2025-12-15
 
 ### Added

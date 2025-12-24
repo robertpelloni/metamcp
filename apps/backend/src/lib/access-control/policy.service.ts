@@ -36,6 +36,15 @@ export class PolicyService {
     return policy;
   }
 
+  async listPolicies(userId?: string): Promise<any[]> {
+      // If userId is provided, filter by user (and maybe public ones if we had that concept)
+      // For now listing all as typical tenancy assumption in this simplified service
+      if (userId) {
+          return await db.select().from(policiesTable).where(eq(policiesTable.user_id, userId));
+      }
+      return await db.select().from(policiesTable);
+  }
+
   /**
    * Evaluate if a tool is allowed by a policy.
    * Logic:
