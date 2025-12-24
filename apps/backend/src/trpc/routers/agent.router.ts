@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../../trpc";
 import { agentService } from "../../lib/ai/agent.service";
 import { createServer } from "../../lib/metamcp/metamcp-proxy";
 

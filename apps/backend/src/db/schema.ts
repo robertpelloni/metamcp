@@ -654,3 +654,28 @@ export const scheduledTasksTable = pgTable(
     index("scheduled_tasks_is_active_idx").on(table.is_active),
   ],
 );
+
+export const notificationsTable = pgTable(
+  "notifications",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    type: text("type").notNull().default("info"), // info, success, warning, error
+    read: boolean("read").notNull().default(false),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("notifications_user_id_idx").on(table.user_id),
+    index("notifications_read_idx").on(table.read),
+    index("notifications_created_at_idx").on(table.created_at),
+  ],
+);

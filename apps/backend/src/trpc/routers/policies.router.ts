@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../../trpc";
 import { policyService } from "../../lib/access-control/policy.service";
 
 export const policiesRouter = router({

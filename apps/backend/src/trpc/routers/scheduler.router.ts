@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../../trpc";
 import { schedulerService } from "../../lib/scheduler/scheduler.service";
 
 export const schedulerRouter = router({

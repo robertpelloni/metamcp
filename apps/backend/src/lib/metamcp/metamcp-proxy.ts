@@ -500,6 +500,67 @@ export const createServer = async (
         }
     });
 
+    // Optimization: Inject concise descriptions from DB to save context tokens
+    if (resultTools.length > 0) {
+        try {
+            const { db } = await import("../../db");
+            const { toolsTable } = await import("../../db/schema");
+            const { inArray, eq, and } = await import("drizzle-orm");
+
+            // Group tools by server UUID to batch queries
+            const serverToTools = new Map<string, string[]>(); // serverUuid -> [originalToolName]
+
+            for (const tool of resultTools) {
+                const serverUuid = toolToServerUuid[tool.name];
+                if (serverUuid) {
+                    const parsed = parseToolName(tool.name);
+                    if (parsed) {
+                        const originalName = parsed.originalToolName;
+                         if (!serverToTools.has(serverUuid)) {
+                            serverToTools.set(serverUuid, []);
+                        }
+                        serverToTools.get(serverUuid)?.push(originalName);
+                    }
+                }
+            }
+
+            // Query DB for each server's tools
+            await Promise.all(Array.from(serverToTools.entries()).map(async ([serverUuid, toolNames]) => {
+                 if (toolNames.length === 0) return;
+
+                 const dbTools = await db.select({
+                    name: toolsTable.name,
+                    concise_description: toolsTable.concise_description
+                 })
+                 .from(toolsTable)
+                 .where(
+                    and(
+                        eq(toolsTable.mcp_server_uuid, serverUuid),
+                        inArray(toolsTable.name, toolNames)
+                    )
+                 );
+
+                 for (const dbTool of dbTools) {
+                    if (dbTool.concise_description) {
+                         // Find the matching tool in the result set and update description
+                         for (const t of resultTools) {
+                             if (toolToServerUuid[t.name] === serverUuid) {
+                                 const parsed = parseToolName(t.name);
+                                 if (parsed && parsed.originalToolName === dbTool.name) {
+                                     // Override with concise description
+                                     t.description = dbTool.concise_description;
+                                 }
+                             }
+                         }
+                    }
+                 }
+            }));
+
+        } catch (e) {
+            console.error("Error optimizing descriptions", e);
+        }
+    }
+
     return { tools: resultTools };
   };
 

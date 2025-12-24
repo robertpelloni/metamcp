@@ -3,7 +3,7 @@ import { protectedProcedure, router } from "../../trpc";
 
 export const createSchedulerRouter = (implementations: {
   list: () => Promise<any[]>;
-  create: (input: { cron: string; type: "agent" | "script"; payload: any }) => Promise<any>;
+  create: (input: { cron: string; type: "agent" | "script"; payload?: any }) => Promise<any>;
   delete: (input: { uuid: string }) => Promise<any>;
 }) => {
   return router({
@@ -15,7 +15,7 @@ export const createSchedulerRouter = (implementations: {
         z.object({
           cron: z.string(),
           type: z.enum(["agent", "script"]),
-          payload: z.any()
+          payload: z.any().optional()
         })
       )
       .mutation(async ({ input }) => {

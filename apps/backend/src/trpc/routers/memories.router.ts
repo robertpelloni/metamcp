@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../../trpc";
 import { memoryService } from "../../lib/ai/memory.service";
 import { db } from "../../db";
 import { memoriesTable } from "../../db/schema";
