@@ -14,6 +14,8 @@ import {
   Settings,
   ShieldCheck,
   Bot,
+  Brain,
+  Calendar,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -70,6 +72,16 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:toolSets"),
     url: getLocalizedPath("/tool-sets", locale),
     icon: Layers,
+  },
+  {
+    title: "Memories", // TODO: Add translation key
+    url: getLocalizedPath("/memories", locale),
+    icon: Brain,
+  },
+  {
+    title: "Scheduler", // TODO: Add translation key
+    url: getLocalizedPath("/scheduler", locale),
+    icon: Calendar,
   },
   {
     title: "Policies", // TODO: Add translation key

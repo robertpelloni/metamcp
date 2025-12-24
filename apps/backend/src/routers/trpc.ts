@@ -17,6 +17,8 @@ import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
 import { agentRouter } from "../trpc/routers/agent.router";
 import { policiesRouter } from "../trpc/routers/policies.router";
+import { memoriesRouter } from "../trpc/routers/memories.router";
+import { schedulerRouter } from "../trpc/routers/scheduler.router";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -33,6 +35,8 @@ const appRouter = createAppRouter({
     toolSets: toolSetsImplementations,
     agent: agentRouter,
     policies: policiesRouter,
+    memories: memoriesRouter,
+    scheduler: schedulerRouter,
   },
 });
 
