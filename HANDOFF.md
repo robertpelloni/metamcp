@@ -82,6 +82,8 @@ This repository has been transformed into an **Ultimate MCP Hub**. It acts as a 
 -   `DATABASE_URL`: Postgres connection (must support pgvector).
 -   `OPENAI_API_KEY`: Required for Semantic Search and Agent.
 -   `CODE_EXECUTION_MEMORY_LIMIT`: Sandbox memory (MB).
+-   `AGENT_MODEL`: LLM model for the Autonomous Agent (default: `gpt-4o`).
+-   `DESCRIPTION_MODEL`: LLM model for Tool RAG description enhancement (default: `gpt-4o-mini`).
 
 ## 🧠 Memories & Learnings
 
