@@ -3,7 +3,7 @@ import {
   GetLogsRequestSchema,
   GetLogsResponseSchema,
 } from "@repo/zod-types";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, gt } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "../db";
@@ -17,11 +17,26 @@ export const logsImplementations = {
     try {
       const limit = input.limit || 100;
 
-      const logs = await db
+      let query = db
         .select()
         .from(toolCallLogsTable)
         .orderBy(desc(toolCallLogsTable.created_at))
-        .limit(limit);
+        .limit(limit)
+        .$dynamic();
+
+      const conditions = [];
+      if (input.sessionId) {
+        conditions.push(eq(toolCallLogsTable.session_id, input.sessionId));
+      }
+      if (input.afterTimestamp) {
+        conditions.push(gt(toolCallLogsTable.created_at, input.afterTimestamp));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      const logs = await query;
 
       // Map to Zod schema format
       const formattedLogs = logs.map(log => {

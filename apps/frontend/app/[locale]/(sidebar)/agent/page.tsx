@@ -10,11 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslations } from "@/hooks/useTranslations";
-import { vanillaTrpcClient } from "@/lib/trpc";
+import { vanillaTrpcClient, trpc } from "@/lib/trpc";
+import { authClient } from "@/lib/auth-client";
 
 interface Message {
-    role: "user" | "assistant";
+    role: "user" | "assistant" | "thought"; // Added 'thought' role
     content: string;
+    details?: any; // For thoughts
 }
 
 export default function AgentPage() {
@@ -24,11 +26,67 @@ export default function AgentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Polling state
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+      authClient.getSession().then((session) => {
+          if (session?.data?.session?.id) {
+              setSessionId(session.data.session.id);
+          }
+      });
+  }, []);
+
   useEffect(() => {
       if (scrollRef.current) {
           scrollRef.current.scrollIntoView({ behavior: "smooth" });
       }
   }, [messages]);
+
+  // Poll for logs (thoughts) while loading
+  useEffect(() => {
+      let interval: NodeJS.Timeout;
+      if (isLoading && startTime && sessionId) {
+          let lastPoll = startTime;
+          interval = setInterval(async () => {
+              try {
+                  const logs = await vanillaTrpcClient.frontend.logs.get.query({
+                      limit: 20,
+                      sessionId: sessionId,
+                      afterTimestamp: lastPoll
+                  });
+
+                  if (logs.success && logs.data.length > 0) {
+                      // Update lastPoll to the latest log time
+                      const latest = new Date(Math.max(...logs.data.map(l => new Date(l.timestamp).getTime())));
+                      if (latest > lastPoll) {
+                          lastPoll = latest;
+                      }
+
+                      // Add logs as thought messages
+                      const thoughts: Message[] = logs.data.map(log => ({
+                          role: "thought",
+                          content: `${log.toolName ? `Called ${log.toolName}` : log.message}`,
+                          details: log
+                      }));
+
+                      // Avoid duplicates if rapid polling?
+                      // We rely on afterTimestamp > lastPoll.
+                      // Note: logs.data is sorted descending in impl, we should probably sort ascending for chat.
+
+                      setMessages(prev => {
+                          // Simple dedup by content/id if needed, but timestamp filtering should work
+                          return [...prev, ...thoughts.reverse()];
+                      });
+                  }
+              } catch (e) {
+                  console.error("Log polling error", e);
+              }
+          }, 1000);
+      }
+      return () => clearInterval(interval);
+  }, [isLoading, startTime, sessionId]);
 
   const handleSubmit = async () => {
       if (!input.trim()) return;
@@ -37,6 +95,7 @@ export default function AgentPage() {
       setMessages(prev => [...prev, userMsg]);
       setInput("");
       setIsLoading(true);
+      setStartTime(new Date());
 
       try {
           // Call the backend agent
@@ -96,15 +155,26 @@ export default function AgentPage() {
                             <div className={`max-w-[80%] rounded-lg p-3 ${
                                 msg.role === "user"
                                     ? "bg-primary text-primary-foreground"
+                                    : msg.role === "thought"
+                                    ? "bg-muted/50 border border-muted-foreground/20 text-xs font-mono"
                                     : "bg-muted"
                             }`}>
-                                <div className="prose dark:prose-invert text-sm max-w-none">
-                                    {msg.role === "assistant" ? (
-                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                                    ) : (
-                                        msg.content
-                                    )}
-                                </div>
+                                {msg.role === "thought" ? (
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Bot className="h-3 w-3" />
+                                            <span>{msg.content}</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="prose dark:prose-invert text-sm max-w-none">
+                                        {msg.role === "assistant" ? (
+                                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                        ) : (
+                                            msg.content
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
