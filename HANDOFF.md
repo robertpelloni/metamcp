@@ -49,10 +49,23 @@ This repository has been transformed into an **Ultimate MCP Hub**. It acts as a 
     -   Prompts OpenAI (`gpt-4o` or similar) to write a script.
     -   Executes the script in the Sandbox.
 
-### 5. Inspection (Mcpshark)
+### 5. Python Bridge (Orchestration)
+-   **Tool:** `run_python`
+-   **Flow:**
+    -   Injects `MCPClient` python class into the script.
+    -   Calls `mcp.call()` communicate via `POST /internal/python-bridge/call`.
+    -   Allows Python scripts (e.g., pandas/numpy) to call MCP tools.
+
+### 6. Notifications
+-   **Service:** `apps/backend/src/lib/notification.service.ts`
+-   **UI:** Frontend Notification Center.
+-   **Tool:** `notify_user` allows agents to alert humans.
+
+### 7. Inspection (Live Logs)
 -   **Middleware:** `apps/backend/src/lib/metamcp/metamcp-middleware/logging.functional.ts`
 -   **UI:** `apps/frontend/app/[locale]/(sidebar)/live-logs/page.tsx`
 -   **Data:** Persists all tool calls to `tool_call_logs` table.
+-   **Parity:** Replaces the need for external `mcpshark` for most use cases by showing full JSON-RPC payloads.
 
 ## 🔑 Key Files & Configuration
 
@@ -88,11 +101,10 @@ This repository has been transformed into an **Ultimate MCP Hub**. It acts as a 
     *   **Improvement:** When a tool is registered, use an LLM to generate a "Synthetic User Query" or "Rich Description" (e.g., "Use this tool when the user wants to X, Y, or Z") and embed *that*. This improves retrieval accuracy.
 
 3.  **Frontend Agent UI**
-    *   Create a dedicated Chat UI for the Agent (currently it's just a test dialog).
-    *   Allow streaming progress updates from the agent script.
+    *   Enhance the Agent Chat UI to support streaming partial thoughts from `run_agent` (currently waits for final result).
 
 4.  **mcp.json Auto-Discovery**
-    *   Implement a file watcher to automatically load/unload MCP servers from a configured directory.
+    *   *Implemented:* `McpConfigWatcherService` watches `/app/config/mcp`.
 
 ## 📦 Handoff Instructions
 

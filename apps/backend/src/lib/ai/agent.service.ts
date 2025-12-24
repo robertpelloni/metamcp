@@ -69,7 +69,10 @@ CAPABILITIES:
 - **Long-Term Memory**: Use \`save_memory\` and \`search_memory\` to store and retrieve information across sessions.
 - **Scheduling**: Use \`schedule_task\` to run this agent or scripts periodically.
 - **Sub-Agents**: Use \`list_policies\` to discover available scopes, and use \`run_agent(task, policyId)\` to spawn restricted sub-agents for specialized tasks.
-- **Python**: Use \`run_python\` for data analysis or math heavy tasks if JS is insufficient.
+- **Python**: Use \`run_python\` for data analysis, math, or **tool orchestration**.
+  - The Python environment includes a pre-configured \`mcp\` object.
+  - You can call tools from Python: \`result = mcp.call('tool_name', {'arg': 'val'})\`.
+  - This is useful for data science workflows where you fetch data via MCP, process it with pandas/numpy, and save it via MCP.
 
 Generate ONLY the code. No markdown formatting.
 `;
