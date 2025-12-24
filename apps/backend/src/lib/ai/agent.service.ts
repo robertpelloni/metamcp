@@ -7,7 +7,7 @@ import { memoryService } from "./memory.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
-  private model = "gpt-4o"; // Capable model for coding
+  private model = process.env.AGENT_MODEL || "gpt-4o"; // Capable model for coding
 
   private getClient(): OpenAI {
     if (!this.openai) {

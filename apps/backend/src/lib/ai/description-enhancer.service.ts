@@ -6,7 +6,7 @@ import { sql } from "drizzle-orm";
 
 export class DescriptionEnhancerService {
   private openai: OpenAI | null = null;
-  private model = "gpt-4o-mini"; // Use a fast/cheap model for this
+  private model = process.env.DESCRIPTION_MODEL || "gpt-4o-mini"; // Use a fast/cheap model for this
 
   private getClient(): OpenAI | null {
     if (!this.openai) {
