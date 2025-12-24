@@ -8,6 +8,7 @@ import mcpProxyRouter from "./routers/mcp-proxy";
 import oauthRouter from "./routers/oauth";
 import publicEndpointsRouter from "./routers/public-metamcp";
 import trpcRouter from "./routers/trpc";
+import pythonBridgeRouter from "./lib/metamcp/python-bridge";
 
 const app = express();
 
@@ -80,6 +81,9 @@ app.use("/metamcp", publicEndpointsRouter);
 
 // Mount MCP proxy routes
 app.use("/mcp-proxy", mcpProxyRouter);
+
+// Mount Python Bridge (Internal)
+app.use("/internal/python-bridge", pythonBridgeRouter);
 
 // Mount tRPC routes
 app.use("/trpc", trpcRouter);
