@@ -5,6 +5,8 @@ import {
 } from "@repo/zod-types";
 import { eq, sql } from "drizzle-orm";
 
+import { descriptionEnhancerService } from "../../lib/ai/description-enhancer.service";
+import { toolSearchService } from "../../lib/ai/tool-search.service";
 import { db } from "../index";
 import { toolsTable } from "../schema";
 
@@ -40,7 +42,7 @@ export class ToolsRepository {
     }));
 
     // Batch insert all tools with upsert
-    return await db
+    const results = await db
       .insert(toolsTable)
       .values(toolsToInsert)
       .onConflictDoUpdate({
@@ -52,6 +54,33 @@ export class ToolsRepository {
         },
       })
       .returning();
+
+    // Async update embeddings and enhance descriptions for all upserted tools
+    // We do this in the background to not block the request
+    Promise.allSettled(
+      results.map(async (tool) => {
+        try {
+          // 1. Enhance description (Optional, needs API Key)
+          await descriptionEnhancerService.enhanceToolDescription({
+            uuid: tool.uuid,
+            name: tool.name,
+            description: tool.description,
+            toolSchema: tool.toolSchema,
+          });
+
+          // 2. Update embedding (Will use enhanced description if available, or fall back to original)
+          // We might need to wait for step 1 to finish so the DB has the new description
+          await toolSearchService.updateToolEmbedding(tool.uuid);
+        } catch (err) {
+          console.error(
+            `Failed to process background tasks for tool ${tool.name} (${tool.uuid}):`,
+            err,
+          );
+        }
+      }),
+    );
+
+    return results;
   }
 
   async findByUuid(uuid: string): Promise<DatabaseTool | undefined> {

@@ -1,6 +1,7 @@
 import express from "express";
 
 import { auth } from "./auth";
+import { mcpConfigWatcherService } from "./lib/mcp-config-watcher.service";
 import { initializeIdleServers } from "./lib/startup";
 import mcpProxyRouter from "./routers/mcp-proxy";
 import oauthRouter from "./routers/oauth";
@@ -98,9 +99,10 @@ app.listen(12009, async () => {
   console.log(
     "Waiting for server to be fully ready before initializing idle servers...",
   );
-  await new Promise((resolve) => setTimeout(resolve, 3000)).then(
-    initializeIdleServers,
-  );
+  await new Promise((resolve) => setTimeout(resolve, 3000)).then(async () => {
+    await initializeIdleServers();
+    await mcpConfigWatcherService.start();
+  });
 });
 
 app.get("/health", (req, res) => {

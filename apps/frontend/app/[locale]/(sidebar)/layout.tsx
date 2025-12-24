@@ -1,14 +1,19 @@
 "use client";
 
 import {
+  ExternalLink,
+  FileCode,
   FileTerminal,
   Key,
+  Layers,
   Link as LinkIcon,
   Package,
   Search,
   SearchCode,
   Server,
   Settings,
+  ShieldCheck,
+  Bot,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,9 +42,15 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
+import packageJson from "../../../package.json";
 
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
+  {
+    title: "Agent", // TODO: Add translation key
+    url: getLocalizedPath("/agent", locale),
+    icon: Bot,
+  },
   {
     title: t("navigation:exploreMcpServers"),
     url: getLocalizedPath("/search", locale),
@@ -49,6 +60,21 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:mcpServers"),
     url: getLocalizedPath("/mcp-servers", locale),
     icon: Server,
+  },
+  {
+    title: t("navigation:savedScripts"),
+    url: getLocalizedPath("/scripts", locale),
+    icon: FileCode,
+  },
+  {
+    title: t("navigation:toolSets"),
+    url: getLocalizedPath("/tool-sets", locale),
+    icon: Layers,
+  },
+  {
+    title: "Policies", // TODO: Add translation key
+    url: getLocalizedPath("/policies", locale),
+    icon: ShieldCheck,
   },
   {
     title: t("navigation:metamcpNamespaces"),
@@ -119,7 +145,7 @@ function UserInfoFooter() {
             <LanguageSwitcher />
             <ThemeToggle />
           </div>
-          <p className="text-xs text-muted-foreground">v2.4.17</p>
+          <p className="text-xs text-muted-foreground">v{packageJson.version}</p>
         </div>
         <Separator />
         {user && (
@@ -189,6 +215,22 @@ export default function SidebarLayout({
                   </SidebarMenuItem>
                 ))}
                 <LiveLogsMenuItem />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>External Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="http://localhost:9853" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink />
+                      <span>MCP Shark</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

@@ -16,6 +16,10 @@ export const createAppRouter = (implementations: {
       apiKeys: frontendRouters.apiKeys,
       config: frontendRouters.config,
       logs: frontendRouters.logs,
+      savedScripts: frontendRouters.savedScripts,
+      toolSets: frontendRouters.toolSets,
+      agent: frontendRouters.agent,
+      policies: frontendRouters.policies,
     }),
   });
 };
