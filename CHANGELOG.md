@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.0] - 2025-12-25
+
+### Added
+- **Python Bridge**: Enabled `run_python` to act as an orchestrator. Python scripts can now call MCP tools via `mcp.call()`, unlocking data science workflows.
+- **LLM Sampling**: Added `ask_llm` tool for scripts to query LLMs directly. Added MCP Sampling Protocol (`sampling/createMessage`) support.
+- **Scripts Editor (IDE)**: Full-featured Monaco Editor in the UI with IntelliSense (Type-Safe `mcp` object) and Create/Edit/Run lifecycle.
+- **Type Generation**: `ToolTypeGenerator` creates TypeScript definitions for discovered tools, injected into the Agent's context.
+- **Agent Thought Streaming**: Agent UI now streams tool calls and "Thoughts" in real-time, providing immediate feedback.
+- **Notifications**: Full-stack notification system (`notify_user`) and frontend alert center.
+- **Context RAG**: Agent now automatically searches `memories` and injects relevant context into the system prompt.
+- **Configurability**: Added `AGENT_MODEL` and `DESCRIPTION_MODEL` environment variables.
+
+### Changed
+- **Logging**: Enhanced `tool_call_logs` to support "Pending" state and updates, enabling real-time status tracking.
+- **Frontend**: Polished Agent UI with collapsible thought bubbles and JSON payload inspection.
+
 ## [3.2.0] - 2025-12-15
 
 ### Added

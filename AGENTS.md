@@ -18,16 +18,20 @@ This file contains high-level directives for Autonomous Agents operating within 
 
 ## 🤖 capabilities & Constraints
 
-### Code Mode (`run_code`)
-*   **Environment**: Restricted Node.js environment.
-*   **Access**: No direct filesystem/network access.
-*   **Tool Calling**: Must use `await mcp.call('tool_name', args)`.
-*   **Limit**: Execution time defaults to 30s. Memory defaults to 128MB (configurable).
+### Code Mode (`run_code` & `run_python`)
+*   **JS**: Restricted Node.js (`isolated-vm`). Use `await mcp.call()`.
+*   **Python**: Restricted Python (`execa`). Use `mcp.call()`. The environment is transient.
+*   **Persistence**: Use `save_script` for reusable logic.
 
 ### Autonomous Agent (`run_agent`)
 *   **Scope**: By default, has access to all tools via Search.
 *   **Restriction**: Can be restricted by passing `policyId`.
 *   **Output**: Returns the final result of the generated script.
+*   **Context**: Will automatically receive relevant memories.
+
+### Operational
+*   **Notifications**: Use `notify_user` to alert humans.
+*   **Inspection**: Logs are streamed to `tool_call_logs` and visible in "Live Logs".
 
 ## 📝 Documentation Maintenance
 

@@ -13,10 +13,10 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
     *   **Recursive Routing**: Internal calls from the Sandbox are routed *back* through the middleware stack (`recursiveCallToolHandler`) to ensure logging, auth, and policy enforcement.
 
 2.  **Code Mode (Sandbox)**: `apps/backend/src/lib/sandbox/code-executor.service.ts`
-    *   Uses `isolated-vm` for secure, memory-limited execution (configurable via `CODE_EXECUTION_MEMORY_LIMIT`).
-    *   Allows tool chaining via injected `mcp.call()`.
+    *   **JavaScript**: `isolated-vm` for secure execution. Tool chaining via `mcp.call()`.
+    *   **Python**: `PythonExecutorService` with **Python Bridge**. Injects `MCPClient` into scripts, allowing them to call back to the hub via an internal API token.
 
-3.  **Semantic Search**: `apps/backend/src/lib/ai/tool-search.service.ts`
+3.  **Semantic Search & RAG**: `apps/backend/src/lib/ai/tool-search.service.ts`
     *   Uses OpenAI Embeddings (`text-embedding-3-small`) and `pgvector` (Postgres extension).
     *   Tools are indexed on upsert.
 
@@ -27,6 +27,12 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
 5.  **Autonomous Agent**: `apps/backend/src/lib/ai/agent.service.ts`
     *   Self-generating code execution for natural language tasks.
     *   Can be scoped by `policyId`.
+    *   **Context Aware**: Automatically searches Memory RAG before execution.
+
+6.  **Operational Tools**:
+    *   **Notifications**: `NotificationService` (Postgres) + Frontend UI.
+    *   **Scheduler**: Native cron job management (`schedule_task`).
+    *   **Scripts IDE**: Monaco Editor with IntelliSense (`toolTypeGenerator`).
 
 ### Tech Stack
 *   **Monorepo**: Turborepo, pnpm workspaces.
