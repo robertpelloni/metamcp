@@ -14,33 +14,61 @@ export function createLoggingMiddleware(options?: {
     }
 
     const startTime = Date.now();
-    let result: CallToolResult | null = null;
-    let error: any = null;
 
     // Check for parent call ID in _meta (passed from run_code recursion)
     const parentCallUuid = request.params._meta?.parentCallUuid as string | undefined;
 
+    // 1. Initial Log (Pending)
+    let logUuid: string | undefined;
     try {
-      result = await next(request, context);
-      return result;
-    } catch (e) {
-      error = e;
-      throw e;
-    } finally {
-      const duration = Date.now() - startTime;
+        const [logEntry] = await db.insert(toolCallLogsTable).values({
+            session_id: context.sessionId,
+            tool_name: request.params.name,
+            arguments: request.params.arguments as Record<string, unknown>,
+            result: null,
+            error: null,
+            duration_ms: null,
+            parent_call_uuid: parentCallUuid,
+        }).returning({ uuid: toolCallLogsTable.uuid });
+        logUuid = logEntry.uuid;
+    } catch (err) {
+        console.error("Failed to create initial log:", err);
+    }
 
-      // Log to DB asynchronously
-      db.insert(toolCallLogsTable).values({
-        session_id: context.sessionId,
-        tool_name: request.params.name,
-        arguments: request.params.arguments as Record<string, unknown>,
-        result: result as unknown as Record<string, unknown>, // Casting for JSONB compatibility
-        error: error ? String(error) : null,
-        duration_ms: String(duration),
-        parent_call_uuid: parentCallUuid,
-      }).catch(err => {
-          console.error("Failed to persist tool call log:", err);
-      });
+    try {
+      const result = await next(request, context);
+
+      // 2. Success Update
+      if (logUuid) {
+          const duration = Date.now() - startTime;
+          // We don't await this to avoid blocking the response
+          const { eq } = await import("drizzle-orm"); // Lazy import to avoid hoisting issues?
+          db.update(toolCallLogsTable)
+            .set({
+                result: result as unknown as Record<string, unknown>,
+                duration_ms: String(duration),
+                updated_at: new Date()
+            })
+            .where(eq(toolCallLogsTable.uuid, logUuid))
+            .catch(err => console.error("Failed to update success log:", err));
+      }
+      return result;
+
+    } catch (e) {
+      // 3. Error Update
+      if (logUuid) {
+          const duration = Date.now() - startTime;
+          const { eq } = await import("drizzle-orm");
+          db.update(toolCallLogsTable)
+            .set({
+                error: String(e),
+                duration_ms: String(duration),
+                updated_at: new Date()
+            })
+            .where(eq(toolCallLogsTable.uuid, logUuid))
+            .catch(err => console.error("Failed to update error log:", err));
+      }
+      throw e;
     }
   };
 }

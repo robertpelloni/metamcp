@@ -24,4 +24,37 @@ export const DeleteSavedScriptResponseSchema = z.object({
   message: z.string().optional(),
 });
 
+export const CreateSavedScriptRequestSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  code: z.string().min(1),
+});
+
+export const CreateSavedScriptResponseSchema = z.object({
+  success: z.literal(true),
+  data: SavedScriptSchema,
+});
+
+export const UpdateSavedScriptRequestSchema = z.object({
+  uuid: z.string(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  code: z.string().optional(),
+});
+
+export const UpdateSavedScriptResponseSchema = z.object({
+  success: z.literal(true),
+  data: SavedScriptSchema,
+});
+
+export const RunSavedScriptRequestSchema = z.object({
+  uuid: z.string(),
+});
+
+export const RunSavedScriptResponseSchema = z.object({
+  success: z.boolean(),
+  result: z.any().optional(),
+  error: z.string().optional(),
+});
+
 export type SavedScript = z.infer<typeof SavedScriptSchema>;

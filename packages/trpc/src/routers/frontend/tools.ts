@@ -9,6 +9,7 @@ export const createToolsRouter = <
   TImplementations extends {
     getByMcpServerUuid: (input: any) => Promise<any>;
     create: (input: any) => Promise<any>;
+    getTypes: () => Promise<any>;
   },
 >(
   implementations: TImplementations,
@@ -27,5 +28,10 @@ export const createToolsRouter = <
       .mutation(async ({ input }) => {
         return implementations.create(input);
       }),
+
+    // Protected: Get TypeScript definitions for all tools
+    getTypes: protectedProcedure.query(async () => {
+      return implementations.getTypes();
+    }),
   });
 };
