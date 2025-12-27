@@ -79,15 +79,11 @@ This repository has been transformed into an **Ultimate MCP Hub**. It acts as a 
 
 ## 🚀 Recommended Next Steps
 
-1.  **Enhanced Indexing (Index-Time RAG)**
-    *   Currently, we embed the raw tool description.
-    *   **Improvement:** When a tool is registered, use an LLM to generate a "Synthetic User Query" or "Rich Description" (e.g., "Use this tool when the user wants to X, Y, or Z") and embed *that*. This improves retrieval accuracy.
-
-2.  **Frontend Agent UI**
+1.  **Frontend Agent UI**
     *   Create a dedicated Chat UI for the Agent (currently it's just a test dialog).
     *   Allow streaming progress updates from the agent script.
 
-3.  **mcp.json Auto-Discovery**
+2.  **mcp.json Auto-Discovery**
     *   Implement a file watcher to automatically load/unload MCP servers from a configured directory.
 
 ## 📦 Handoff Instructions
@@ -96,5 +92,5 @@ To continue work:
 1.  Ensure `pnpm install` and `pnpm db:migrate` are run.
 2.  Set `OPENAI_API_KEY` in `.env`.
 3.  Start with `pnpm dev`.
-4.  **Policy Engine** is now implemented. You can create policies in the UI and pass `policyId` to `run_agent`.
-5.  Next focus: **Enhanced Indexing** or **Frontend Agent UI**.
+4.  **Enhanced Indexing** is now implemented. New tools will automatically get "Synthetic User Queries" embedded.
+5.  Next focus: **Frontend Agent UI**.
