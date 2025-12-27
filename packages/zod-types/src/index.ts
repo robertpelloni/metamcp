@@ -10,3 +10,4 @@ export * from "./api-keys.zod";
 export * from "./config.zod";
 export * from "./saved-scripts.zod";
 export * from "./tool-sets.zod";
+export * from "./policies.zod";

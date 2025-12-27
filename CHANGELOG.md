@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.2] - 2025-12-27
+
+### Added
+- **Policy Engine**: Full implementation of Policy Management.
+    - Added TRPC router for Policies (List, Create, Update, Delete).
+    - Updated Frontend `PoliciesPage` to use real data.
+    - Updated `AgentService` to filter tool search results based on the active policy.
+
 ## [3.0.1] - 2025-12-27
 
 ### Changed

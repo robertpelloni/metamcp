@@ -2,6 +2,7 @@ import OpenAI from "openai";
 
 import { toolSearchService } from "./tool-search.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
+import { policyService } from "../access-control/policy.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
@@ -34,14 +35,25 @@ export class AgentService {
 
     // 1. Context Retrieval
     // We search for relevant tools based on the task
-    const searchResults = await toolSearchService.searchTools(task, 15);
+    let searchResults = await toolSearchService.searchTools(task, 15);
+
+    // Filter tools if a policy is active
+    if (policyId) {
+        const policy = await policyService.getPolicy(policyId);
+        if (policy) {
+            searchResults = searchResults.filter(tool => 
+                policyService.evaluateAccess(policy, tool.name)
+            );
+        }
+    }
+
     const toolsContext = searchResults.map(t =>
         `- ${t.name}: ${t.description}`
     ).join("\n");
 
     if (searchResults.length === 0) {
         // Fallback if no tools found? Or just proceed?
-        console.warn("[Agent] No tools found for task via search.");
+        console.warn("[Agent] No tools found for task via search (or all filtered by policy).");
     }
 
     // 2. Planning & Code Generation

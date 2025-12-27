@@ -79,19 +79,15 @@ This repository has been transformed into an **Ultimate MCP Hub**. It acts as a 
 
 ## 🚀 Recommended Next Steps
 
-1.  **Policy Engine (Subagent Scopes)**
-    *   Currently, `run_agent` can search *all* tools.
-    *   Implement a "Policy" system where an agent is restricted to a specific namespace or set of tags.
-
-2.  **Enhanced Indexing (Index-Time RAG)**
+1.  **Enhanced Indexing (Index-Time RAG)**
     *   Currently, we embed the raw tool description.
     *   **Improvement:** When a tool is registered, use an LLM to generate a "Synthetic User Query" or "Rich Description" (e.g., "Use this tool when the user wants to X, Y, or Z") and embed *that*. This improves retrieval accuracy.
 
-3.  **Frontend Agent UI**
+2.  **Frontend Agent UI**
     *   Create a dedicated Chat UI for the Agent (currently it's just a test dialog).
     *   Allow streaming progress updates from the agent script.
 
-4.  **mcp.json Auto-Discovery**
+3.  **mcp.json Auto-Discovery**
     *   Implement a file watcher to automatically load/unload MCP servers from a configured directory.
 
 ## 📦 Handoff Instructions
@@ -100,4 +96,5 @@ To continue work:
 1.  Ensure `pnpm install` and `pnpm db:migrate` are run.
 2.  Set `OPENAI_API_KEY` in `.env`.
 3.  Start with `pnpm dev`.
-4.  Focus on **"Policy Engine"** as the next logical security upgrade.
+4.  **Policy Engine** is now implemented. You can create policies in the UI and pass `policyId` to `run_agent`.
+5.  Next focus: **Enhanced Indexing** or **Frontend Agent UI**.

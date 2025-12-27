@@ -15,6 +15,7 @@ import { oauthImplementations } from "../trpc/oauth.impl";
 import { savedScriptsImplementations } from "../trpc/saved-scripts.impl";
 import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
+import { policiesImplementations } from "../trpc/policies.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -29,6 +30,7 @@ const appRouter = createAppRouter({
     logs: logsImplementations,
     savedScripts: savedScriptsImplementations,
     toolSets: toolSetsImplementations,
+    policies: policiesImplementations,
   },
 });
 
