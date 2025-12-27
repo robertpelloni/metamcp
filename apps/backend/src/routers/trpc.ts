@@ -15,11 +15,11 @@ import { oauthImplementations } from "../trpc/oauth.impl";
 import { savedScriptsImplementations } from "../trpc/saved-scripts.impl";
 import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
-import { agentRouter } from "../trpc/routers/agent.router";
-import { policiesRouter } from "../trpc/routers/policies.router";
-import { memoriesRouter } from "../trpc/routers/memories.router";
-import { schedulerRouter } from "../trpc/routers/scheduler.router";
-import { notificationsRouter } from "../trpc/routers/notifications.router";
+import { agentImplementations } from "../trpc/impl/agent.impl";
+import { policiesImplementations } from "../trpc/impl/policies.impl";
+import { memoriesImplementations } from "../trpc/impl/memories.impl";
+import { schedulerImplementations } from "../trpc/impl/scheduler.impl";
+import { notificationsImplementations } from "../trpc/impl/notifications.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -34,11 +34,11 @@ const appRouter = createAppRouter({
     logs: logsImplementations,
     savedScripts: savedScriptsImplementations,
     toolSets: toolSetsImplementations,
-    agent: agentRouter,
-    policies: policiesRouter,
-    memories: memoriesRouter,
-    scheduler: schedulerRouter,
-    notifications: notificationsRouter,
+    agent: agentImplementations,
+    policies: policiesImplementations,
+    memories: memoriesImplementations,
+    scheduler: schedulerImplementations,
+    notifications: notificationsImplementations,
   },
 });
 
@@ -56,8 +56,6 @@ trpcRouter.use(
     credentials: true,
   }),
 );
-
-// Better-auth integration now handled in tRPC context
 
 // Mount tRPC handler
 trpcRouter.use(

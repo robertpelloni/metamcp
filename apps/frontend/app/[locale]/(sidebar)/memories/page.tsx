@@ -49,7 +49,7 @@ export default function MemoriesPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await vanillaTrpcClient.frontend.memories.delete.mutate({ uuid: deleteId });
+      await vanillaTrpcClient.frontend.memories.delete.mutate({ id: deleteId });
       toast.success(t("common:deleteSuccess"));
       fetchMemories();
     } catch (error) {

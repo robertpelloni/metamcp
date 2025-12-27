@@ -24,7 +24,7 @@ interface Policy {
     uuid: string;
     name: string;
     description: string | null;
-    rules: { allow: string[]; deny?: string[] };
+    rules: any;
 }
 
 export default function PoliciesPage() {
@@ -54,10 +54,10 @@ export default function PoliciesPage() {
 
   const handleCreate = async () => {
       try {
-          const rules = {
+          const rules = [{
               allow: newAllow.split(",").map(s => s.trim()).filter(Boolean),
               deny: [] // Not exposing deny in UI yet for simplicity
-          };
+          }];
 
           await vanillaTrpcClient.frontend.policies.create.mutate({
               name: newName,
@@ -107,7 +107,7 @@ export default function PoliciesPage() {
               <div className="mt-2">
                   <div className="text-xs font-semibold">Allowed:</div>
                   <pre className="text-xs bg-muted p-1 rounded mt-1 overflow-x-auto">
-                      {policy.rules.allow.join(", ")}
+                      {(Array.isArray(policy.rules) ? policy.rules[0]?.allow : policy.rules?.allow)?.join(", ") || "All"}
                   </pre>
               </div>
             </CardContent>

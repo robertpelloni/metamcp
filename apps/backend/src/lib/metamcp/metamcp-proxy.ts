@@ -586,7 +586,9 @@ export const createServer = async (
     meta?: any
   ): Promise<CallToolResult> => {
 
-    const useToon = meta?.toon === true || meta?.toon === "true";
+    // Check for Global Override
+    const globalToon = process.env.MCP_BRIDGE_OUTPUT_MODE === "toon";
+    const useToon = globalToon || meta?.toon === true || meta?.toon === "true";
 
     const formatResult = (result: CallToolResult): CallToolResult => {
         if (!useToon) return result;

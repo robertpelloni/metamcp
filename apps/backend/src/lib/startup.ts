@@ -60,6 +60,15 @@ export async function initializeIdleServers() {
       );
     }
 
+    // Start Config Watchers
+    try {
+        const { mcpConfigWatcherService } = await import("./mcp-config-watcher.service");
+        await mcpConfigWatcherService.start();
+        console.log("✅ MCP Config Watcher started");
+    } catch (e) {
+        console.error("Failed to start config watcher", e);
+    }
+
     console.log(
       "✅ Successfully initialized idle servers for all namespaces and all MCP servers",
     );

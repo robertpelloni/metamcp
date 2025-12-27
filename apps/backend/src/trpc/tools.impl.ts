@@ -8,8 +8,13 @@ import { z } from "zod";
 
 import { toolsRepository } from "../db/repositories";
 import { ToolsSerializer } from "../db/serializers";
+import { toolTypeGeneratorService } from "../lib/ai/tool-type-generator.service";
 
 export const toolsImplementations = {
+  getTypes: async (): Promise<string> => {
+    return await toolTypeGeneratorService.generateTypes();
+  },
+
   getByMcpServerUuid: async (
     input: z.infer<typeof GetToolsByMcpServerUuidRequestSchema>,
   ): Promise<z.infer<typeof GetToolsByMcpServerUuidResponseSchema>> => {

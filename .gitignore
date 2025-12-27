@@ -39,3 +39,20 @@ yarn-error.log*
 
 .cursor/
 .vscode/
+.next/
+dist/
+.turbo/
+node_modules/
+**/.next
+**/dist
+**/.turbo
+**/.turbo/
+**/.turbo/
+dist
+.turbo
+.next
+dist/
+.turbo/
+.next/
+**/.next
+**/.next

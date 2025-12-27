@@ -61,7 +61,7 @@ export default function SchedulerPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await vanillaTrpcClient.frontend.scheduler.delete.mutate({ uuid: deleteId });
+      await vanillaTrpcClient.frontend.scheduler.delete.mutate({ id: deleteId });
       toast.success(t("common:deleteSuccess"));
       fetchTasks();
     } catch (error) {

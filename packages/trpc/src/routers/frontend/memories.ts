@@ -3,7 +3,8 @@ import { protectedProcedure, router } from "../../trpc";
 
 export const createMemoriesRouter = (implementations: {
   list: (input: { limit?: number }) => Promise<any[]>;
-  delete: (input: { uuid: string }) => Promise<any>;
+  create: (input: { content: string; tags?: string[] }) => Promise<any>;
+  delete: (input: { id: string }) => Promise<any>;
 }) => {
   return router({
     list: protectedProcedure
@@ -11,10 +12,15 @@ export const createMemoriesRouter = (implementations: {
       .query(async ({ input }) => {
         return await implementations.list(input);
       }),
+    create: protectedProcedure
+      .input(z.object({ content: z.string(), tags: z.array(z.string()).optional() }))
+      .mutation(async ({ input }) => {
+        return await implementations.create(input);
+      }),
     delete: protectedProcedure
-      .input(z.object({ uuid: z.string() }))
+      .input(z.object({ id: z.string() }))
       .mutation(async ({ input }) => {
         return await implementations.delete(input);
-      }),
+      })
   });
 };

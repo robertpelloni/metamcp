@@ -5,20 +5,26 @@ import { configImportService } from "./metamcp/config-import.service";
 
 export class McpConfigWatcherService {
   private watcher: chokidar.FSWatcher | null = null;
-  private watchPath = "/app/config/mcp"; // Default internal path
+  // Watch both the internal config and the external mount point
+  private internalWatchPath = "/app/config/mcp";
+  private externalWatchPath = "/app/config/external";
 
-  constructor() {
-    // Ensure directory exists or gracefully fail until startup
-  }
+  constructor() {}
 
   async start(): Promise<void> {
     try {
-        // Create directory if not exists
-        await fs.mkdir(this.watchPath, { recursive: true });
+        // Ensure directories exist
+        await fs.mkdir(this.internalWatchPath, { recursive: true });
+        await fs.mkdir(this.externalWatchPath, { recursive: true });
 
-        console.log(`[ConfigWatcher] Starting watch on ${this.watchPath}/*.json`);
+        const paths = [
+            `${this.internalWatchPath}/*.json`,
+            `${this.externalWatchPath}/*.json`
+        ];
 
-        this.watcher = chokidar.watch(`${this.watchPath}/*.json`, {
+        console.log(`[ConfigWatcher] Starting watch on: ${paths.join(", ")}`);
+
+        this.watcher = chokidar.watch(paths, {
             persistent: true,
             ignoreInitial: false, // Process existing files on startup
             awaitWriteFinish: {
@@ -51,10 +57,7 @@ export class McpConfigWatcherService {
 
   async handleRemove(filePath: string): Promise<void> {
       console.log(`[ConfigWatcher] File removed: ${filePath}`);
-      // TODO: Decide if we want to delete servers when config is removed.
-      // For now, we keep them as "inactive" or just leave them.
-      // Deleting might destroy manual edits or logs.
-      // Safe default: Do nothing.
+      // Safe default: Do nothing to preserve state.
   }
 
   async stop(): Promise<void> {

@@ -27,6 +27,16 @@ services:
       
       # Docker networking fix
       TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL: ${TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL:-true}
+
+      # Output Mode
+      # Set to 'toon' to enable global TOON (syntax compressed) output
+      # MCP_BRIDGE_OUTPUT_MODE: toon
+
+    # Mount point for external MCP configurations (e.g. from ~/.claude.json)
+    # Uncomment to enable auto-discovery:
+    # volumes:
+    #   - ~/.claude.json:/app/config/external/claude.json:ro
+    #   - ./my-local-mcp-config.json:/app/config/external/my-config.json:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
