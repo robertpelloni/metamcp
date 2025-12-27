@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.1] - 2025-12-27
+
+### Changed
+- **Documentation**: Refactored LLM instructions into a universal `LLM_INSTRUCTIONS.md` file.
+- **Versioning**: Implemented centralized versioning via `VERSION` file.
+- **Project Structure**: Added `docs/PROJECT_STRUCTURE.md`.
+
 ## [3.0.0] - 2025-12-15
 
 ### Added
