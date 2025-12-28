@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.4.0] - 2025-12-25
+
+### Infrastructure
+- **Docker Modernization**: Updated database image to `pgvector/pgvector:pg17` for improved performance and latest vector search features.
+- **Python Hardening**: Updated `Dockerfile` to explicitly install `python3-pip` and `python3-venv` for robust Code Mode execution.
+- **Sandbox Security**: Hardened `pythonExecutorService` with existence checks, configurable timeouts (via `MCP_TIMEOUT`), and environment variable sanitization to prevent secret leakage.
+
+### Added
+- **Dashboard**: Added `DASHBOARD.md` to document the monorepo structure and service status.
+
 ## [3.3.0] - 2025-12-25
 
 ### Added
