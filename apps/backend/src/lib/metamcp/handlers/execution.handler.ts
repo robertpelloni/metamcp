@@ -37,11 +37,11 @@ export const handleExecutionTools = async (
 
     if (name === "run_python") {
         const { code } = args as { code: string };
-        try {
-            // Setup Bridge
-            const token = randomUUID();
-            const callbackUrl = `http://localhost:12009/internal/python-bridge/call`; // Internal URL
+        // Setup Bridge
+        const token = randomUUID();
+        const callbackUrl = `http://localhost:12009/internal/python-bridge/call`; // Internal URL
 
+        try {
             // Register handler
             pythonBridgeService.registerHandler(token, async (toolName, toolArgs, toolMeta) => {
                  if (["run_code", "run_agent", "run_python"].includes(toolName)) {
@@ -103,12 +103,12 @@ mcp = MCPClient()
                 METAMCP_CALLBACK_TOKEN: token
             });
 
-            // Cleanup
-            pythonBridgeService.unregisterHandler(token);
-
             return { content: [{ type: "text", text: result }] };
         } catch (e: any) {
             return { content: [{ type: "text", text: `Python Error: ${e.message}` }], isError: true };
+        } finally {
+            // Cleanup - ensure handler is always unregistered
+            pythonBridgeService.unregisterHandler(token);
         }
     }
 
