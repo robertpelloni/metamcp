@@ -3,11 +3,10 @@ import OpenAI from "openai";
 import { toolSearchService } from "./tool-search.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { policyService } from "../access-control/policy.service";
-import { memoryService } from "./memory.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
-  private model = process.env.AGENT_MODEL || "gpt-4o"; // Capable model for coding
+  private model = "gpt-4o"; // Capable model for coding
 
   private getClient(): OpenAI {
     if (!this.openai) {
@@ -35,36 +34,17 @@ export class AgentService {
     const client = this.getClient();
 
     // 1. Context Retrieval
-    // A. Search for relevant tools
+    // We search for relevant tools based on the task
     let searchResults = await toolSearchService.searchTools(task, 15);
 
-    // Filter by Policy if active
+    // Filter tools if a policy is active
     if (policyId) {
-        try {
-            const policy = await policyService.getPolicy(policyId);
-            if (policy) {
-                searchResults = searchResults.filter(t =>
-                    policyService.evaluateAccess(policy, t.name)
-                );
-                console.log(`[Agent] Filtered tools by policy '${policy.name}'. Remaining: ${searchResults.length}`);
-            } else {
-                console.warn(`[Agent] Policy ID ${policyId} not found. Proceeding with full access context (enforcement will still apply).`);
-            }
-        } catch (e) {
-            console.error("[Agent] Error applying policy filter:", e);
+        const policy = await policyService.getPolicy(policyId);
+        if (policy) {
+            searchResults = searchResults.filter(tool =>
+                policyService.evaluateAccess(policy, tool.name)
+            );
         }
-    }
-
-    // B. Search for relevant memories (Context RAG)
-    let memoryContext = "";
-    try {
-        const memories = await memoryService.searchMemory(task, 5, 0.6); // Higher threshold for relevance
-        if (memories.length > 0) {
-            memoryContext = "RELEVANT MEMORIES:\n" + memories.map(m => `- ${m.content}`).join("\n");
-            console.log(`[Agent] Found ${memories.length} relevant memories.`);
-        }
-    } catch (error) {
-        console.warn("[Agent] Failed to search memories:", error);
     }
 
     const toolsContext = searchResults.map(t =>
@@ -72,15 +52,14 @@ export class AgentService {
     ).join("\n");
 
     if (searchResults.length === 0) {
-        console.warn("[Agent] No tools found for task via search.");
+        // Fallback if no tools found? Or just proceed?
+        console.warn("[Agent] No tools found for task via search (or all filtered by policy).");
     }
 
     // 2. Planning & Code Generation
     const prompt = `
 You are an autonomous AI agent running in a secure Code Execution Sandbox.
 Your goal is to complete the following task: "${task}"
-
-${memoryContext ? memoryContext + "\n" : ""}
 
 You have access to the following tools (via the 'mcp' object):
 ${toolsContext}
@@ -90,22 +69,12 @@ ${policyId ? "NOTE: You are running under a restricted security policy. Access t
 INSTRUCTIONS:
 1. Analyze the task and available tools.
 2. Write a TypeScript/JavaScript script to accomplish the task.
-3. Use \`await mcp.call('tool_name', { args }, { toon: true })\` if calling tools that return large lists or data (like filesystem lists, database rows, or git logs). This uses TOON format to save tokens.
-4. Otherwise use \`await mcp.call('tool_name', { args })\`.
-5. You can use console.log() to debug or print intermediate steps.
-6. Return a final result object at the end of the script.
-7. Do NOT import external libraries. Use standard JS features.
-8. Handle errors gracefully.
-9. If the task is simple, just do it. If complex, break it down.
-
-CAPABILITIES:
-- **Long-Term Memory**: Use \`save_memory\` and \`search_memory\` to store and retrieve information across sessions.
-- **Scheduling**: Use \`schedule_task\` to run this agent or scripts periodically.
-- **Sub-Agents**: Use \`list_policies\` to discover available scopes, and use \`run_agent(task, policyId)\` to spawn restricted sub-agents for specialized tasks.
-- **Python**: Use \`run_python\` for data analysis, math, or **tool orchestration**.
-  - The Python environment includes a pre-configured \`mcp\` object.
-  - You can call tools from Python: \`result = mcp.call('tool_name', {'arg': 'val'})\`.
-  - This is useful for data science workflows where you fetch data via MCP, process it with pandas/numpy, and save it via MCP.
+3. Use \`await mcp.call('tool_name', { args })\` to use tools.
+4. You can use console.log() to debug or print intermediate steps.
+5. Return a final result object at the end of the script.
+6. Do NOT import external libraries. Use standard JS features.
+7. Handle errors gracefully.
+8. If the task is simple, just do it. If complex, break it down.
 
 Generate ONLY the code. No markdown formatting.
 `;
@@ -118,11 +87,6 @@ Generate ONLY the code. No markdown formatting.
         ],
         temperature: 0,
     });
-
-    // Log Token Usage
-    if (completion.usage) {
-        console.log(`[Agent] Token Usage - Prompt: ${completion.usage.prompt_tokens}, Completion: ${completion.usage.completion_tokens}, Total: ${completion.usage.total_tokens}`);
-    }
 
     const code = completion.choices[0].message.content?.replace(/```typescript|```js|```/g, "").trim();
 

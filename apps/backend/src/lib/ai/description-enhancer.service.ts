@@ -6,7 +6,7 @@ import { sql } from "drizzle-orm";
 
 export class DescriptionEnhancerService {
   private openai: OpenAI | null = null;
-  private model = process.env.DESCRIPTION_MODEL || "gpt-4o-mini"; // Use a fast/cheap model for this
+  private model = "gpt-4o-mini"; // Use a fast/cheap model for this
 
   private getClient(): OpenAI | null {
     if (!this.openai) {
@@ -45,11 +45,13 @@ export class DescriptionEnhancerService {
         Task:
         1. Create a "Rich Description" that details every capability, parameter nuance, and use case. This will be used for semantic search embeddings.
         2. Create a "Concise Description" that is extremely brief (under 15 words) but captures the core purpose. This will be used in the LLM context window to save tokens.
+        3. Create a "Synthetic User Query" that represents what a user might ask to trigger this tool.
 
         Return JSON format:
         {
           "rich": "...",
-          "concise": "..."
+          "concise": "...",
+          "syntheticQuery": "..."
         }
       `;
 
@@ -63,13 +65,16 @@ export class DescriptionEnhancerService {
       if (!content) return;
 
       const result = JSON.parse(content);
-      const { rich, concise } = result;
+      const { rich, concise, syntheticQuery } = result;
+
+      // Combine rich description and synthetic query for better retrieval
+      const finalRichDescription = `${rich}\n\nSynthetic User Query: ${syntheticQuery}`;
 
       // Update database
       await db
         .update(toolsTable)
         .set({
-          rich_description: rich,
+          rich_description: finalRichDescription,
           concise_description: concise,
         })
         .where(sql`${toolsTable.uuid} = ${tool.uuid}`);

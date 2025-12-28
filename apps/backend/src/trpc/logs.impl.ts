@@ -3,7 +3,7 @@ import {
   GetLogsRequestSchema,
   GetLogsResponseSchema,
 } from "@repo/zod-types";
-import { desc, eq, and, gt } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "../db";
@@ -13,6 +13,7 @@ import { parseToolName } from "../lib/metamcp/tool-name-parser";
 export const logsImplementations = {
   getLogs: async (
     input: z.infer<typeof GetLogsRequestSchema>,
+    context?: { user?: { id: string } },
   ): Promise<z.infer<typeof GetLogsResponseSchema>> => {
     try {
       const limit = input.limit || 100;
@@ -24,16 +25,8 @@ export const logsImplementations = {
         .limit(limit)
         .$dynamic();
 
-      const conditions = [];
       if (input.sessionId) {
-        conditions.push(eq(toolCallLogsTable.session_id, input.sessionId));
-      }
-      if (input.afterTimestamp) {
-        conditions.push(gt(toolCallLogsTable.created_at, input.afterTimestamp));
-      }
-
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        query = query.where(eq(toolCallLogsTable.session_id, input.sessionId));
       }
 
       const logs = await query;
@@ -76,7 +69,7 @@ export const logsImplementations = {
     }
   },
 
-  clearLogs: async (): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
+  clearLogs: async (context?: { user?: { id: string } }): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
     try {
       await db.delete(toolCallLogsTable);
 

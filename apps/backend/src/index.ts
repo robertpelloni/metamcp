@@ -1,14 +1,11 @@
 import express from "express";
 
 import { auth } from "./auth";
-import { mcpConfigWatcherService } from "./lib/mcp-config-watcher.service";
-import { schedulerService } from "./lib/scheduler/scheduler.service";
 import { initializeIdleServers } from "./lib/startup";
 import mcpProxyRouter from "./routers/mcp-proxy";
 import oauthRouter from "./routers/oauth";
 import publicEndpointsRouter from "./routers/public-metamcp";
 import trpcRouter from "./routers/trpc";
-import pythonBridgeRouter from "./lib/metamcp/python-bridge";
 
 const app = express();
 
@@ -82,9 +79,6 @@ app.use("/metamcp", publicEndpointsRouter);
 // Mount MCP proxy routes
 app.use("/mcp-proxy", mcpProxyRouter);
 
-// Mount Python Bridge (Internal)
-app.use("/internal/python-bridge", pythonBridgeRouter);
-
 // Mount tRPC routes
 app.use("/trpc", trpcRouter);
 
@@ -104,11 +98,9 @@ app.listen(12009, async () => {
   console.log(
     "Waiting for server to be fully ready before initializing idle servers...",
   );
-  await new Promise((resolve) => setTimeout(resolve, 3000)).then(async () => {
-    await initializeIdleServers();
-    await mcpConfigWatcherService.start();
-    await schedulerService.start();
-  });
+  await new Promise((resolve) => setTimeout(resolve, 3000)).then(
+    initializeIdleServers,
+  );
 });
 
 app.get("/health", (req, res) => {

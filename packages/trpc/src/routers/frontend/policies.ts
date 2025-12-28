@@ -1,42 +1,37 @@
 import { z } from "zod";
+import {
+  CreatePolicySchema,
+  DeletePolicySchema,
+  PolicySchema,
+  UpdatePolicySchema,
+} from "@repo/zod-types";
+
 import { protectedProcedure, router } from "../../trpc";
 
 export const createPoliciesRouter = (implementations: {
-  list: () => Promise<any[]>;
-  create: (input: { name: string; description?: string; rules: any[] }) => Promise<any>;
-  update: (input: { id: string; name: string; rules: any[] }) => Promise<any>;
-  delete: (input: { id: string }) => Promise<any>;
+  list: () => Promise<z.infer<typeof PolicySchema>[]>;
+  create: (input: z.infer<typeof CreatePolicySchema>) => Promise<z.infer<typeof PolicySchema>>;
+  update: (input: z.infer<typeof UpdatePolicySchema>) => Promise<z.infer<typeof PolicySchema>>;
+  delete: (input: z.infer<typeof DeletePolicySchema>) => Promise<void>;
 }) => {
   return router({
     list: protectedProcedure.query(async () => {
       return await implementations.list();
     }),
     create: protectedProcedure
-      .input(
-        z.object({
-          name: z.string().min(1),
-          description: z.string().optional(),
-          rules: z.array(z.any())
-        })
-      )
+      .input(CreatePolicySchema)
       .mutation(async ({ input }) => {
         return await implementations.create(input);
       }),
     update: protectedProcedure
-      .input(
-          z.object({
-              id: z.string(),
-              name: z.string(),
-              rules: z.array(z.any())
-          })
-      )
+      .input(UpdatePolicySchema)
       .mutation(async ({ input }) => {
-          return await implementations.update(input);
+        return await implementations.update(input);
       }),
     delete: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(DeletePolicySchema)
       .mutation(async ({ input }) => {
-          return await implementations.delete(input);
-      })
+        return await implementations.delete(input);
+      }),
   });
 };

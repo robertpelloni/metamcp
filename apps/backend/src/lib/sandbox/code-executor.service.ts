@@ -2,8 +2,7 @@ import ivm from "isolated-vm";
 import { configService } from "../config.service";
 
 // Type definition for the sandbox tool call function
-// Updated to accept meta
-type SandboxCallTool = (name: string, args: any, meta?: any) => Promise<any>;
+type SandboxCallTool = (name: string, args: any) => Promise<any>;
 
 export class CodeExecutorService {
   /**
@@ -34,14 +33,12 @@ export class CodeExecutorService {
     // Inject the tool calling capability
     await jail.set(
       "callTool",
-      new ivm.Reference(async (name: string, argsJson: string, metaJson?: string) => {
+      new ivm.Reference(async (name: string, argsJson: string) => {
         try {
           const args = JSON.parse(argsJson);
-          const meta = metaJson ? JSON.parse(metaJson) : undefined;
+          console.log(`[Sandbox] calling tool: ${name}`, args);
 
-          console.log(`[Sandbox] calling tool: ${name}`, args, meta ? `(meta: ${JSON.stringify(meta)})` : "");
-
-          const result = await callToolCallback(name, args, meta);
+          const result = await callToolCallback(name, args);
 
           // Return the result stringified to avoid transfer issues
           return JSON.stringify(result);
@@ -64,10 +61,9 @@ export class CodeExecutorService {
         // Helper wrapper for callTool to handle the async/await cleanly
         // We handle JSON serialization here to simplify the boundary crossing
         const mcp = {
-          call: async (name, args, meta) => {
+          call: async (name, args) => {
              const argsJson = JSON.stringify(args || {});
-             const metaJson = meta ? JSON.stringify(meta) : undefined;
-             const resultJson = await callTool.apply(undefined, [name, argsJson, metaJson], { result: { promise: true } });
+             const resultJson = await callTool.apply(undefined, [name, argsJson], { result: { promise: true } });
              return JSON.parse(resultJson);
           }
         };

@@ -20,14 +20,14 @@ MetaMCP is organized as a monorepo using **Turborepo** and **pnpm workspaces**.
 
 ## 🛠️ Submodule & Dependency Status
 
-*Note: This project uses pnpm workspaces, not git submodules.*
+*Note: This project uses pnpm workspaces. Versions are synchronized via `pnpm-workspace.yaml`.*
 
-| Module | Location | Status | Build | Last Updated |
-|--------|----------|--------|-------|--------------|
+| Module | Location | Status | Version | Build Date |
+|--------|----------|--------|---------|------------|
 | **Core Proxy** | `apps/backend` | 🟢 Active | v3.4.0 | 2025-12-25 |
 | **Web Dashboard** | `apps/frontend` | 🟢 Active | v3.4.0 | 2025-12-25 |
 | **TRPC Contract** | `packages/trpc` | 🟢 Active | v1.0.0 | 2025-12-25 |
-| **DB Schema** | `apps/backend/drizzle` | 🟢 Active | v17 | 2025-12-25 |
+| **DB Schema** | `apps/backend/drizzle` | 🟢 Active | v18 | 2025-12-25 |
 
 ## 🐳 Infrastructure
 

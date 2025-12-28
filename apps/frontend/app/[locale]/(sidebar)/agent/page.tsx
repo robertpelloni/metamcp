@@ -1,219 +1,196 @@
 "use client";
 
-import { Bot, Send } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Bot, Play, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTranslations } from "@/hooks/useTranslations";
-import { vanillaTrpcClient, trpc } from "@/lib/trpc";
-import { authClient } from "@/lib/auth-client";
-
-interface Message {
-    role: "user" | "assistant" | "thought"; // Added 'thought' role
-    content: string;
-    details?: any; // For thoughts
-}
+import { trpc } from "@/lib/trpc";
+import { LogEntry } from "@/components/log-entry";
 
 export default function AgentPage() {
   const { t } = useTranslations();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Polling state
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [task, setTask] = useState("");
+  const [selectedPolicyId, setSelectedPolicyId] = useState<string>("none");
+  const [result, setResult] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
-  useEffect(() => {
-      authClient.getSession().then((session) => {
-          if (session?.data?.session?.id) {
-              setSessionId(session.data.session.id);
-          }
+  const { data: policies } = trpc.frontend.policies.list.useQuery();
+  const runAgentMutation = trpc.frontend.agent.run.useMutation();
+
+  // Poll for logs when running or when we have a session ID
+  const { data: logsData } = trpc.frontend.logs.get.useQuery(
+    { sessionId: sessionId || "", limit: 100 },
+    {
+      enabled: !!sessionId,
+      refetchInterval: isRunning ? 1000 : 5000 // Poll faster when running
+    }
+  );
+
+  const handleRun = async () => {
+    if (!task.trim()) {
+      toast.error("Please enter a task");
+      return;
+    }
+
+    setIsRunning(true);
+    setResult(null);
+
+    // Generate a new session ID for this run
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+
+    try {
+      const response = await runAgentMutation.mutateAsync({
+        task,
+        policyId: selectedPolicyId === "none" ? undefined : selectedPolicyId,
+        sessionId: newSessionId,
       });
-  }, []);
 
-  useEffect(() => {
-      if (scrollRef.current) {
-          scrollRef.current.scrollIntoView({ behavior: "smooth" });
+      if (response.success) {
+        setResult(JSON.stringify(response.result, null, 2));
+        toast.success("Agent finished successfully");
+      } else {
+        setResult(`Error: ${response.error}`);
+        toast.error("Agent failed");
       }
-  }, [messages]);
-
-  // Poll for logs (thoughts) while loading
-  useEffect(() => {
-      let interval: NodeJS.Timeout;
-      if (isLoading && startTime && sessionId) {
-          let lastPoll = startTime;
-          interval = setInterval(async () => {
-              try {
-                  const logs = await vanillaTrpcClient.frontend.logs.get.query({
-                      limit: 20,
-                      sessionId: sessionId,
-                      afterTimestamp: lastPoll
-                  });
-
-                  if (logs.success && logs.data.length > 0) {
-                      // Update lastPoll to the latest log time
-                      const latest = new Date(Math.max(...logs.data.map(l => new Date(l.timestamp).getTime())));
-                      if (latest > lastPoll) {
-                          lastPoll = latest;
-                      }
-
-                      // Add logs as thought messages
-                      const thoughts: Message[] = logs.data.map(log => ({
-                          role: "thought",
-                          content: `${log.toolName ? `Called ${log.toolName}` : log.message}`,
-                          details: log
-                      }));
-
-                      // Avoid duplicates if rapid polling?
-                      // We rely on afterTimestamp > lastPoll.
-                      // Note: logs.data is sorted descending in impl, we should probably sort ascending for chat.
-
-                      setMessages(prev => {
-                          // Simple dedup by content/id if needed, but timestamp filtering should work
-                          return [...prev, ...thoughts.reverse()];
-                      });
-                  }
-              } catch (e) {
-                  console.error("Log polling error", e);
-              }
-          }, 1000);
-      }
-      return () => clearInterval(interval);
-  }, [isLoading, startTime, sessionId]);
-
-  const handleSubmit = async () => {
-      if (!input.trim()) return;
-
-      const userMsg: Message = { role: "user", content: input };
-      setMessages(prev => [...prev, userMsg]);
-      setInput("");
-      setIsLoading(true);
-      setStartTime(new Date());
-
-      try {
-          // Call the backend agent
-          const response = await vanillaTrpcClient.frontend.agent.run.mutate({
-              task: userMsg.content
-          });
-
-          // Result comes back as a JSON string usually from the tool result
-          let content = "";
-          if (response && response.content && Array.isArray(response.content)) {
-              content = response.content.map((c: any) => c.text).join("\n");
-          } else {
-              content = JSON.stringify(response, null, 2);
-          }
-
-          const assistantMsg: Message = { role: "assistant", content };
-          setMessages(prev => [...prev, assistantMsg]);
-      } catch (error: any) {
-          console.error(error);
-          const errorMsg: Message = {
-              role: "assistant",
-              content: `Error: ${error.message || "Failed to execute agent task."}\n\nNote: Agent execution via Web UI currently requires an MCP Client connection or loopback configuration on the backend.`
-          };
-          setMessages(prev => [...prev, errorMsg]);
-      } finally {
-          setIsLoading(false);
-      }
+    } catch (error: any) {
+      setResult(`Error: ${error.message}`);
+      toast.error("Agent failed");
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
-    <div className="space-y-6 h-[calc(100vh-8rem)] flex flex-col">
-      <div className="flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <Bot className="h-6 w-6 text-muted-foreground" />
-          <div>
-            <h1 className="text-2xl font-semibold">Autonomous Agent</h1>
-            <p className="text-sm text-muted-foreground">
-              Task the agent to perform complex workflows using available tools.
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Bot className="h-6 w-6 text-muted-foreground" />
+        <div>
+          <h1 className="text-2xl font-semibold">Autonomous Agent</h1>
+          <p className="text-sm text-muted-foreground">
+            Delegate complex tasks to an AI agent that can use tools.
+          </p>
         </div>
       </div>
 
-      <Card className="flex-1 flex flex-col min-h-0">
-        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-            <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                    {messages.length === 0 && (
-                        <div className="text-center text-muted-foreground mt-20">
-                            <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>Enter a task below to start.</p>
-                            <p className="text-xs mt-2">Example: "Find the latest issue in repo X and summarize it"</p>
-                        </div>
-                    )}
-                    {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                            <div className={`max-w-[80%] rounded-lg p-3 ${
-                                msg.role === "user"
-                                    ? "bg-primary text-primary-foreground"
-                                    : msg.role === "thought"
-                                    ? "bg-muted/50 border border-muted-foreground/20 text-xs font-mono"
-                                    : "bg-muted"
-                            }`}>
-                                {msg.role === "thought" ? (
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Bot className="h-3 w-3" />
-                                            <span>{msg.content}</span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="prose dark:prose-invert text-sm max-w-none">
-                                        {msg.role === "assistant" ? (
-                                            <ReactMarkdown>{msg.content}</ReactMarkdown>
-                                        ) : (
-                                            msg.content
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                    {isLoading && (
-                        <div className="flex justify-start">
-                            <div className="bg-muted rounded-lg p-3 flex items-center gap-2">
-                                <Bot className="h-4 w-4 animate-pulse" />
-                                <span className="text-xs text-muted-foreground">Agent is thinking...</span>
-                            </div>
-                        </div>
-                    )}
-                    <div ref={scrollRef} />
-                </div>
-            </ScrollArea>
-            <div className="p-4 border-t">
-                <div className="flex gap-2">
-                    <Textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Describe a task..."
-                        className="min-h-[60px]"
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSubmit();
-                            }
-                        }}
-                    />
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={isLoading || !input.trim()}
-                        className="h-auto"
-                    >
-                        <Send className="h-4 w-4" />
-                    </Button>
-                </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="md:col-span-1 h-fit">
+          <CardHeader>
+            <CardTitle>Task Configuration</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Task Description</Label>
+              <Textarea
+                placeholder="e.g. Find the latest issue in repo X and summarize it..."
+                className="min-h-[150px]"
+                value={task}
+                onChange={(e) => setTask(e.target.value)}
+              />
             </div>
-        </CardContent>
-      </Card>
+
+            <div className="space-y-2">
+              <Label>Security Policy</Label>
+              <Select
+                value={selectedPolicyId}
+                onValueChange={setSelectedPolicyId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a policy..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Policy (Unrestricted)</SelectItem>
+                  {policies?.map((policy) => (
+                    <SelectItem key={policy.uuid} value={policy.uuid}>
+                      {policy.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[0.8rem] text-muted-foreground">
+                Restricts which tools the agent can access.
+              </p>
+            </div>
+
+            <Button
+              className="w-full"
+              onClick={handleRun}
+              disabled={isRunning}
+            >
+              {isRunning ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Running Agent...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Run Agent
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="md:col-span-1 space-y-6">
+            {/* Live Logs Section */}
+            <Card className="flex flex-col max-h-[400px]">
+                <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                        <span>Live Activity</span>
+                        {isRunning && <span className="text-xs text-green-500 animate-pulse">● Live</span>}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-y-auto p-0">
+                    <div className="bg-black min-h-[200px] p-4 font-mono text-sm">
+                        {!logsData?.data || logsData.data.length === 0 ? (
+                            <div className="text-gray-500 text-center py-8">
+                                {isRunning ? "Waiting for agent activity..." : "No activity logs yet."}
+                            </div>
+                        ) : (
+                            <div className="space-y-1">
+                                {logsData.data.map((log) => (
+                                    <LogEntry key={log.id} log={log} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Final Output Section */}
+            <Card className="flex flex-col">
+            <CardHeader>
+                <CardTitle>Final Output</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 min-h-[200px]">
+                {result ? (
+                <pre className="w-full h-full p-4 bg-muted rounded-md overflow-auto text-xs font-mono whitespace-pre-wrap">
+                    {result}
+                </pre>
+                ) : (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-md p-8">
+                    Agent output will appear here
+                </div>
+                )}
+            </CardContent>
+            </Card>
+        </div>
+      </div>
     </div>
   );
 }

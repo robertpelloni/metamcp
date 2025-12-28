@@ -31,8 +31,6 @@
 - **Traffic Inspection**: Persistent logging of tool calls, arguments, and results ("Mcpshark").
 - **Saved Scripts & Tool Sets**: Persist useful scripts and tool profiles.
 - **Config Import**: Easily import existing `claude_desktop_config.json` files.
-- **External Config Auto-Discovery**: Automatically load MCP configurations from a mounted volume.
-- **Syntax Compression (TOON)**: Optional token-optimized output format (Token-Oriented Object Notation).
 
 ![MetaMCP Diagram](metamcp.svg)
 
@@ -114,17 +112,6 @@ cp example.env .env
 # Edit .env to add OPENAI_API_KEY if you want semantic search features
 docker compose up -d
 ```
-
-#### Auto-Discovery of Local Configs
-To automatically load your local `~/.claude.json` or other MCP configs:
-1. Uncomment the `volumes` section in `docker-compose.yml`.
-2. Mount your config directory to `/app/config/external`.
-3. MetaMCP will watch this directory and import servers instantly.
-
-#### Syntax Compression (TOON)
-To enable reduced token usage for large JSON outputs globally:
-1. Set `MCP_BRIDGE_OUTPUT_MODE=toon` in `docker-compose.yml`.
-2. Or use `meta: { toon: true }` in individual tool calls.
 
 ### **💻 Local Development**
 

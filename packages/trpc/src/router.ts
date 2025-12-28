@@ -18,10 +18,8 @@ export const createAppRouter = (implementations: {
       logs: frontendRouters.logs,
       savedScripts: frontendRouters.savedScripts,
       toolSets: frontendRouters.toolSets,
-      agent: frontendRouters.agent,
       policies: frontendRouters.policies,
-      memories: frontendRouters.memories,
-      scheduler: frontendRouters.scheduler,
+      agent: frontendRouters.agent,
     }),
   });
 };

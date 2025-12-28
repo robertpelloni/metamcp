@@ -22,11 +22,18 @@ import {
 import { z } from "zod";
 
 import { toolsImplementations } from "../../trpc/tools.impl";
+import { toolSearchService } from "../ai/tool-search.service";
+import { agentService } from "../ai/agent.service";
+import { configImportService } from "./config-import.service";
 import { configService } from "../config.service";
+import { codeExecutorService } from "../sandbox/code-executor.service";
+import { savedScriptService } from "../sandbox/saved-script.service";
+import { toolSetService } from "./tool-set.service";
 import { toonSerializer } from "../serializers/toon.serializer";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
 import { mcpServerPool } from "./mcp-server-pool";
+import { toolsSyncCache } from "./tools-sync-cache";
 import {
   createFilterCallToolMiddleware,
   createFilterListToolsMiddleware,
@@ -46,10 +53,6 @@ import {
 } from "./metamcp-middleware/tool-overrides.functional";
 import { parseToolName } from "./tool-name-parser";
 import { sanitizeName } from "./utils";
-
-// Handlers
-import { handleMetaTool, MetaToolContext } from "./handlers/meta-tools.handler";
-import { handleExecutionTools } from "./handlers/execution.handler";
 
 /**
  * Filter out tools that are overrides of existing tools to prevent duplicates in database
@@ -217,20 +220,6 @@ export const createServer = async (
         },
       },
       {
-        name: "run_python",
-        description: "Execute Python 3 code. Suitable for data processing or simple scripts. No direct tool calling integration yet (use run_code for tool chaining).",
-        inputSchema: {
-          type: "object",
-          properties: {
-            code: {
-              type: "string",
-              description: "The Python 3 code to execute.",
-            },
-          },
-          required: ["code"],
-        },
-      },
-      {
         name: "run_agent",
         description: "Run an autonomous AI agent to perform a task. The agent will analyze your request, find relevant tools, write its own code, and execute it.",
         inputSchema: {
@@ -316,88 +305,18 @@ export const createServer = async (
           required: ["configJson"],
         },
       },
-      {
-        name: "save_memory",
-        description: "Save a piece of information to long-term memory (Vector Store). Useful for remembering context between sessions.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            content: {
-              type: "string",
-              description: "The text content to remember.",
-            },
-            tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Optional tags for categorization."
-            }
-          },
-          required: ["content"],
-        },
-      },
-      {
-        name: "search_memory",
-        description: "Search long-term memory for relevant information using semantic search.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: "The search query.",
-            },
-            limit: {
-                type: "number",
-                description: "Max results (default 5)."
-            }
-          },
-          required: ["query"],
-        },
-      },
-      {
-        name: "list_policies",
-        description: "List available security policies. Useful for an agent to decide which policy (scope) to use for a sub-task.",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "schedule_task",
-        description: "Schedule a task (Agent run or Script run) to execute periodically.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            cron: { type: "string", description: "Cron expression (e.g. '0 9 * * *' for daily at 9am)." },
-            type: { type: "string", enum: ["agent", "script"], description: "Type of task." },
-            payload: {
-                type: "object",
-                description: "Task payload. For 'agent': { agentTask, policyId }. For 'script': { scriptName }."
-            }
-          },
-          required: ["cron", "type", "payload"],
-        },
-      },
     ];
 
     // 2. Saved Scripts
-    // (Logic moved to handler? No, listing still needs to happen here for tools/list)
-    // We can keep list logic here or move to a handler.
-    // For now, let's keep list logic here as it's complex with the mcpServerPool iteration.
-
-    // ... (Existing Saved Script Listing Logic) ...
-    // Note: I will need to re-implement or copy the logic if I deleted it.
-    // Since I'm overwriting, I will include it.
-
+    // Fetch user-defined saved scripts and expose them as tools
     try {
-        // Need to import savedScriptService here or at top
-        const { savedScriptService } = await import("../sandbox/saved-script.service");
         const savedScripts = await savedScriptService.listScripts();
         const scriptTools: Tool[] = savedScripts.map(script => ({
             name: `script__${script.name}`,
             description: `[Saved Script] ${script.description || "No description"}`,
             inputSchema: {
                 type: "object",
-                properties: {},
+                properties: {}, // Scripts currently take no args
                 additionalProperties: true
             }
         }));
@@ -415,6 +334,8 @@ export const createServer = async (
     const allServerEntries = Object.entries(serverParams);
     const allAvailableTools: Tool[] = [];
 
+    console.log(`[DEBUG-TOOLS] 📋 Processing ${allServerEntries.length} servers`);
+
     await Promise.allSettled(
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
@@ -425,7 +346,10 @@ export const createServer = async (
             params,
             namespaceUuid,
         );
-        if (!session) return;
+        if (!session) {
+          console.log(`[DEBUG-TOOLS] ❌ No session for: ${params.name}`);
+          return;
+        }
 
         const serverVersion = session.client.getServerVersion();
         const actualServerName = serverVersion?.name || params.name || "";
@@ -500,67 +424,6 @@ export const createServer = async (
         }
     });
 
-    // Optimization: Inject concise descriptions from DB to save context tokens
-    if (resultTools.length > 0) {
-        try {
-            const { db } = await import("../../db");
-            const { toolsTable } = await import("../../db/schema");
-            const { inArray, eq, and } = await import("drizzle-orm");
-
-            // Group tools by server UUID to batch queries
-            const serverToTools = new Map<string, string[]>(); // serverUuid -> [originalToolName]
-
-            for (const tool of resultTools) {
-                const serverUuid = toolToServerUuid[tool.name];
-                if (serverUuid) {
-                    const parsed = parseToolName(tool.name);
-                    if (parsed) {
-                        const originalName = parsed.originalToolName;
-                         if (!serverToTools.has(serverUuid)) {
-                            serverToTools.set(serverUuid, []);
-                        }
-                        serverToTools.get(serverUuid)?.push(originalName);
-                    }
-                }
-            }
-
-            // Query DB for each server's tools
-            await Promise.all(Array.from(serverToTools.entries()).map(async ([serverUuid, toolNames]) => {
-                 if (toolNames.length === 0) return;
-
-                 const dbTools = await db.select({
-                    name: toolsTable.name,
-                    concise_description: toolsTable.concise_description
-                 })
-                 .from(toolsTable)
-                 .where(
-                    and(
-                        eq(toolsTable.mcp_server_uuid, serverUuid),
-                        inArray(toolsTable.name, toolNames)
-                    )
-                 );
-
-                 for (const dbTool of dbTools) {
-                    if (dbTool.concise_description) {
-                         // Find the matching tool in the result set and update description
-                         for (const t of resultTools) {
-                             if (toolToServerUuid[t.name] === serverUuid) {
-                                 const parsed = parseToolName(t.name);
-                                 if (parsed && parsed.originalToolName === dbTool.name) {
-                                     // Override with concise description
-                                     t.description = dbTool.concise_description;
-                                 }
-                             }
-                         }
-                    }
-                 }
-            }));
-
-        } catch (e) {
-            console.error("Error optimizing descriptions", e);
-        }
-    }
-
     return { tools: resultTools };
   };
 
@@ -568,8 +431,15 @@ export const createServer = async (
   // Middleware Composition & Recursive Handling
   // ----------------------------------------------------------------------
 
+  // We need a mechanism to allow _internalCallToolImpl to call the *final composed function* (recursiveCallToolHandler).
+  // However, recursiveCallToolHandler is composed *using* a handler that calls _internalCallToolImpl.
+  // This creates a circular dependency:
+  // recursiveCallToolHandler -> middleware -> internalHandler -> recursiveCallToolHandler
+
+  // To solve this cleanly, we use a mutable reference pattern.
   let recursiveCallToolHandlerRef: CallToolHandler | null = null;
 
+  // The "delegate" handler simply calls whatever function is currently in the reference.
   const delegateHandler: CallToolHandler = async (request, context) => {
     if (!recursiveCallToolHandlerRef) {
         throw new Error("Handler not initialized");
@@ -586,52 +456,299 @@ export const createServer = async (
     meta?: any
   ): Promise<CallToolResult> => {
 
-    // Check for Global Override
-    const globalToon = process.env.MCP_BRIDGE_OUTPUT_MODE === "toon";
-    const useToon = globalToon || meta?.toon === true || meta?.toon === "true";
+    // Check for TOON request
+    const useToon = meta?.toon === true || meta?.toon === "true";
 
     const formatResult = (result: CallToolResult): CallToolResult => {
         if (!useToon) return result;
+
+        // Attempt to compress JSON content
         const newContent = result.content.map(item => {
             if (item.type === "text") {
                 try {
+                    // Try to parse as JSON first
                     const data = JSON.parse(item.text);
                     const serialized = toonSerializer.serialize(data);
                     return { ...item, text: serialized };
                 } catch (e) {
+                    // Not JSON, return as is
                     return item;
                 }
             }
             return item;
         });
-        return { ...result, content: newContent };
+
+        return {
+            ...result,
+            content: newContent
+        };
     };
 
-    // Prepare Context for handlers
-    const context: MetaToolContext = {
-        sessionId,
-        namespaceUuid,
-        toolToClient,
-        loadedTools,
-        addToLoadedTools,
-        recursiveHandler: async (n, a, m) => {
-             // We need to unwrap the result if it's already a CallToolResult
-             // The delegate returns CallToolResult.
-             const res = await delegateHandler({
-                method: "tools/call",
-                params: { name: n, arguments: a, _meta: m }
-             }, handlerContext);
-             return res;
+    // 1. Meta Tools
+    if (name === "search_tools") {
+      const { query, limit } = args as { query: string; limit?: number };
+      const results = await toolSearchService.searchTools(query, limit);
+      return formatResult({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      });
+    }
+
+    if (name === "load_tool") {
+      const { name: toolName } = args as { name: string };
+      if (toolToClient[toolName]) {
+        addToLoadedTools(toolName);
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `Tool '${toolName}' loaded.`,
+                }
+            ]
+        };
+      } else {
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `Tool '${toolName}' not found.`,
+                },
+            ],
+            isError: true,
+        };
+      }
+    }
+
+    if (name === "save_script") {
+        const { name: scriptName, code, description } = args as { name: string; code: string; description?: string };
+        try {
+            const saved = await savedScriptService.saveScript(scriptName, code, description);
+            return {
+                content: [{ type: "text", text: `Script '${saved.name}' saved successfully.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save script: ${error.message}` }],
+                isError: true
+            };
         }
-    };
+    }
 
-    // 1. Try Meta Tools Handler
-    const metaResult = await handleMetaTool(name, args, context);
-    if (metaResult) return formatResult(metaResult);
+    if (name === "save_tool_set") {
+        const { name: setName, description } = args as { name: string; description?: string };
+        try {
+            const toolsToSave = Array.from(loadedTools);
+            if (toolsToSave.length === 0) {
+                return {
+                    content: [{ type: "text", text: `No tools currently loaded to save.` }],
+                    isError: true
+                };
+            }
+            const saved = await toolSetService.createToolSet(setName, toolsToSave, description);
+            return {
+                content: [{ type: "text", text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.` }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to save tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
 
-    // 2. Try Execution Tools Handler
-    const execResult = await handleExecutionTools(name, args, meta, context);
-    if (execResult) return formatResult(execResult);
+    if (name === "load_tool_set") {
+        const { name: setName } = args as { name: string };
+        try {
+            const set = await toolSetService.getToolSet(setName);
+            if (!set) {
+                return {
+                    content: [{ type: "text", text: `Tool Set '${setName}' not found.` }],
+                    isError: true
+                };
+            }
+
+            // Add tools to loadedTools
+            let count = 0;
+            const missing = [];
+            for (const toolName of set.tools) {
+                if (toolToClient[toolName]) {
+                    addToLoadedTools(toolName);
+                    count++;
+                } else {
+                    missing.push(toolName);
+                }
+            }
+
+            let msg = `Loaded ${count} tools from set '${setName}'.`;
+            if (missing.length > 0) {
+                msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
+            }
+
+            return {
+                content: [{ type: "text", text: msg }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Failed to load tool set: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "import_mcp_config") {
+        const { configJson } = args as { configJson: string };
+        try {
+            const result = await configImportService.importClaudeConfig(configJson);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`
+                }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Import failed: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "run_code") {
+        const { code } = args as { code: string };
+        try {
+            // RECURSION MAGIC: We pass the *delegate* handler to the sandbox.
+            // This ensures that when the sandbox calls 'mcp.call', it goes through
+            // the full middleware stack (logging, auditing, etc.) just like a request from the client.
+            const result = await codeExecutorService.executeCode(
+                code,
+                async (toolName, toolArgs) => {
+                    if (toolName === "run_code" || toolName === "run_agent") {
+                        throw new Error("Cannot call run_code/run_agent from within sandbox");
+                    }
+                    // Call the delegate handler which points to the composed stack
+                    const res = await delegateHandler({
+                        method: "tools/call",
+                        params: {
+                            name: toolName,
+                            arguments: toolArgs,
+                            _meta: meta
+                        }
+                    }, handlerContext);
+
+                    return res;
+                }
+            );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
+        } catch (error: any) {
+            const errorInfo = {
+                message: error?.message || String(error),
+                name: error?.name || "Error",
+                stack: error?.stack || undefined,
+            };
+            return {
+                content: [{
+                    type: "text",
+                    text: `Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
+                }],
+                isError: true
+            };
+        }
+    }
+
+    if (name === "run_agent") {
+        const { task, policyId } = args as { task: string; policyId?: string };
+        try {
+            const result = await agentService.runAgent(
+                task,
+                async (toolName, toolArgs, meta) => {
+                    if (toolName === "run_code" || toolName === "run_agent") {
+                         throw new Error("Recursive agent calls restricted.");
+                    }
+
+                    // Inject policyId into meta if provided
+                    const callMeta = { ...meta, ...(policyId ? { policyId } : {}) };
+
+                    const res = await delegateHandler({
+                        method: "tools/call",
+                        params: {
+                            name: toolName,
+                            arguments: toolArgs,
+                            _meta: callMeta
+                        }
+                    }, handlerContext);
+                    return res;
+                },
+                policyId
+            );
+            return formatResult({
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+            });
+        } catch (error: any) {
+            const errorInfo = {
+                message: error?.message || String(error),
+                name: error?.name || "Error",
+                stack: error?.stack || undefined,
+            };
+            return {
+                content: [{
+                    type: "text",
+                    text: `Agent Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
+                }],
+                isError: true
+            };
+        }
+    }
+
+    // 2. Saved Scripts execution
+    if (name.startsWith("script__")) {
+        const scriptName = name.replace("script__", "");
+        const script = await savedScriptService.getScript(scriptName);
+
+        if (script) {
+             try {
+                // Execute saved script using the SAME logic as run_code
+                const result = await codeExecutorService.executeCode(
+                    script.code,
+                    async (toolName, toolArgs) => {
+                        if (toolName === "run_code" || toolName.startsWith("script__")) {
+                            throw new Error("Recursion restricted in saved scripts");
+                        }
+                        const res = await delegateHandler({
+                            method: "tools/call",
+                            params: {
+                                name: toolName,
+                                arguments: toolArgs,
+                                _meta: meta
+                            }
+                        }, handlerContext);
+                        return res;
+                    }
+                );
+                return formatResult({
+                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+                });
+            } catch (error: any) {
+                 const errorInfo = {
+                    message: error?.message || String(error),
+                    name: error?.name || "Error",
+                    stack: error?.stack || undefined,
+                };
+                return {
+                    content: [{
+                        type: "text",
+                        text: `Script Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
+                    }],
+                    isError: true
+                };
+            }
+        }
+    }
 
     // 3. Downstream Tools
     const clientForTool = toolToClient[name];
@@ -676,7 +793,20 @@ export const createServer = async (
     return await _internalCallToolImpl(name, args, _meta);
   };
 
-  // Compose middleware with handlers
+  // Compose the middleware
+  // The composed handler calls implCallToolHandler, which calls _internalCallToolImpl,
+  // which might call delegateHandler, which calls recursiveCallToolHandlerRef (this composed stack).
+  recursiveCallToolHandlerRef = compose(
+    createLoggingMiddleware({ enabled: true }),
+    createPolicyMiddleware({ enabled: true }), // Add Policy Middleware
+    createFilterCallToolMiddleware({
+      cacheEnabled: true,
+      customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
+    }),
+    createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
+  )(implCallToolHandler);
+
+
   const listToolsWithMiddleware = compose(
     createToolOverridesListToolsMiddleware({
       cacheEnabled: true,
@@ -685,49 +815,396 @@ export const createServer = async (
     createFilterListToolsMiddleware({ cacheEnabled: true }),
   )(originalListToolsHandler);
 
-  const callToolWithMiddleware = compose(
-    createLoggingMiddleware({ enabled: true }),
-    createPolicyMiddleware({ enabled: true }), // Add Policy Middleware
-    createFilterCallToolMiddleware({
-      cacheEnabled: true,
-      customErrorMessage: (toolName, reason) =>
-        `Access denied to tool "${toolName}": ${reason}`,
-    }),
-    createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
-  )(originalCallToolHandler);
 
-  // Set up the handlers with middleware
+  // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {
     return await listToolsWithMiddleware(request, handlerContext);
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    return await callToolWithMiddleware(request, handlerContext);
+    if (!recursiveCallToolHandlerRef) throw new Error("Handler not initialized");
+    return await recursiveCallToolHandlerRef(request, handlerContext);
   });
 
-  // Compose recursive handler for internal use
-  recursiveCallToolHandlerRef = callToolWithMiddleware;
+  // Get Prompt Handler
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name } = request.params;
+    const clientForPrompt = promptToClient[name];
 
-  // ... (rest of handlers: GetPrompt, ListPrompts, ListResources, ReadResource, ListResourceTemplates)
+    if (!clientForPrompt) {
+      throw new Error(`Unknown prompt: ${name}`);
+    }
+
+    try {
+      // Parse the prompt name using shared utility
+      const parsed = parseToolName(name);
+      if (!parsed) {
+        throw new Error(`Invalid prompt name format: ${name}`);
+      }
+
+      const promptName = parsed.originalToolName;
+      const response = await clientForPrompt.client.request(
+        {
+          method: "prompts/get",
+          params: {
+            name: promptName,
+            arguments: request.params.arguments || {},
+            _meta: request.params._meta,
+          },
+        },
+        GetPromptResultSchema,
+      );
+
+      return response;
+    } catch (error) {
+      console.error(
+        `Error getting prompt through ${
+          clientForPrompt.client.getServerVersion()?.name
+        }:`,
+        error,
+      );
+      throw error;
+    }
+  });
+
+  // List Prompts Handler
+  server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
+    const serverParams = await getMcpServers(
+      namespaceUuid,
+      includeInactiveServers,
+    );
+    const allPrompts: z.infer<typeof ListPromptsResultSchema>["prompts"] = [];
+
+    // Track visited servers to detect circular references - reset on each call
+    const visitedServers = new Set<string>();
+
+    // Filter out self-referencing servers before processing
+    const validPromptServers = Object.entries(serverParams).filter(
+      ([uuid, params]) => {
+        // Skip if we've already visited this server to prevent circular references
+        if (visitedServers.has(uuid)) {
+          console.log(
+            `Skipping already visited server in prompts: ${params.name || uuid}`,
+          );
+          return false;
+        }
+
+        // Check if this server is the same instance to prevent self-referencing
+        if (isSameServerInstance(params, uuid)) {
+          console.log(
+            `Skipping self-referencing server in prompts: ${params.name || uuid}`,
+          );
+          return false;
+        }
+
+        // Mark this server as visited
+        visitedServers.add(uuid);
+        return true;
+      },
+    );
+
+    await Promise.allSettled(
+      validPromptServers.map(async ([uuid, params]) => {
+        const session = await mcpServerPool.getSession(
+          sessionId,
+          uuid,
+          params,
+          namespaceUuid,
+        );
+        if (!session) return;
+
+        // Now check for self-referencing using the actual MCP server name
+        const serverVersion = session.client.getServerVersion();
+        const actualServerName = serverVersion?.name || params.name || "";
+        const ourServerName = `metamcp-unified-${namespaceUuid}`;
+
+        if (actualServerName === ourServerName) {
+          console.log(
+            `Skipping self-referencing MetaMCP server in prompts: "${actualServerName}"`,
+          );
+          return;
+        }
+
+        const capabilities = session.client.getServerCapabilities();
+        if (!capabilities?.prompts) return;
+
+        // Use name assigned by user, fallback to name from server
+        const serverName =
+          params.name || session.client.getServerVersion()?.name || "";
+        try {
+          const result = await session.client.request(
+            {
+              method: "prompts/list",
+              params: {
+                cursor: request.params?.cursor,
+                _meta: request.params?._meta,
+              },
+            },
+            ListPromptsResultSchema,
+          );
+
+          if (result.prompts) {
+            const promptsWithSource = result.prompts.map((prompt) => {
+              const promptName = `${sanitizeName(serverName)}__${prompt.name}`;
+              promptToClient[promptName] = session;
+              return {
+                ...prompt,
+                name: promptName,
+                description: prompt.description || "",
+              };
+            });
+            allPrompts.push(...promptsWithSource);
+          }
+        } catch (error) {
+          console.error(`Error fetching prompts from: ${serverName}`, error);
+        }
+      }),
+    );
+
+    return {
+      prompts: allPrompts,
+      nextCursor: request.params?.cursor,
+    };
+  });
+
+  // List Resources Handler
+  server.setRequestHandler(ListResourcesRequestSchema, async (request) => {
+    const serverParams = await getMcpServers(
+      namespaceUuid,
+      includeInactiveServers,
+    );
+    const allResources: z.infer<typeof ListResourcesResultSchema>["resources"] =
+      [];
+
+    // Track visited servers to detect circular references - reset on each call
+    const visitedServers = new Set<string>();
+
+    // Filter out self-referencing servers before processing
+    const validResourceServers = Object.entries(serverParams).filter(
+      ([uuid, params]) => {
+        // Skip if we've already visited this server to prevent circular references
+        if (visitedServers.has(uuid)) {
+          console.log(
+            `Skipping already visited server in resources: ${params.name || uuid}`,
+          );
+          return false;
+        }
+
+        // Check if this server is the same instance to prevent self-referencing
+        if (isSameServerInstance(params, uuid)) {
+          console.log(
+            `Skipping self-referencing server in resources: ${params.name || uuid}`,
+          );
+          return false;
+        }
+
+        // Mark this server as visited
+        visitedServers.add(uuid);
+        return true;
+      },
+    );
+
+    await Promise.allSettled(
+      validResourceServers.map(async ([uuid, params]) => {
+        const session = await mcpServerPool.getSession(
+          sessionId,
+          uuid,
+          params,
+          namespaceUuid,
+        );
+        if (!session) return;
+
+        // Now check for self-referencing using the actual MCP server name
+        const serverVersion = session.client.getServerVersion();
+        const actualServerName = serverVersion?.name || params.name || "";
+        const ourServerName = `metamcp-unified-${namespaceUuid}`;
+
+        if (actualServerName === ourServerName) {
+          console.log(
+            `Skipping self-referencing MetaMCP server in resources: "${actualServerName}"`,
+          );
+          return;
+        }
+
+        const capabilities = session.client.getServerCapabilities();
+        if (!capabilities?.resources) return;
+
+        // Use name assigned by user, fallback to name from server
+        const serverName =
+          params.name || session.client.getServerVersion()?.name || "";
+        try {
+          const result = await session.client.request(
+            {
+              method: "resources/list",
+              params: {
+                cursor: request.params?.cursor,
+                _meta: request.params?._meta,
+              },
+            },
+            ListResourcesResultSchema,
+          );
+
+          if (result.resources) {
+            const resourcesWithSource = result.resources.map((resource) => {
+              resourceToClient[resource.uri] = session;
+              return {
+                ...resource,
+                name: resource.name || "",
+              };
+            });
+            allResources.push(...resourcesWithSource);
+          }
+        } catch (error) {
+          console.error(`Error fetching resources from: ${serverName}`, error);
+        }
+      }),
+    );
+
+    return {
+      resources: allResources,
+      nextCursor: request.params?.cursor,
+    };
+  });
+
+  // Read Resource Handler
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const { uri } = request.params;
+    const clientForResource = resourceToClient[uri];
+
+    if (!clientForResource) {
+      throw new Error(`Unknown resource: ${uri}`);
+    }
+
+    try {
+      return await clientForResource.client.request(
+        {
+          method: "resources/read",
+          params: {
+            uri,
+            _meta: request.params._meta,
+          },
+        },
+        ReadResourceResultSchema,
+      );
+    } catch (error) {
+      console.error(
+        `Error reading resource through ${
+          clientForResource.client.getServerVersion()?.name
+        }:`,
+        error,
+      );
+      throw error;
+    }
+  });
+
+  // List Resource Templates Handler
+  server.setRequestHandler(
+    ListResourceTemplatesRequestSchema,
+    async (request) => {
+      const serverParams = await getMcpServers(
+        namespaceUuid,
+        includeInactiveServers,
+      );
+      const allTemplates: ResourceTemplate[] = [];
+
+      // Track visited servers to detect circular references - reset on each call
+      const visitedServers = new Set<string>();
+
+      // Filter out self-referencing servers before processing
+      const validTemplateServers = Object.entries(serverParams).filter(
+        ([uuid, params]) => {
+          // Skip if we've already visited this server to prevent circular references
+          if (visitedServers.has(uuid)) {
+            console.log(
+              `Skipping already visited server in resource templates: ${params.name || uuid}`,
+            );
+            return false;
+          }
+
+          // Check if this server is the same instance to prevent self-referencing
+          if (isSameServerInstance(params, uuid)) {
+            console.log(
+              `Skipping self-referencing server in resource templates: ${params.name || uuid}`,
+            );
+            return false;
+          }
+
+          // Mark this server as visited
+          visitedServers.add(uuid);
+          return true;
+        },
+      );
+
+      await Promise.allSettled(
+        validTemplateServers.map(async ([uuid, params]) => {
+          const session = await mcpServerPool.getSession(
+            sessionId,
+            uuid,
+            params,
+            namespaceUuid,
+          );
+          if (!session) return;
+
+          // Now check for self-referencing using the actual MCP server name
+          const serverVersion = session.client.getServerVersion();
+          const actualServerName = serverVersion?.name || params.name || "";
+          const ourServerName = `metamcp-unified-${namespaceUuid}`;
+
+          if (actualServerName === ourServerName) {
+            console.log(
+              `Skipping self-referencing MetaMCP server in resource templates: "${actualServerName}"`,
+            );
+            return;
+          }
+
+          const capabilities = session.client.getServerCapabilities();
+          if (!capabilities?.resources) return;
+
+          const serverName =
+            params.name || session.client.getServerVersion()?.name || "";
+
+          try {
+            const result = await session.client.request(
+              {
+                method: "resources/templates/list",
+                params: {
+                  cursor: request.params?.cursor,
+                  _meta: request.params?._meta,
+                },
+              },
+              ListResourceTemplatesResultSchema,
+            );
+
+            if (result.resourceTemplates) {
+              const templatesWithSource = result.resourceTemplates.map(
+                (template) => ({
+                  ...template,
+                  name: template.name || "",
+                }),
+              );
+              allTemplates.push(...templatesWithSource);
+            }
+          } catch (error) {
+            console.error(
+              `Error fetching resource templates from: ${serverName}`,
+              error,
+            );
+            return;
+          }
+        }),
+      );
+
+      return {
+        resourceTemplates: allTemplates,
+        nextCursor: request.params?.cursor,
+      };
+    },
+  );
 
   const cleanup = async () => {
     // Cleanup is now handled by the pool
     await mcpServerPool.cleanupSession(sessionId);
   };
 
-  // EXPOSE THE HANDLER DIRECTLY
-  return {
-      server,
-      cleanup,
-      callToolHandler: async (name: string, args: any, meta?: any) => {
-          return await callToolWithMiddleware({
-              method: "tools/call",
-              params: {
-                  name,
-                  arguments: args,
-                  _meta: meta
-              }
-          }, handlerContext);
-      }
-  };
+  return { server, cleanup };
 };

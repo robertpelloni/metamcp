@@ -9,7 +9,7 @@ export const createToolsRouter = <
   TImplementations extends {
     getByMcpServerUuid: (input: any) => Promise<any>;
     create: (input: any) => Promise<any>;
-    getTypes: () => Promise<any>;
+    sync: (input: any) => Promise<any>;
   },
 >(
   implementations: TImplementations,
@@ -22,16 +22,18 @@ export const createToolsRouter = <
         return implementations.getByMcpServerUuid(input);
       }),
 
-    // Protected: Save tools to database
+    // Protected: Save tools to database (upsert only, no cleanup)
     create: protectedProcedure
       .input(CreateToolRequestSchema)
       .mutation(async ({ input }) => {
         return implementations.create(input);
       }),
 
-    // Protected: Get TypeScript definitions for all tools
-    getTypes: protectedProcedure.query(async () => {
-      return implementations.getTypes();
-    }),
+    // Protected: Sync tools with cleanup (removes obsolete tools)
+    sync: protectedProcedure
+      .input(CreateToolRequestSchema)
+      .mutation(async ({ input }) => {
+        return implementations.sync(input);
+      }),
   });
 };

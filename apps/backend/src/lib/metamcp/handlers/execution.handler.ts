@@ -48,8 +48,6 @@ export const handleExecutionTools = async (
                      throw new Error("Recursive execution restricted.");
                  }
                  const res = await context.recursiveHandler(toolName, toolArgs, toolMeta);
-                 // We need to unwrap result content for Python simplicity?
-                 // Or return full result. Python client should parse.
                  return res;
             });
 

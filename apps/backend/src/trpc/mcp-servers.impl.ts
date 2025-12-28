@@ -22,6 +22,7 @@ import { clearOverrideCache } from "../lib/metamcp/metamcp-middleware/tool-overr
 import { metaMcpServerPool } from "../lib/metamcp/metamcp-server-pool";
 import { serverErrorTracker } from "../lib/metamcp/server-error-tracker";
 import { convertDbServerToParams } from "../lib/metamcp/utils";
+import { syncMcpSharkConfig } from "../lib/mcp-shark";
 
 export const mcpServersImplementations = {
   create: async (
@@ -62,6 +63,11 @@ export const mcpServersImplementations = {
             );
           });
       }
+
+      // Sync MCP Shark config
+      syncMcpSharkConfig().catch((err) => {
+        console.error("Error syncing MCP Shark config:", err);
+      });
 
       return {
         success: true as const,
@@ -131,6 +137,7 @@ export const mcpServersImplementations = {
             env: serverConfig.env || {},
             url: serverConfig.url || null,
             bearerToken: undefined,
+            headers: serverConfig.headers || {},
             user_id: userId, // Default bulk imported servers to current user
           };
 
@@ -176,6 +183,11 @@ export const mcpServersImplementations = {
           });
         }
       }
+
+      // Sync MCP Shark config
+      syncMcpSharkConfig().catch((err) => {
+        console.error("Error syncing MCP Shark config:", err);
+      });
 
       return {
         success: true as const,
@@ -318,6 +330,11 @@ export const mcpServersImplementations = {
         );
       }
 
+      // Sync MCP Shark config
+      syncMcpSharkConfig().catch((err) => {
+        console.error("Error syncing MCP Shark config:", err);
+      });
+
       return {
         success: true as const,
         message: "MCP server deleted successfully",
@@ -448,6 +465,11 @@ export const mcpServersImplementations = {
           `Cleared tool overrides cache for ${affectedNamespaceUuids.length} namespaces after updating server: ${updatedServer.name} (${updatedServer.uuid})`,
         );
       }
+
+      // Sync MCP Shark config
+      syncMcpSharkConfig().catch((err) => {
+        console.error("Error syncing MCP Shark config:", err);
+      });
 
       return {
         success: true as const,

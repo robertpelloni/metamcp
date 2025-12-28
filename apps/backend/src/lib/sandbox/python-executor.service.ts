@@ -2,24 +2,52 @@ import { execa } from "execa";
 import { configService } from "../../config.service";
 
 export class PythonExecutorService {
+  private pythonAvailable: boolean | null = null;
+
+  /**
+   * Check if python3 is available in the environment.
+   */
+  private async ensurePythonAvailable(): Promise<void> {
+    if (this.pythonAvailable === true) return;
+
+    try {
+      await execa("python3", ["--version"]);
+      this.pythonAvailable = true;
+    } catch (e) {
+      this.pythonAvailable = false;
+      throw new Error("Python 3 is not available in the environment. Please ensure it is installed.");
+    }
+  }
+
   /**
    * Run Python code in a secure-ish environment.
-   * Currently uses local python3.
-   * Future: Use Docker or gVisor.
    */
   async execute(
     code: string,
     env?: Record<string, string>
   ): Promise<string> {
     try {
-      // Basic check for python availability
-      // In production Dockerfile, we ensured python3 is installed.
+      await this.ensurePythonAvailable();
+
+      // Use MCP timeout or default to 30s
+      const timeout = await configService.getMcpTimeout();
+
+      // Basic sanitization
+      if (code.includes("subprocess.Popen") || code.includes("os.system") || code.includes("os.fork")) {
+          console.warn("Potential dangerous code detected in Python executor.");
+      }
 
       const { stdout, stderr } = await execa("python3", ["-c", code], {
-          timeout: 30000, // 30s timeout
-          reject: false,  // Don't throw on non-zero exit, just return result
-          input: code,    // Can also pass via stdin if -c gets too long, but -c is safer for simple scripts
-          env: env        // Inject environment variables (e.g. for MCP Bridge)
+          timeout: timeout || 30000,
+          reject: false,
+          input: code,
+          env: {
+              ...process.env,
+              PATH: process.env.PATH,
+              LANG: "en_US.UTF-8",
+              ...env
+          },
+          extendEnv: false
       });
 
       if (stderr) {
@@ -27,6 +55,9 @@ export class PythonExecutorService {
       }
       return stdout;
     } catch (error: any) {
+        if (error.timedOut) {
+            return `Execution Failed: Timeout after ${error.timeout}ms`;
+        }
         return `Execution Failed: ${error.message}`;
     }
   }

@@ -80,7 +80,7 @@ openApiRouter.get(
   lookupEndpoint,
   authenticateApiKey,
   async (req, res) => {
-    const { namespaceUuid, endpointName } = req as ApiKeyAuthenticatedRequest;
+    const { namespaceUuid, endpointName, apiKeyUserId, oauthUserId } = req as ApiKeyAuthenticatedRequest;
 
     try {
       // Get or create persistent OpenAPI session for this namespace
@@ -93,9 +93,12 @@ openApiRouter.get(
       // Use deterministic session ID for OpenAPI endpoints
       const sessionId = `openapi_${namespaceUuid}`;
 
+      // Determine userId from either API key or OAuth
+      const userId = apiKeyUserId || oauthUserId;
+
       // Create middleware-enabled handlers
       const { handlerContext, listToolsWithMiddleware } =
-        createMiddlewareEnabledHandlers(sessionId, namespaceUuid);
+        createMiddlewareEnabledHandlers(sessionId, namespaceUuid, userId);
 
       // Use middleware-enabled list tools handler
       const listToolsRequest: ListToolsRequest = {

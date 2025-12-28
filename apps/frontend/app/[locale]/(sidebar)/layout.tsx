@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bot,
   ExternalLink,
   FileCode,
   FileTerminal,
@@ -13,9 +14,7 @@ import {
   Server,
   Settings,
   ShieldCheck,
-  Bot,
-  Brain,
-  Calendar,
+  Activity,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,11 +48,6 @@ import packageJson from "../../../package.json";
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
   {
-    title: "Agent", // TODO: Add translation key
-    url: getLocalizedPath("/agent", locale),
-    icon: Bot,
-  },
-  {
     title: t("navigation:exploreMcpServers"),
     url: getLocalizedPath("/search", locale),
     icon: Search,
@@ -74,19 +68,14 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     icon: Layers,
   },
   {
-    title: "Memories", // TODO: Add translation key
-    url: getLocalizedPath("/memories", locale),
-    icon: Brain,
-  },
-  {
-    title: "Scheduler", // TODO: Add translation key
-    url: getLocalizedPath("/scheduler", locale),
-    icon: Calendar,
-  },
-  {
     title: "Policies", // TODO: Add translation key
     url: getLocalizedPath("/policies", locale),
     icon: ShieldCheck,
+  },
+  {
+    title: "Agent", // TODO: Add translation key
+    url: getLocalizedPath("/agent", locale),
+    icon: Bot,
   },
   {
     title: t("navigation:metamcpNamespaces"),
@@ -112,6 +101,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:settings"),
     url: getLocalizedPath("/settings", locale),
     icon: Settings,
+  },
+  {
+    title: "Observability", // TODO: Add translation key
+    url: getLocalizedPath("/observability", locale),
+    icon: Activity,
   },
 ];
 

@@ -8,10 +8,8 @@ import { createOAuthRouter } from "./oauth";
 import { createSavedScriptsRouter } from "./saved-scripts";
 import { createToolSetsRouter } from "./tool-sets";
 import { createToolsRouter } from "./tools";
-import { createAgentRouter } from "./agent";
 import { createPoliciesRouter } from "./policies";
-import { createMemoriesRouter } from "./memories";
-import { createSchedulerRouter } from "./scheduler";
+import { createAgentRouter } from "./agent";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -23,10 +21,8 @@ export { createConfigRouter };
 export { createLogsRouter };
 export { createSavedScriptsRouter };
 export { createToolSetsRouter };
-export { createAgentRouter };
 export { createPoliciesRouter };
-export { createMemoriesRouter };
-export { createSchedulerRouter };
+export { createAgentRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -39,10 +35,8 @@ export const createFrontendRouter = (implementations: {
   logs: Parameters<typeof createLogsRouter>[0];
   savedScripts: Parameters<typeof createSavedScriptsRouter>[0];
   toolSets: Parameters<typeof createToolSetsRouter>[0];
-  agent: Parameters<typeof createAgentRouter>[0];
   policies: Parameters<typeof createPoliciesRouter>[0];
-  memories: Parameters<typeof createMemoriesRouter>[0];
-  scheduler: Parameters<typeof createSchedulerRouter>[0];
+  agent: Parameters<typeof createAgentRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -55,9 +49,7 @@ export const createFrontendRouter = (implementations: {
     logs: createLogsRouter(implementations.logs),
     savedScripts: createSavedScriptsRouter(implementations.savedScripts),
     toolSets: createToolSetsRouter(implementations.toolSets),
-    agent: createAgentRouter(implementations.agent),
     policies: createPoliciesRouter(implementations.policies),
-    memories: createMemoriesRouter(implementations.memories),
-    scheduler: createSchedulerRouter(implementations.scheduler),
+    agent: createAgentRouter(implementations.agent),
   };
 };

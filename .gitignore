@@ -39,20 +39,8 @@ yarn-error.log*
 
 .cursor/
 .vscode/
-.next/
-dist/
-.turbo/
-node_modules/
-**/.next
-**/dist
-**/.turbo
-**/.turbo/
-**/.turbo/
-dist
-.turbo
-.next
-dist/
-.turbo/
-.next/
-**/.next
-**/.next
+.idea/
+
+# Docker Files
+docker-compose.override.yml
+compose.override.yml

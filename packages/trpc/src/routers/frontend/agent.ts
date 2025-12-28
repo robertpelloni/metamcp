@@ -1,21 +1,15 @@
 import { z } from "zod";
+import { RunAgentRequestSchema, RunAgentResponseSchema } from "@repo/zod-types";
 import { protectedProcedure, router } from "../../trpc";
 
-import { BaseContext } from "../../trpc";
-
 export const createAgentRouter = (implementations: {
-  run: (input: { task: string; policyId?: string }, ctx: BaseContext) => Promise<any>;
+  run: (input: z.infer<typeof RunAgentRequestSchema>) => Promise<z.infer<typeof RunAgentResponseSchema>>;
 }) => {
   return router({
     run: protectedProcedure
-      .input(
-        z.object({
-          task: z.string().min(1),
-          policyId: z.string().optional()
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        return await implementations.run(input, ctx);
+      .input(RunAgentRequestSchema)
+      .mutation(async ({ input }) => {
+        return await implementations.run(input);
       }),
   });
 };

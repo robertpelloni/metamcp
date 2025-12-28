@@ -1,7 +1,7 @@
 "use client";
 
-import { ShieldCheck, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ShieldCheck, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -18,61 +18,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
-import { vanillaTrpcClient } from "@/lib/trpc";
-
-interface Policy {
-    uuid: string;
-    name: string;
-    description: string | null;
-    rules: any;
-}
+import { trpc } from "@/lib/trpc";
 
 export default function PoliciesPage() {
   const { t } = useTranslations();
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newAllow, setNewAllow] = useState(""); // Comma separated
 
-  const fetchPolicies = async () => {
-    try {
-      setIsLoading(true);
-      const response = await vanillaTrpcClient.frontend.policies.list.query();
-      if (response) setPolicies(response);
-    } catch (error) {
-      toast.error(t("common:errorLoadingData"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPolicies();
-  }, []);
+  const { data: policies, isLoading, refetch } = trpc.frontend.policies.list.useQuery();
+  const createMutation = trpc.frontend.policies.create.useMutation();
+  const deleteMutation = trpc.frontend.policies.delete.useMutation();
 
   const handleCreate = async () => {
       try {
-          const rules = [{
-              allow: newAllow.split(",").map(s => s.trim()).filter(Boolean),
-              deny: [] // Not exposing deny in UI yet for simplicity
-          }];
-
-          await vanillaTrpcClient.frontend.policies.create.mutate({
+          const allowList = newAllow.split(",").map(s => s.trim()).filter(s => s.length > 0);
+          await createMutation.mutateAsync({
               name: newName,
               description: newDescription,
-              rules: rules
+              rules: {
+                  allow: allowList
+              }
           });
-
           toast.success("Policy created");
           setIsCreateOpen(false);
           setNewName("");
           setNewDescription("");
           setNewAllow("");
-          fetchPolicies();
-      } catch (e: any) {
-          toast.error(`Failed to create policy: ${e.message}`);
+          refetch();
+      } catch (error: any) {
+          toast.error(`Failed to create policy: ${error.message}`);
+      }
+  };
+
+  const handleDelete = async (uuid: string) => {
+      if (!confirm("Are you sure you want to delete this policy?")) return;
+      try {
+          await deleteMutation.mutateAsync({ uuid });
+          toast.success("Policy deleted");
+          refetch();
+      } catch (error: any) {
+          toast.error(`Failed to delete policy: ${error.message}`);
       }
   };
 
@@ -95,10 +82,13 @@ export default function PoliciesPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {policies.map((policy) => (
+        {policies?.map((policy) => (
           <Card key={policy.uuid}>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{policy.name}</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(policy.uuid)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground mb-2">
@@ -107,13 +97,16 @@ export default function PoliciesPage() {
               <div className="mt-2">
                   <div className="text-xs font-semibold">Allowed:</div>
                   <pre className="text-xs bg-muted p-1 rounded mt-1 overflow-x-auto">
-                      {(Array.isArray(policy.rules) ? policy.rules[0]?.allow : policy.rules?.allow)?.join(", ") || "All"}
+                      {policy.rules.allow.join(", ")}
                   </pre>
+              </div>
+              <div className="mt-4 text-[10px] text-muted-foreground">
+                  ID: {policy.uuid}
               </div>
             </CardContent>
           </Card>
         ))}
-        {policies.length === 0 && !isLoading && (
+        {(!policies || policies.length === 0) && !isLoading && (
           <div className="col-span-full text-center text-muted-foreground py-8">
             No policies found. Create one to secure your agents.
           </div>

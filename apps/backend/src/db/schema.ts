@@ -5,7 +5,7 @@ import {
   McpServerStatusEnum,
   McpServerTypeEnum,
 } from "@repo/zod-types";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -58,6 +58,10 @@ export const mcpServersTable = pgTable(
       .notNull()
       .defaultNow(),
     bearerToken: text("bearer_token"),
+    headers: jsonb("headers")
+      .$type<{ [key: string]: string }>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
     user_id: text("user_id").references(() => usersTable.id, {
       onDelete: "cascade",
     }),
@@ -518,15 +522,11 @@ export const toolCallLogsTable = pgTable(
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
   },
   (table) => [
     index("tool_call_logs_session_id_idx").on(table.session_id),
     index("tool_call_logs_parent_call_uuid_idx").on(table.parent_call_uuid),
     index("tool_call_logs_created_at_idx").on(table.created_at),
-    index("tool_call_logs_updated_at_idx").on(table.updated_at),
   ],
 );
 
@@ -601,85 +601,5 @@ export const policiesTable = pgTable(
     sql`CONSTRAINT policies_name_regex_check CHECK (
       name ~ '^[a-zA-Z0-9_-]+$'
     )`,
-  ],
-);
-
-export const memoriesTable = pgTable(
-  "memories",
-  {
-    uuid: uuid("uuid").primaryKey().defaultRandom(),
-    content: text("content").notNull(),
-    tags: text("tags").array().default(sql`'{}'::text[]`),
-    embedding: vector("embedding", { dimensions: 1536 }),
-    user_id: text("user_id").references(() => usersTable.id, {
-      onDelete: "cascade",
-    }),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (table) => [
-    index("memories_user_id_idx").on(table.user_id),
-    index("memories_embedding_idx").using(
-      "hnsw",
-      table.embedding.op("vector_cosine_ops"),
-    ),
-  ],
-);
-
-export const scheduledTasksTable = pgTable(
-  "scheduled_tasks",
-  {
-    uuid: uuid("uuid").primaryKey().defaultRandom(),
-    cron: text("cron").notNull(),
-    task_type: text("task_type").notNull(), // 'script' or 'agent'
-    payload: jsonb("payload").$type<{
-      scriptName?: string;
-      agentTask?: string;
-      policyId?: string;
-    }>().notNull(),
-    user_id: text("user_id").references(() => usersTable.id, {
-      onDelete: "cascade",
-    }),
-    is_active: boolean("is_active").notNull().default(true),
-    last_run: timestamp("last_run", { withTimezone: true }),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (table) => [
-    index("scheduled_tasks_user_id_idx").on(table.user_id),
-    index("scheduled_tasks_is_active_idx").on(table.is_active),
-  ],
-);
-
-export const notificationsTable = pgTable(
-  "notifications",
-  {
-    uuid: uuid("uuid").primaryKey().defaultRandom(),
-    title: text("title").notNull(),
-    message: text("message").notNull(),
-    type: text("type").notNull().default("info"), // info, success, warning, error
-    read: boolean("read").notNull().default(false),
-    user_id: text("user_id").references(() => usersTable.id, {
-      onDelete: "cascade",
-    }),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (table) => [
-    index("notifications_user_id_idx").on(table.user_id),
-    index("notifications_read_idx").on(table.read),
-    index("notifications_created_at_idx").on(table.created_at),
   ],
 );

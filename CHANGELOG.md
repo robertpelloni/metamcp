@@ -2,55 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.4.0] - 2025-12-25
-
-### Infrastructure
-- **Docker Modernization**: Updated database image to `pgvector/pgvector:pg17` for improved performance and latest vector search features.
-- **Python Hardening**: Updated `Dockerfile` to explicitly install `python3-pip` and `python3-venv` for robust Code Mode execution.
-- **Sandbox Security**: Hardened `pythonExecutorService` with existence checks, configurable timeouts (via `MCP_TIMEOUT`), and environment variable sanitization to prevent secret leakage.
+## [3.1.0] - 2025-12-27
 
 ### Added
-- **Dashboard**: Added `DASHBOARD.md` to document the monorepo structure and service status.
-
-## [3.3.0] - 2025-12-25
-
-### Added
-- **Python Bridge**: Enabled `run_python` to act as an orchestrator. Python scripts can now call MCP tools via `mcp.call()`, unlocking data science workflows.
-- **LLM Sampling**: Added `ask_llm` tool for scripts to query LLMs directly. Added MCP Sampling Protocol (`sampling/createMessage`) support.
-- **Scripts Editor (IDE)**: Full-featured Monaco Editor in the UI with IntelliSense (Type-Safe `mcp` object) and Create/Edit/Run lifecycle.
-- **Type Generation**: `ToolTypeGenerator` creates TypeScript definitions for discovered tools, injected into the Agent's context.
-- **Agent Thought Streaming**: Agent UI now streams tool calls and "Thoughts" in real-time, providing immediate feedback.
-- **Notifications**: Full-stack notification system (`notify_user`) and frontend alert center.
-- **Context RAG**: Agent now automatically searches `memories` and injects relevant context into the system prompt.
-- **Configurability**: Added `AGENT_MODEL` and `DESCRIPTION_MODEL` environment variables.
+- **Agent Implementation**: Added core agent functionality including `agent.impl.ts` and `agent.zod.ts`.
+- **Dashboard**: Added `docs/DASHBOARD.md` listing all submodules and project structure.
 
 ### Changed
-- **Logging**: Enhanced `tool_call_logs` to support "Pending" state and updates, enabling real-time status tracking.
-- **Frontend**: Polished Agent UI with collapsible thought bubbles and JSON payload inspection.
+- **Upstream Sync**: Merged latest changes from upstream `main` branch.
+- **Schemas**: Updated Zod schemas to support agent features.
 
-## [3.2.0] - 2025-12-15
-
-### Added
-- **Task Scheduler**: New `scheduled_tasks` table and `SchedulerService` to run Agents or Scripts on a cron schedule. Added `schedule_task` meta-tool.
-- **Long-Term Memory**: New `memories` table and `MemoryService` using `pgvector` for saving/searching text content. Added `save_memory` and `search_memory` meta-tools.
-- **Policy Discovery**: Added `list_policies` meta-tool so Agents can discover available security scopes for sub-task delegation.
-- **Agent Evolution**: Updated Agent System Prompt to be aware of its new Scheduling, Memory, and Sub-Agent capabilities.
+## [3.0.3] - 2025-12-27
 
 ### Changed
-- **Proxy**: Refactored `metamcp-proxy.ts` to include the new meta-tools.
-- **Database**: Added `memories` and `scheduled_tasks` tables.
+- **Enhanced Indexing**: Updated `DescriptionEnhancerService` to generate "Synthetic User Queries" along with rich descriptions. This significantly improves semantic search accuracy by matching user intent.
 
-## [3.1.0] - 2025-12-15
+## [3.0.2] - 2025-12-27
 
 ### Added
-- **Config Watcher**: New service `McpConfigWatcherService` that watches `/app/config/mcp/*.json` and auto-imports server configurations.
-- **Agent Chat UI**: Dedicated frontend page (`/agent`) for interacting with the Autonomous Agent.
-- **Agent Optimization**: Agent now requests `_meta: { toon: true }` for data-heavy tools to save tokens.
-- **Frontend Policies**: Policy management UI (`/policies`) connected to backend via TRPC.
+- **Policy Engine**: Full implementation of Policy Management.
+    - Added TRPC router for Policies (List, Create, Update, Delete).
+    - Updated Frontend `PoliciesPage` to use real data.
+    - Updated `AgentService` to filter tool search results based on the active policy.
+
+## [3.0.1] - 2025-12-27
 
 ### Changed
-- **Config**: Bumped version to 3.1.0.
-- **Agent Execution**: Updated sandbox to support passing `_meta` arguments to tools.
+- **Documentation**: Refactored LLM instructions into a universal `LLM_INSTRUCTIONS.md` file.
+- **Versioning**: Implemented centralized versioning via `VERSION` file.
+- **Project Structure**: Added `docs/PROJECT_STRUCTURE.md`.
 
 ## [3.0.0] - 2025-12-15
 

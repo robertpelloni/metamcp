@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { db } from "../../db";
 import { policiesTable } from "../../db/schema";
 import { minimatch } from "minimatch";
@@ -10,6 +10,12 @@ export interface PolicyRule {
 
 export class PolicyService {
 
+  async listPolicies(): Promise<any[]> {
+    return await db.query.policiesTable.findMany({
+      orderBy: [desc(policiesTable.updatedAt)],
+    });
+  }
+
   async createPolicy(name: string, rules: PolicyRule, description?: string): Promise<any> {
     const [policy] = await db
       .insert(policiesTable)
@@ -20,6 +26,22 @@ export class PolicyService {
       })
       .returning();
     return policy;
+  }
+
+  async updatePolicy(uuid: string, data: { name?: string; description?: string; rules?: PolicyRule }): Promise<any> {
+    const [policy] = await db
+      .update(policiesTable)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(policiesTable.uuid, uuid))
+      .returning();
+    return policy;
+  }
+
+  async deletePolicy(uuid: string): Promise<void> {
+    await db.delete(policiesTable).where(eq(policiesTable.uuid, uuid));
   }
 
   async getPolicy(uuid: string): Promise<any> {
@@ -34,15 +56,6 @@ export class PolicyService {
         where: eq(policiesTable.name, name)
     });
     return policy;
-  }
-
-  async listPolicies(userId?: string): Promise<any[]> {
-      // If userId is provided, filter by user (and maybe public ones if we had that concept)
-      // For now listing all as typical tenancy assumption in this simplified service
-      if (userId) {
-          return await db.select().from(policiesTable).where(eq(policiesTable.user_id, userId));
-      }
-      return await db.select().from(policiesTable);
   }
 
   /**
