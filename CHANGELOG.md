@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0] - 2025-12-27
+
+### Added
+- **Agent Implementation**: Added core agent functionality including `agent.impl.ts` and `agent.zod.ts`.
+- **Dashboard**: Added `docs/DASHBOARD.md` listing all submodules and project structure.
+
+### Changed
+- **Upstream Sync**: Merged latest changes from upstream `main` branch.
+- **Schemas**: Updated Zod schemas to support agent features.
+
 ## [3.0.3] - 2025-12-27
 
 ### Changed
