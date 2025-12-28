@@ -19,6 +19,7 @@ services:
       - /app/packages/zod-types/node_modules
       - /app/packages/eslint-config/node_modules
       - /app/packages/typescript-config/node_modules
+      - mcpshark_data_dev:/mnt/mcpshark
     environment:
       # Postgres connection details
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
@@ -71,8 +72,27 @@ services:
     networks:
       - metamcp-network
 
+  mcpshark:
+    container_name: mcp-shark-dev
+    build:
+      context: ./apps/backend/mcp-shark
+      dockerfile: Dockerfile
+    ports:
+      - "9851:9851" # Server
+      - "9853:9853" # UI
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/backend/mcp-shark:/app
+      - /app/node_modules
+      - mcpshark_data_dev:/root/.mcp-shark
+    networks:
+      - metamcp-network
+
 volumes:
   postgres_data_dev:
+    driver: local
+  mcpshark_data_dev:
     driver: local
 
 networks:

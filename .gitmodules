@@ -1,0 +1,3 @@
+[submodule "apps/backend/mcp-shark"]
+	path = apps/backend/mcp-shark
+	url = https://github.com/mcp-shark/mcp-shark
