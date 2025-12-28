@@ -19,6 +19,7 @@ export const MetaMcpLogEntrySchema = z.object({
 
 export const GetLogsRequestSchema = z.object({
   limit: z.number().int().positive().max(1000).optional(),
+  sessionId: z.string().optional(),
 });
 
 export const GetLogsResponseSchema = z.object({

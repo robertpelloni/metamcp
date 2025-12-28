@@ -16,6 +16,7 @@ import { savedScriptsImplementations } from "../trpc/saved-scripts.impl";
 import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
 import { policiesImplementations } from "../trpc/policies.impl";
+import { agentImplementations } from "../trpc/agent.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -31,6 +32,7 @@ const appRouter = createAppRouter({
     savedScripts: savedScriptsImplementations,
     toolSets: toolSetsImplementations,
     policies: policiesImplementations,
+    agent: agentImplementations,
   },
 });
 

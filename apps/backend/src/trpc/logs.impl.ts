@@ -18,11 +18,18 @@ export const logsImplementations = {
     try {
       const limit = input.limit || 100;
 
-      const logs = await db
+      let query = db
         .select()
         .from(toolCallLogsTable)
         .orderBy(desc(toolCallLogsTable.created_at))
-        .limit(limit);
+        .limit(limit)
+        .$dynamic();
+
+      if (input.sessionId) {
+        query = query.where(eq(toolCallLogsTable.session_id, input.sessionId));
+      }
+
+      const logs = await query;
 
       // Map to Zod schema format
       const formattedLogs = logs.map(log => {

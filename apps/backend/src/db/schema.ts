@@ -5,7 +5,7 @@ import {
   McpServerStatusEnum,
   McpServerTypeEnum,
 } from "@repo/zod-types";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,

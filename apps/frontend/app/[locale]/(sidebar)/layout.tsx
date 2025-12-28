@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bot,
   ExternalLink,
   FileCode,
   FileTerminal,
@@ -69,6 +70,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: "Policies", // TODO: Add translation key
     url: getLocalizedPath("/policies", locale),
     icon: ShieldCheck,
+  },
+  {
+    title: "Agent", // TODO: Add translation key
+    url: getLocalizedPath("/agent", locale),
+    icon: Bot,
   },
   {
     title: t("navigation:metamcpNamespaces"),

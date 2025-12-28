@@ -19,6 +19,7 @@ export const createAppRouter = (implementations: {
       savedScripts: frontendRouters.savedScripts,
       toolSets: frontendRouters.toolSets,
       policies: frontendRouters.policies,
+      agent: frontendRouters.agent,
     }),
   });
 };
