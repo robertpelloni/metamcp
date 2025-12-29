@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - 2025-12-25
+
+### Added
+- **Bobcoin Integration**: Added `bobcoin` submodule as the foundation for the decentralized economy layer.
+- **Vision Documentation**: Added `docs/BOBCOIN_VISION.md` detailing the cryptocurrency and mesh network architecture.
+
 ## [3.4.0] - 2025-12-25
 
 ### Infrastructure

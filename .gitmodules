@@ -1,6 +1,9 @@
 [submodule "apps/backend/mcp-shark"]
 	path = apps/backend/mcp-shark
 	url = https://github.com/mcp-shark/mcp-shark
+[submodule "submodules/bobcoin"]
+	path = submodules/bobcoin
+	url = https://github.com/robertpelloni/bobcoin
 [submodule "submodules/mcp-shark"]
 	path = submodules/mcp-shark
 	url = https://github.com/mcp-shark/mcp-shark
