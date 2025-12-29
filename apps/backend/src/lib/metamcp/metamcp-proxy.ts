@@ -220,6 +220,20 @@ export const createServer = async (
         },
       },
       {
+        name: "run_python",
+        description: "Execute Python 3 code. Suitable for data processing or simple scripts. No direct tool calling integration yet (use run_code for tool chaining).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            code: {
+              type: "string",
+              description: "The Python 3 code to execute.",
+            },
+          },
+          required: ["code"],
+        },
+      },
+      {
         name: "run_agent",
         description: "Run an autonomous AI agent to perform a task. The agent will analyze your request, find relevant tools, write its own code, and execute it.",
         inputSchema: {
@@ -536,6 +550,38 @@ export const createServer = async (
                 isError: true
             };
         }
+    }
+
+    if (name === "run_python") {
+        const { code } = args as { code: string };
+        // We import the execution logic from the handler, but we need to inject dependencies here?
+        // Wait, the handler implementation I wrote earlier (execution.handler.ts) contained the logic.
+        // But here I'm using an inline implementation pattern for run_code.
+        // Let's import the handleExecutionTools logic or reimplement it here for consistency?
+        // Let's use the implementation I restored in execution.handler.ts by importing it.
+
+        const { handleExecutionTools } = await import("./handlers/execution.handler");
+
+        // Prepare context
+        const context: any = { // Ideally should match MetaToolContext interface
+            sessionId,
+            namespaceUuid,
+            toolToClient,
+            loadedTools,
+            addToLoadedTools,
+            recursiveHandler: async (n: string, a: any, m: any) => {
+                 const res = await delegateHandler({
+                    method: "tools/call",
+                    params: { name: n, arguments: a, _meta: m }
+                 }, handlerContext);
+                 return res;
+            }
+        };
+
+        const result = await handleExecutionTools(name, args, meta, context);
+        if (result) return formatResult(result);
+
+        return { content: [{ type: "text", text: "Python execution failed to return result." }], isError: true };
     }
 
     if (name === "save_tool_set") {
