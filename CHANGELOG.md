@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.5] - 2026-01-09
+
+### Added
+
+- **docs/REST_API.md**: Comprehensive REST API documentation
+  - OpenAPI/Swagger UI documentation (`/metamcp/:endpoint/api`)
+  - Tool execution endpoints (GET/POST `/metamcp/:endpoint/api/:tool_name`)
+  - MCP transport endpoints (SSE, Streamable HTTP)
+  - Authentication methods (API Key, OAuth 2.0, query parameter)
+  - Session management and lifecycle
+  - Error handling and HTTP status codes
+  - Code examples (cURL, Python, JavaScript, HTTPie)
+
+### Changed
+
+- **LLM_INSTRUCTIONS.md**: Updated to reference REST_API.md
+  - Added link to REST API documentation
+  - Added quick start examples for REST API usage
+  - Corrected OpenAPI version to 3.1.0
+- **ROADMAP.md**: Marked "REST API Documentation" as completed
+  - Removed "Tool Override Documentation" (completed in v3.2.4)
+
 ## [3.2.4] - 2026-01-09
 
 ### Changed

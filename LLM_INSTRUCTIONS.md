@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.3  
+**Version**: 3.2.5  
 **Last Updated**: 2026-01-09
 
 ---
@@ -81,11 +81,26 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
 
 ### REST API (Per-Endpoint)
 
+For complete REST API documentation, see [docs/REST_API.md](docs/REST_API.md).
+
 | Endpoint                              | Method   | Purpose                  |
 | :------------------------------------ | :------- | :----------------------- |
 | `/metamcp/:endpoint/api`              | GET      | Swagger UI documentation |
-| `/metamcp/:endpoint/api/openapi.json` | GET      | OpenAPI 3.0 schema       |
+| `/metamcp/:endpoint/api/openapi.json` | GET      | OpenAPI 3.1.0 schema     |
 | `/metamcp/:endpoint/api/:tool_name`   | GET/POST | Execute tool via REST    |
+
+**Quick Start**:
+
+```bash
+# View Swagger UI
+open http://localhost:12009/metamcp/default/api
+
+# Execute a tool
+curl -X POST http://localhost:12009/metamcp/default/api/read_file \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d '{"path": "/tmp/example.txt"}'
+```
 
 ### Authentication Options (per endpoint)
 
@@ -335,3 +350,4 @@ git submodule update --remote --merge
 - [docs/DASHBOARD.md](docs/DASHBOARD.md) - Project dashboard
 - [docs/ROADMAP.md](docs/ROADMAP.md) - Feature roadmap
 - [docs/DISCOVERED_FEATURES.md](docs/DISCOVERED_FEATURES.md) - Comprehensive feature audit
+- [docs/REST_API.md](docs/REST_API.md) - REST API reference
