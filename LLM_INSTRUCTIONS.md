@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.0  
+**Version**: 3.2.3  
 **Last Updated**: 2026-01-09
 
 ---
@@ -10,17 +10,20 @@ This document serves as the central source of truth for all AI models (Claude, G
 ## 🛡️ Primary Directives
 
 ### 1. Security First
+
 - Do not modify `isolated-vm` configuration to weaken security (e.g., enabling network access directly) without explicit user authorization.
 - Ensure all new tool execution paths route through the **Policy Middleware**.
 - Never bypass the middleware stack for internal tool calls. Always use `delegateHandler` or `recursiveCallToolHandler`.
 
 ### 2. Versioning Mandatory (CRITICAL)
+
 - **Rule**: Every PR that touches code MUST include a version bump in `VERSION` file, `package.json` (Apps), and a `CHANGELOG.md` entry.
 - **Format**: Semantic Versioning (Major.Minor.Patch).
 - **Source of Truth**: The `VERSION` file in the root directory is the single source of truth.
 - **Commit Message**: Include the version number (e.g., "chore: bump version to 3.2.0").
 
 ### 3. Progressive Disclosure
+
 - Do not expose raw downstream tools in `tools/list` by default.
 - Maintain the "Search -> Load -> Use" pattern to conserve context.
 
@@ -32,14 +35,14 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
 
 ### Core Components
 
-| Component | File | Purpose |
-|:----------|:-----|:--------|
-| **Hub (Proxy)** | `apps/backend/src/lib/metamcp/metamcp-proxy.ts` | Progressive disclosure, session management, tool proxying |
-| **Code Mode** | `apps/backend/src/lib/sandbox/code-executor.service.ts` | Secure sandbox via `isolated-vm` |
-| **Semantic Search** | `apps/backend/src/lib/ai/tool-search.service.ts` | Tool RAG using pgvector embeddings |
-| **Policy Engine** | `apps/backend/src/lib/access-control/policy.service.ts` | Allow/Deny patterns for tool access |
-| **Autonomous Agent** | `apps/backend/src/lib/ai/agent.service.ts` | NL task → code generation → execution |
-| **Traffic Inspection** | `apps/backend/src/lib/metamcp/metamcp-middleware/logging.functional.ts` | Mcpshark integration |
+| Component              | File                                                                    | Purpose                                                   |
+| :--------------------- | :---------------------------------------------------------------------- | :-------------------------------------------------------- |
+| **Hub (Proxy)**        | `apps/backend/src/lib/metamcp/metamcp-proxy.ts`                         | Progressive disclosure, session management, tool proxying |
+| **Code Mode**          | `apps/backend/src/lib/sandbox/code-executor.service.ts`                 | Secure sandbox via `isolated-vm`                          |
+| **Semantic Search**    | `apps/backend/src/lib/ai/tool-search.service.ts`                        | Tool RAG using pgvector embeddings                        |
+| **Policy Engine**      | `apps/backend/src/lib/access-control/policy.service.ts`                 | Allow/Deny patterns for tool access                       |
+| **Autonomous Agent**   | `apps/backend/src/lib/ai/agent.service.ts`                              | NL task → code generation → execution                     |
+| **Traffic Inspection** | `apps/backend/src/lib/metamcp/metamcp-middleware/logging.functional.ts` | Mcpshark integration                                      |
 
 ### Architecture Details
 
@@ -57,13 +60,96 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
 3. **Semantic Search**
    - OpenAI `text-embedding-3-small`
    - pgvector for cosine similarity
-   - Tools indexed on upsert
+   - Tools indexed on upsert with rich/concise descriptions
+
+4. **Tool Override System**
+   - Namespace-scoped tool customization via `namespace_tool_mappings` table
+   - Override: name, title, description, annotations
+   - Status: ACTIVE/INACTIVE per namespace
+
+---
+
+## 🔌 API Endpoints Reference
+
+### Standard Endpoints
+
+| Endpoint                 | Method | Purpose                       |
+| :----------------------- | :----- | :---------------------------- |
+| `/health`                | GET    | Health check                  |
+| `/metamcp/:endpoint/sse` | GET    | SSE MCP transport             |
+| `/metamcp/:endpoint/mcp` | POST   | Streamable HTTP MCP transport |
+
+### REST API (Per-Endpoint)
+
+| Endpoint                              | Method   | Purpose                  |
+| :------------------------------------ | :------- | :----------------------- |
+| `/metamcp/:endpoint/api`              | GET      | Swagger UI documentation |
+| `/metamcp/:endpoint/api/openapi.json` | GET      | OpenAPI 3.0 schema       |
+| `/metamcp/:endpoint/api/:tool_name`   | GET/POST | Execute tool via REST    |
+
+### Authentication Options (per endpoint)
+
+| Option                 | Default | Description            |
+| :--------------------- | :------ | :--------------------- |
+| `enable_api_key_auth`  | true    | API key in header      |
+| `enable_oauth`         | false   | OAuth 2.0 bearer token |
+| `use_query_param_auth` | false   | Allow `?api_key=xxx`   |
+
+---
+
+## ⚙️ Configuration Reference
+
+### Database-Stored Settings (`config` table)
+
+| Key                             | Default | Description                               |
+| :------------------------------ | :------ | :---------------------------------------- |
+| `DISABLE_SIGNUP`                | false   | Disable new user registration             |
+| `DISABLE_SSO_SIGNUP`            | false   | Disable SSO/OAuth registration            |
+| `DISABLE_BASIC_AUTH`            | false   | Disable email/password auth               |
+| `MCP_TIMEOUT`                   | 60000   | Individual MCP request timeout (ms)       |
+| `MCP_MAX_TOTAL_TIMEOUT`         | 60000   | Maximum total timeout (ms)                |
+| `MCP_MAX_ATTEMPTS`              | 1       | Retry attempts before ERROR state         |
+| `MCP_RESET_TIMEOUT_ON_PROGRESS` | true    | Reset timeout on progress events          |
+| `SESSION_LIFETIME`              | null    | Session auto-cleanup time (null=infinite) |
+
+### Environment Variables
+
+| Variable                      | Default | Description                          |
+| :---------------------------- | :------ | :----------------------------------- |
+| `DATABASE_URL`                | -       | PostgreSQL connection string         |
+| `OPENAI_API_KEY`              | -       | Required for semantic search & agent |
+| `CODE_EXECUTION_MEMORY_LIMIT` | 128MB   | Sandbox memory limit                 |
+| `OIDC_CLIENT_ID`              | -       | OIDC provider client ID              |
+| `OIDC_CLIENT_SECRET`          | -       | OIDC provider client secret          |
+| `OIDC_DISCOVERY_URL`          | -       | OIDC discovery endpoint              |
+
+---
+
+## 🔧 Middleware Stack
+
+### MCP Functional Middleware (`apps/backend/src/lib/metamcp/metamcp-middleware/`)
+
+| Middleware                     | Purpose                                      |
+| :----------------------------- | :------------------------------------------- |
+| `filter-tools.functional.ts`   | Filter inactive tools from responses         |
+| `logging.functional.ts`        | Log all tool calls to database               |
+| `policy.functional.ts`         | Enforce allow/deny patterns                  |
+| `tool-overrides.functional.ts` | Apply namespace-specific tool customizations |
+
+### Authentication Middleware
+
+| Middleware                   | Purpose                                         |
+| :--------------------------- | :---------------------------------------------- |
+| `api-key-oauth.middleware`   | Multi-method auth (API key, OAuth, query param) |
+| `better-auth-mcp.middleware` | Session validation for MCP proxy                |
+| `lookup-endpoint-middleware` | Endpoint resolution and namespace injection     |
 
 ---
 
 ## 🛠️ Development Workflow
 
 ### Build & Run
+
 ```bash
 pnpm install                    # Install dependencies
 docker-compose up -d db         # Start database (ensure DATABASE_URL is set)
@@ -72,12 +158,14 @@ pnpm build                      # Production build
 ```
 
 ### Testing
+
 ```bash
 cd apps/backend && pnpm test    # Backend unit tests (vitest)
 python scripts/verify_frontend.py  # Frontend visual tests (Playwright)
 ```
 
 ### Database Changes
+
 ```bash
 # 1. Edit schema
 vim apps/backend/src/db/schema.ts
@@ -88,6 +176,7 @@ cd apps/backend && pnpm db:generate
 # 3. Apply migration
 cd apps/backend && pnpm db:migrate
 ```
+
 **Caution**: Use `IF NOT EXISTS` for indexes in migrations to avoid transaction failures.
 
 ---
@@ -97,6 +186,7 @@ cd apps/backend && pnpm db:migrate
 **Every significant change MUST result in a version bump.**
 
 ### Version Bump Process
+
 1. Update `VERSION` file in root
 2. Update `version` in `apps/backend/package.json`
 3. Update `version` in `apps/frontend/package.json`
@@ -104,6 +194,7 @@ cd apps/backend && pnpm db:migrate
 5. Commit with message including version: `chore: bump version to X.Y.Z`
 
 ### Changelog Categories
+
 - `Added` - New features
 - `Changed` - Changes in existing functionality
 - `Fixed` - Bug fixes
@@ -116,17 +207,20 @@ cd apps/backend && pnpm db:migrate
 ## 📝 Documentation Requirements
 
 ### Files to Maintain
-| File | Purpose | Update When |
-|:-----|:--------|:------------|
-| `VERSION` | Version number | Every code change |
-| `CHANGELOG.md` | Version history | Every version bump |
-| `docs/DASHBOARD.md` | Project overview | Structure/dependency changes |
-| `docs/ROADMAP.md` | Feature roadmap | Feature additions |
-| `HANDOFF.md` | Architecture docs | Architecture changes |
-| `LLM_INSTRUCTIONS.md` | This file | Workflow/process changes |
+
+| File                  | Purpose           | Update When                  |
+| :-------------------- | :---------------- | :--------------------------- |
+| `VERSION`             | Version number    | Every code change            |
+| `CHANGELOG.md`        | Version history   | Every version bump           |
+| `docs/DASHBOARD.md`   | Project overview  | Structure/dependency changes |
+| `docs/ROADMAP.md`     | Feature roadmap   | Feature additions            |
+| `HANDOFF.md`          | Architecture docs | Architecture changes         |
+| `LLM_INSTRUCTIONS.md` | This file         | Workflow/process changes     |
 
 ### Session Handoff
+
 When ending a session or switching models, create/update a handoff document:
+
 - Document all changes made
 - List any incomplete tasks
 - Note any issues discovered
@@ -151,11 +245,13 @@ When ending a session or switching models, create/update a handoff document:
    - `isolated-vm` requires native build tools in Dockerfile
 
 ### Type Safety
+
 - Never use `any` type
 - Never use `@ts-ignore` or `@ts-expect-error`
 - Always validate with Zod schemas
 
 ### Code Style
+
 - ES2022 target with ES modules
 - Strict TypeScript mode
 - Path aliases: `@/*`
@@ -167,12 +263,14 @@ When ending a session or switching models, create/update a handoff document:
 ## 🤖 AI Model Capabilities
 
 ### Code Mode (`run_code`)
+
 - **Environment**: Restricted Node.js
 - **Access**: No direct filesystem/network access
 - **Tool Calling**: `await mcp.call('tool_name', args)`
 - **Limits**: 30s timeout, 128MB memory (configurable)
 
 ### Autonomous Agent (`run_agent`)
+
 - **Scope**: All tools via semantic search (default)
 - **Restriction**: Can be scoped by `policyId`
 - **Output**: Final result of generated script
@@ -199,10 +297,10 @@ metamcp/
 
 ## 🔄 Git Submodules
 
-| Submodule | Location | Purpose |
-|:----------|:---------|:--------|
+| Submodule | Location                 | Purpose            |
+| :-------- | :----------------------- | :----------------- |
 | mcp-shark | `apps/backend/mcp-shark` | Traffic inspection |
-| mcp-shark | `submodules/mcp-shark` | Reference copy |
+| mcp-shark | `submodules/mcp-shark`   | Reference copy     |
 
 ```bash
 # Initialize submodules
@@ -236,3 +334,4 @@ git submodule update --remote --merge
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [docs/DASHBOARD.md](docs/DASHBOARD.md) - Project dashboard
 - [docs/ROADMAP.md](docs/ROADMAP.md) - Feature roadmap
+- [docs/DISCOVERED_FEATURES.md](docs/DISCOVERED_FEATURES.md) - Comprehensive feature audit

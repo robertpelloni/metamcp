@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.2  
+**Current Version**: 3.2.3  
 **Last Updated**: 2026-01-09
 
 ---
@@ -82,6 +82,7 @@
 - [x] **Dependency Library Index** - Rated documentation of all dependencies
 - [x] **MCP Directories Library** - 951 indexed servers from 6 submodules
 - [x] **Feature Parity Plan** - Comprehensive competitive analysis
+- [x] **Discovered Features Audit** - Comprehensive audit of 47+ undocumented features
 
 ### Developer Experience
 
@@ -92,6 +93,13 @@
 ---
 
 ## Planned (v3.3.x - v4.x) 📋
+
+### Documentation (Research-driven)
+
+- [ ] **REST API Documentation** - Document Swagger UI, OpenAPI endpoints, REST tool execution
+- [ ] **Configuration Guide** - Comprehensive DB and env config reference
+- [ ] **Tool Override Documentation** - Document namespace-scoped tool customization
+- [ ] **Middleware Development Guide** - Document functional middleware framework
 
 ### Token Optimization (Research-driven)
 
@@ -128,6 +136,7 @@
 
 ### UI/UX
 
+- [ ] **Tool Override UI** - Frontend interface for namespace-scoped tool customization
 - [ ] **Dark Mode** - Theme support
 - [ ] **Keyboard Shortcuts** - Power user features
 - [ ] **Mobile Responsive** - Mobile-friendly dashboard
@@ -149,6 +158,7 @@
 - [ ] **Workflow Builder** - Visual tool chain builder
 - [ ] **Scheduled Tasks** - Cron-like tool execution
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
+- [ ] **OAuth Server Documentation** - Document existing OAuth 2.0 server capability
 
 ### Analytics
 
@@ -168,6 +178,7 @@
 
 | Version   | Date       | Highlights                                       |
 | :-------- | :--------- | :----------------------------------------------- |
+| **3.2.3** | 2026-01-09 | Discovered Features Audit (47+ undocumented)     |
 | **3.2.2** | 2026-01-09 | MCP Directories Library, Feature Parity Plan     |
 | **3.2.1** | 2026-01-09 | Dependency Library Index                         |
 | **3.2.0** | 2026-01-09 | Documentation overhaul, enhanced instructions    |

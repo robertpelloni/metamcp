@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.3] - 2026-01-09
+
+### Added
+
+- **DISCOVERED_FEATURES.md**: Comprehensive audit of 47+ undocumented features
+  - Tool Override System (namespace-scoped customization)
+  - Full OAuth 2.0 Server implementation (3 tables)
+  - 8 undocumented DB configuration options
+  - 4 undocumented API endpoints (Swagger UI, OpenAPI, REST tool execution, /health)
+  - 8+ middleware layers documentation
+  - Session management internals
+  - Clarification: loadedTools FIFO eviction NOT found in code
+
+### Changed
+
+- **LLM_INSTRUCTIONS.md**: Major enhancement with:
+  - API Endpoints Reference (REST, Swagger, health)
+  - Configuration Reference (DB-stored and environment variables)
+  - Middleware Stack documentation
+  - Tool Override System documentation
+- **ROADMAP.md**: Updated with discovered feature documentation tasks:
+  - Added Documentation section (REST API, Config Guide, Tool Override, Middleware)
+  - Added Tool Override UI to UI/UX section
+  - Added OAuth Server Documentation to Ideas
+  - Version history updated
+
 ## [3.2.2] - 2026-01-09
 
 ### Added
