@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.1] - 2026-01-09
+
+### Added
+- **DEPENDENCIES.md**: Comprehensive dependency library index with:
+  - Star ratings (⭐) for all packages based on quality, docs, and stability
+  - Organized by category (Core Framework, Database, MCP/AI, Auth, etc.)
+  - Documentation links for every dependency
+  - Usage notes and gotchas
+  - Version pinning strategy guidelines
+  - Troubleshooting common issues
+  - Security and performance notes
+
+### Changed
+- **ROADMAP.md**: Marked "Dependency Library Index" as completed
+
 ## [3.2.0] - 2026-01-09
 
 ### Added
