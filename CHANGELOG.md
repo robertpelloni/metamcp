@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.4] - 2026-01-09
+
+### Changed
+
+- **ROADMAP.md**: Moved "Tool Override UI" from Planned to Completed
+  - Added new "Tool Customization" section under Completed Features
+  - Tool Override System and UI are fully implemented (not planned)
+- **DISCOVERED_FEATURES.md**: Updated Tool Override System status
+  - Changed from "Schema exists, implementation status unclear" to "Fully Implemented"
+  - Added implementation details: backend API location, frontend UI component paths
+  - Updated documentation gap status to reflect ROADMAP.md addition
+
+### Documentation
+
+- Corrected feature audit findings based on codebase verification
+- Tool Override UI exists in `enhanced-namespace-tools-table.tsx` (1300+ lines)
+- Backend API: `namespaces.impl.ts` → `updateToolOverrides()` (lines 585-647)
+
 ## [3.2.3] - 2026-01-09
 
 ### Added

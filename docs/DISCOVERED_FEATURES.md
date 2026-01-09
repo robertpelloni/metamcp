@@ -3,7 +3,7 @@
 > Comprehensive audit of all features, functionality, and design details discovered through codebase analysis.
 >
 > **Audit Date**: January 2025  
-> **Version**: 3.2.3
+> **Version**: 3.2.4
 
 ---
 
@@ -25,7 +25,7 @@ This audit discovered **47+ undocumented or partially documented features** acro
 
 ### 1.1 Tool Override System (`namespaceToolMappingsTable`)
 
-**Status**: Schema exists, implementation status unclear
+**Status**: ✅ Fully Implemented (Backend + Frontend UI)
 
 ```typescript
 // Fields that enable per-namespace tool customization:
@@ -36,9 +36,15 @@ override_annotations: jsonb // Custom metadata/annotations
 status: enum               // ACTIVE/INACTIVE per namespace
 ```
 
+**Implementation Details**:
+
+- **Backend API**: `apps/backend/src/trpc/namespaces.impl.ts` → `updateToolOverrides()` (lines 585-647)
+- **Frontend UI**: `apps/frontend/app/[locale]/(sidebar)/namespaces/[uuid]/components/enhanced-namespace-tools-table.tsx` (1300+ lines)
+- **Features**: Full inline editing with Edit Overrides dropdown, temp state management, Save/Cancel/Reset buttons
+
 **Use Case**: Allow different namespaces to present the same underlying tool with different names, descriptions, or configurations.
 
-**Documentation Gap**: Not mentioned in any guide or roadmap.
+**Documentation Gap**: ~~Not mentioned in any guide or roadmap.~~ Now documented in ROADMAP.md under "Tool Customization".
 
 ---
 
@@ -326,10 +332,10 @@ headers: jsonb; // Custom headers for HTTP requests
 
 ### ROADMAP Additions
 
-1. Add "Document undocumented features" to In Progress
-2. Add "Tool Override UI" to Planned
-3. Add "OAuth Server Documentation/Testing" to Ideas
-4. Clarify "loadedTools FIFO" status
+1. ~~Add "Document undocumented features" to In Progress~~ ✅ Done (v3.2.3)
+2. ~~Add "Tool Override UI" to Planned~~ ✅ Already implemented - moved to Completed (v3.2.4)
+3. Add "OAuth Server Documentation/Testing" to Ideas ✅ Done
+4. Clarify "loadedTools FIFO" status - **Finding: NOT found in codebase**
 
 ---
 
@@ -347,7 +353,7 @@ headers: jsonb; // Custom headers for HTTP requests
 | `namespaces`                | Tool groupings                   | ✅                   |
 | `endpoints`                 | Public routing endpoints         | ✅ Partial           |
 | `namespace_server_mappings` | Namespace ↔ Server relations     | ✅                   |
-| `namespace_tool_mappings`   | **Tool overrides**               | ❌                   |
+| `namespace_tool_mappings`   | **Tool overrides**               | ✅ (v3.2.4)          |
 | `api_keys`                  | API key management               | ✅                   |
 | `config`                    | App-wide settings                | ❌                   |
 | `oauth_clients`             | **OAuth server clients**         | ❌                   |

@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.3  
+**Current Version**: 3.2.4  
 **Last Updated**: 2026-01-09
 
 ---
@@ -37,6 +37,11 @@
 - [x] **Tool Chaining** - `mcp.call()` for calling tools from sandbox
 - [x] **Memory Limits** - Configurable via `CODE_EXECUTION_MEMORY_LIMIT`
 - [x] **Timeout Protection** - 30s default execution timeout
+
+### Tool Customization ✅
+
+- [x] **Tool Override System** - Namespace-scoped tool customization (name, title, description, annotations)
+- [x] **Tool Override UI** - Full inline editing UI in namespace tools table with Save/Cancel/Reset
 
 ### Autonomous Agent ✅
 
@@ -136,7 +141,6 @@
 
 ### UI/UX
 
-- [ ] **Tool Override UI** - Frontend interface for namespace-scoped tool customization
 - [ ] **Dark Mode** - Theme support
 - [ ] **Keyboard Shortcuts** - Power user features
 - [ ] **Mobile Responsive** - Mobile-friendly dashboard
@@ -176,19 +180,20 @@
 
 ## Version History Summary
 
-| Version   | Date       | Highlights                                       |
-| :-------- | :--------- | :----------------------------------------------- |
-| **3.2.3** | 2026-01-09 | Discovered Features Audit (47+ undocumented)     |
-| **3.2.2** | 2026-01-09 | MCP Directories Library, Feature Parity Plan     |
-| **3.2.1** | 2026-01-09 | Dependency Library Index                         |
-| **3.2.0** | 2026-01-09 | Documentation overhaul, enhanced instructions    |
-| **3.1.0** | 2025-12-27 | Agent implementation, dashboard docs             |
-| **3.0.3** | 2025-12-27 | Enhanced semantic indexing                       |
-| **3.0.2** | 2025-12-27 | Policy Engine implementation                     |
-| **3.0.1** | 2025-12-27 | Centralized versioning system                    |
-| **3.0.0** | 2025-12-15 | Major release: Agent, Code Mode, Semantic Search |
-| **2.x**   | 2025       | Progressive disclosure, basic hub features       |
-| **1.x**   | 2025       | Initial MCP proxy implementation                 |
+| Version   | Date       | Highlights                                        |
+| :-------- | :--------- | :------------------------------------------------ |
+| **3.2.4** | 2026-01-09 | Documentation correction: Tool Override UI exists |
+| **3.2.3** | 2026-01-09 | Discovered Features Audit (47+ undocumented)      |
+| **3.2.2** | 2026-01-09 | MCP Directories Library, Feature Parity Plan      |
+| **3.2.1** | 2026-01-09 | Dependency Library Index                          |
+| **3.2.0** | 2026-01-09 | Documentation overhaul, enhanced instructions     |
+| **3.1.0** | 2025-12-27 | Agent implementation, dashboard docs              |
+| **3.0.3** | 2025-12-27 | Enhanced semantic indexing                        |
+| **3.0.2** | 2025-12-27 | Policy Engine implementation                      |
+| **3.0.1** | 2025-12-27 | Centralized versioning system                     |
+| **3.0.0** | 2025-12-15 | Major release: Agent, Code Mode, Semantic Search  |
+| **2.x**   | 2025       | Progressive disclosure, basic hub features        |
+| **1.x**   | 2025       | Initial MCP proxy implementation                  |
 
 ---
 
