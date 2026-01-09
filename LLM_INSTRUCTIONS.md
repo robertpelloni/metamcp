@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.6  
+**Version**: 3.2.7  
 **Last Updated**: 2026-01-09
 
 ---
@@ -145,6 +145,8 @@ curl -X POST http://localhost:12009/metamcp/default/api/read_file \
 ---
 
 ## 🔧 Middleware Stack
+
+> **Full Documentation**: See [docs/MIDDLEWARE.md](docs/MIDDLEWARE.md) for the complete middleware development guide.
 
 ### MCP Functional Middleware (`apps/backend/src/lib/metamcp/metamcp-middleware/`)
 

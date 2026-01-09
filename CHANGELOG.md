@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.7] - 2026-01-09
+
+### Added
+
+- **docs/MIDDLEWARE.md**: Comprehensive middleware development guide (~600 lines)
+  - Core architecture: MetaMCPHandlerContext, handler types, middleware signatures
+  - Middleware composition with `compose()` function and execution flow diagrams
+  - Built-in middleware documentation: logging, policy, filter-tools, tool-overrides
+  - Custom middleware patterns using `createFunctionalMiddleware()` factory
+  - Caching strategies with TTL recommendations (ToolStatusCache, ToolOverridesCache)
+  - 5 example implementations: request validation, audit trail, response sanitization, timeout, feature flags
+
+### Changed
+
+- **LLM_INSTRUCTIONS.md**: Added reference to MIDDLEWARE.md in Middleware Stack section
+- **ROADMAP.md**: Marked "Middleware Development Guide" as completed
+
 ## [3.2.6] - 2026-01-09
 
 ### Added
