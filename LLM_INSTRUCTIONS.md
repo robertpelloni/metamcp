@@ -1,95 +1,238 @@
 # Universal LLM Instructions for MetaMCP
 
-This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, etc.) working on the MetaMCP repository.
+This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
+
+**Version**: 3.2.0  
+**Last Updated**: 2026-01-09
+
+---
 
 ## 🛡️ Primary Directives
 
-1.  **Security First**:
-    *   Do not modify `isolated-vm` configuration to weaken security (e.g., enabling network access directly) without explicit user authorization.
-    *   Ensure all new tool execution paths route through the **Policy Middleware**.
+### 1. Security First
+- Do not modify `isolated-vm` configuration to weaken security (e.g., enabling network access directly) without explicit user authorization.
+- Ensure all new tool execution paths route through the **Policy Middleware**.
+- Never bypass the middleware stack for internal tool calls. Always use `delegateHandler` or `recursiveCallToolHandler`.
 
-2.  **Versioning Mandatory**:
-    *   **Rule**: Every PR that touches code MUST include a version bump in `VERSION` file, `package.json` (Apps), and a `CHANGELOG.md` entry.
-    *   **Format**: Semantic Versioning (Major.Minor.Patch).
-    *   **Source of Truth**: The `VERSION` file in the root directory is the single source of truth for the project version.
+### 2. Versioning Mandatory (CRITICAL)
+- **Rule**: Every PR that touches code MUST include a version bump in `VERSION` file, `package.json` (Apps), and a `CHANGELOG.md` entry.
+- **Format**: Semantic Versioning (Major.Minor.Patch).
+- **Source of Truth**: The `VERSION` file in the root directory is the single source of truth.
+- **Commit Message**: Include the version number (e.g., "chore: bump version to 3.2.0").
 
-3.  **Progressive Disclosure**:
-    *   Do not expose raw downstream tools in `tools/list` by default.
-    *   Maintain the "Search -> Load -> Use" pattern to conserve context.
+### 3. Progressive Disclosure
+- Do not expose raw downstream tools in `tools/list` by default.
+- Maintain the "Search -> Load -> Use" pattern to conserve context.
+
+---
 
 ## 🏗️ System Architecture
 
 MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downstream MCP servers.
 
 ### Core Components
-1.  **The Hub (Proxy)**: `apps/backend/src/lib/metamcp/metamcp-proxy.ts`
-    *   **Progressive Disclosure**: Hides downstream tools by default. Exposes only meta-tools (`search_tools`, `load_tool`, `run_code`, `run_agent`).
-    *   **Session Management**: Maintains a session-specific `loadedTools` set with FIFO eviction (max 200 items).
-    *   **Recursive Routing**: Internal calls from the Sandbox are routed *back* through the middleware stack (`recursiveCallToolHandler`) to ensure logging, auth, and policy enforcement.
 
-2.  **Code Mode (Sandbox)**: `apps/backend/src/lib/sandbox/code-executor.service.ts`
-    *   Uses `isolated-vm` for secure, memory-limited execution (configurable via `CODE_EXECUTION_MEMORY_LIMIT`).
-    *   Allows tool chaining via injected `mcp.call()`.
+| Component | File | Purpose |
+|:----------|:-----|:--------|
+| **Hub (Proxy)** | `apps/backend/src/lib/metamcp/metamcp-proxy.ts` | Progressive disclosure, session management, tool proxying |
+| **Code Mode** | `apps/backend/src/lib/sandbox/code-executor.service.ts` | Secure sandbox via `isolated-vm` |
+| **Semantic Search** | `apps/backend/src/lib/ai/tool-search.service.ts` | Tool RAG using pgvector embeddings |
+| **Policy Engine** | `apps/backend/src/lib/access-control/policy.service.ts` | Allow/Deny patterns for tool access |
+| **Autonomous Agent** | `apps/backend/src/lib/ai/agent.service.ts` | NL task → code generation → execution |
+| **Traffic Inspection** | `apps/backend/src/lib/metamcp/metamcp-middleware/logging.functional.ts` | Mcpshark integration |
 
-3.  **Semantic Search**: `apps/backend/src/lib/ai/tool-search.service.ts`
-    *   Uses OpenAI Embeddings (`text-embedding-3-small`) and `pgvector` (Postgres extension).
-    *   Tools are indexed on upsert.
+### Architecture Details
 
-4.  **Policy Engine**: `apps/backend/src/lib/access-control/policy.service.ts`
-    *   Enforces Allow/Deny patterns on tool access.
-    *   Middleware: `apps/backend/src/lib/metamcp/metamcp-middleware/policy.functional.ts`.
+1. **The Hub (Proxy)**
+   - Hides downstream tools by default
+   - Exposes meta-tools: `search_tools`, `load_tool`, `run_code`, `run_agent`
+   - Session-specific `loadedTools` set with FIFO eviction (max 200)
+   - Recursive routing back through middleware stack
 
-5.  **Autonomous Agent**: `apps/backend/src/lib/ai/agent.service.ts`
-    *   Self-generating code execution for natural language tasks.
-    *   Can be scoped by `policyId`.
+2. **Code Mode (Sandbox)**
+   - Memory limit: `CODE_EXECUTION_MEMORY_LIMIT` (default 128MB)
+   - Tool chaining via `mcp.call()`
+   - No network/FS access by default
+
+3. **Semantic Search**
+   - OpenAI `text-embedding-3-small`
+   - pgvector for cosine similarity
+   - Tools indexed on upsert
+
+---
 
 ## 🛠️ Development Workflow
 
-### 1. Build & Run
-*   **Install**: `pnpm install`
-*   **Database**: `docker-compose up -d db` (Ensure `DATABASE_URL` is set)
-*   **Dev Server**: `pnpm dev`
-*   **Build**: `pnpm build` (Checks types and builds both apps)
+### Build & Run
+```bash
+pnpm install                    # Install dependencies
+docker-compose up -d db         # Start database (ensure DATABASE_URL is set)
+pnpm dev                        # Start dev server (frontend:12008, backend:12009)
+pnpm build                      # Production build
+```
 
-### 2. Testing
-*   **Backend Unit**: `apps/backend/node_modules/.bin/vitest apps/backend/src/...`
-*   **Frontend Visual**: `python scripts/verify_frontend.py` (Playwright) - *See `frontend_verification_instructions` tool*.
+### Testing
+```bash
+cd apps/backend && pnpm test    # Backend unit tests (vitest)
+python scripts/verify_frontend.py  # Frontend visual tests (Playwright)
+```
 
-### 3. Database Changes
-*   **Schema**: Edit `apps/backend/src/db/schema.ts`.
-*   **Generate**: `cd apps/backend && pnpm db:generate`
-*   **Migrate**: `cd apps/backend && pnpm db:migrate`
-*   **Caution**: Use `IF NOT EXISTS` for indexes in migrations to avoid transaction failures.
+### Database Changes
+```bash
+# 1. Edit schema
+vim apps/backend/src/db/schema.ts
 
-## 📦 Versioning & Changelog (CRITICAL)
+# 2. Generate migration
+cd apps/backend && pnpm db:generate
 
-**Every significant change or build MUST result in a version bump.**
+# 3. Apply migration
+cd apps/backend && pnpm db:migrate
+```
+**Caution**: Use `IF NOT EXISTS` for indexes in migrations to avoid transaction failures.
 
-1.  **Bump Version**:
-    *   Update `VERSION` file in root.
-    *   Update `version` in `apps/backend/package.json` and `apps/frontend/package.json`.
-2.  **Update Changelog**:
-    *   Add an entry to `CHANGELOG.md` under `## [Version] - Date`.
-    *   Categories: `Added`, `Changed`, `Fixed`, `Removed`.
-3.  **Commit Message**:
-    *   Include the new version number in the commit message (e.g., "chore: bump version to 3.0.1").
+---
+
+## 📦 Versioning & Changelog Protocol
+
+**Every significant change MUST result in a version bump.**
+
+### Version Bump Process
+1. Update `VERSION` file in root
+2. Update `version` in `apps/backend/package.json`
+3. Update `version` in `apps/frontend/package.json`
+4. Add entry to `CHANGELOG.md` under `## [Version] - YYYY-MM-DD`
+5. Commit with message including version: `chore: bump version to X.Y.Z`
+
+### Changelog Categories
+- `Added` - New features
+- `Changed` - Changes in existing functionality
+- `Fixed` - Bug fixes
+- `Removed` - Removed features
+- `Security` - Security fixes
+- `Deprecated` - Soon-to-be removed features
+
+---
+
+## 📝 Documentation Requirements
+
+### Files to Maintain
+| File | Purpose | Update When |
+|:-----|:--------|:------------|
+| `VERSION` | Version number | Every code change |
+| `CHANGELOG.md` | Version history | Every version bump |
+| `docs/DASHBOARD.md` | Project overview | Structure/dependency changes |
+| `docs/ROADMAP.md` | Feature roadmap | Feature additions |
+| `HANDOFF.md` | Architecture docs | Architecture changes |
+| `LLM_INSTRUCTIONS.md` | This file | Workflow/process changes |
+
+### Session Handoff
+When ending a session or switching models, create/update a handoff document:
+- Document all changes made
+- List any incomplete tasks
+- Note any issues discovered
+- Include relevant context for continuity
+
+---
 
 ## 🚨 Coding Standards & Gotchas
 
-*   **Recursion**: When modifying `metamcp-proxy.ts`, beware of the circular dependency in the middleware stack. Use the **Mutable Reference Pattern** (`recursiveCallToolHandlerRef`) to ensure the handler is defined before execution.
-*   **Environment**: `OPENAI_API_KEY` is validated at startup. `isolated-vm` requires native build tools (`python3`, `make`, `g++`) in the Dockerfile.
-*   **Security**: Never bypass the middleware stack for internal tool calls. Always use `delegateHandler` or `recursiveCallToolHandler`.
-*   **Tool Names**: Tool names are namespaced: `serverName__toolName`.
+### Critical Patterns
 
-## 🤖 Capabilities & Constraints
+1. **Mutable Reference Pattern**
+   - When modifying `metamcp-proxy.ts`, use `recursiveCallToolHandlerRef`
+   - Required for circular dependencies in middleware stack
+
+2. **Tool Naming**
+   - Tool names are namespaced: `serverName__toolName`
+   - Always use this format when referencing tools
+
+3. **Environment Variables**
+   - `OPENAI_API_KEY` validated at startup
+   - `isolated-vm` requires native build tools in Dockerfile
+
+### Type Safety
+- Never use `any` type
+- Never use `@ts-ignore` or `@ts-expect-error`
+- Always validate with Zod schemas
+
+### Code Style
+- ES2022 target with ES modules
+- Strict TypeScript mode
+- Path aliases: `@/*`
+- Format with Prettier
+- Lint with ESLint
+
+---
+
+## 🤖 AI Model Capabilities
 
 ### Code Mode (`run_code`)
-*   **Environment**: Restricted Node.js environment.
-*   **Access**: No direct filesystem/network access.
-*   **Tool Calling**: Must use `await mcp.call('tool_name', args)`.
-*   **Limit**: Execution time defaults to 30s. Memory defaults to 128MB (configurable).
+- **Environment**: Restricted Node.js
+- **Access**: No direct filesystem/network access
+- **Tool Calling**: `await mcp.call('tool_name', args)`
+- **Limits**: 30s timeout, 128MB memory (configurable)
 
 ### Autonomous Agent (`run_agent`)
-*   **Scope**: By default, has access to all tools via Search.
-*   **Restriction**: Can be restricted by passing `policyId`.
-*   **Output**: Returns the final result of the generated script.
+- **Scope**: All tools via semantic search (default)
+- **Restriction**: Can be scoped by `policyId`
+- **Output**: Final result of generated script
+
+---
+
+## 📊 Project Structure
+
+See `docs/DASHBOARD.md` for complete project structure and dependencies.
+
+```
+metamcp/
+├── apps/
+│   ├── backend/          # Express/TRPC API + MCP Proxy
+│   └── frontend/         # Next.js 15 UI
+├── packages/             # Shared packages
+├── docs/                 # Documentation
+├── VERSION               # Version source of truth
+├── CHANGELOG.md          # Version history
+└── LLM_INSTRUCTIONS.md   # This file
+```
+
+---
+
+## 🔄 Git Submodules
+
+| Submodule | Location | Purpose |
+|:----------|:---------|:--------|
+| mcp-shark | `apps/backend/mcp-shark` | Traffic inspection |
+| mcp-shark | `submodules/mcp-shark` | Reference copy |
+
+```bash
+# Initialize submodules
+git submodule update --init --recursive
+
+# Update to latest
+git submodule update --remote --merge
+```
+
+---
+
+## ⚠️ Prohibited Actions
+
+1. **DO NOT** weaken `isolated-vm` security without explicit authorization
+2. **DO NOT** bypass Policy Middleware for tool execution
+3. **DO NOT** commit without version bump for code changes
+4. **DO NOT** use `any` type or suppress TypeScript errors
+5. **DO NOT** run `taskkill /F /IM node.exe /T` (kills all sessions)
+6. **DO NOT** push directly to main without PR (if team workflow)
+
+---
+
+## 📚 Reference Documents
+
+- [CLAUDE.md](CLAUDE.md) - Claude-specific instructions
+- [AGENTS.md](AGENTS.md) - Agent-specific directives
+- [GEMINI.md](GEMINI.md) - Gemini-specific instructions
+- [GPT.md](GPT.md) - GPT-specific instructions
+- [copilot-instructions.md](copilot-instructions.md) - Copilot-specific instructions
+- [HANDOFF.md](HANDOFF.md) - Architecture documentation
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [docs/DASHBOARD.md](docs/DASHBOARD.md) - Project dashboard
+- [docs/ROADMAP.md](docs/ROADMAP.md) - Feature roadmap

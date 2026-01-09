@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.0] - 2026-01-09
+
+### Added
+- **ROADMAP.md**: Comprehensive feature roadmap with completed, in-progress, and planned features.
+- **Enhanced DASHBOARD.md**: Comprehensive project dashboard with:
+  - Detailed project structure documentation
+  - Git submodule documentation (mcp-shark)
+  - Dependency ratings and purpose documentation
+  - Build commands and environment variables
+- **Session Handoff System**: Documentation protocol for AI model continuity.
+
+### Changed
+- **LLM_INSTRUCTIONS.md**: Major enhancement with:
+  - Detailed versioning protocol
+  - Documentation requirements table
+  - Prohibited actions list
+  - Architecture component table
+  - Git submodule documentation
+  - Session handoff guidelines
+- **Documentation Structure**: All LLM instruction files now reference universal `LLM_INSTRUCTIONS.md`.
+
+### Documentation
+- Added dependency ratings (⭐ relevance system) in DASHBOARD.md
+- Added version history summary across documentation
+- Synchronized version numbers across all package.json files and VERSION file
+
 ## [3.1.0] - 2025-12-27
 
 ### Added
