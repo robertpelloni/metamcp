@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.5  
+**Version**: 3.2.6  
 **Last Updated**: 2026-01-09
 
 ---
@@ -114,6 +114,8 @@ curl -X POST http://localhost:12009/metamcp/default/api/read_file \
 
 ## ⚙️ Configuration Reference
 
+> **Full Documentation**: See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for comprehensive configuration guide with examples.
+
 ### Database-Stored Settings (`config` table)
 
 | Key                             | Default | Description                               |
@@ -137,6 +139,8 @@ curl -X POST http://localhost:12009/metamcp/default/api/read_file \
 | `OIDC_CLIENT_ID`              | -       | OIDC provider client ID              |
 | `OIDC_CLIENT_SECRET`          | -       | OIDC provider client secret          |
 | `OIDC_DISCOVERY_URL`          | -       | OIDC discovery endpoint              |
+
+> **OIDC Provider Examples**: Okta, Auth0, Google Workspace, Azure AD, Keycloak. See [CONFIGURATION.md](docs/CONFIGURATION.md#oidcsso-configuration) for setup instructions.
 
 ---
 

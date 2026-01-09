@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.6] - 2026-01-09
+
+### Added
+
+- **docs/CONFIGURATION.md**: Comprehensive configuration guide (~450 lines)
+  - Database-stored settings: authentication, MCP timeouts, session management
+  - Environment variables: DATABASE_URL, OPENAI_API_KEY, CODE_EXECUTION_MEMORY_LIMIT
+  - OIDC/SSO configuration with provider-specific examples (Okta, Auth0, Google, Azure AD, Keycloak)
+  - Per-endpoint authentication options (API key, OAuth, query parameter auth)
+  - Configuration management via Admin UI and tRPC API
+  - Configuration precedence documentation
+  - Production deployment examples (minimal, SSO, high-availability, air-gapped)
+
+### Changed
+
+- **LLM_INSTRUCTIONS.md**: Added reference to CONFIGURATION.md
+  - Added "Full Documentation" link at top of Configuration Reference section
+  - Added OIDC provider examples note with link to detailed setup instructions
+- **ROADMAP.md**: Marked "Configuration Guide" as completed
+
 ## [3.2.5] - 2026-01-09
 
 ### Added

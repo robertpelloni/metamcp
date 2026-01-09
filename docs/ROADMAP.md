@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.5  
+**Current Version**: 3.2.6  
 **Last Updated**: 2026-01-09
 
 ---
@@ -102,7 +102,7 @@
 ### Documentation (Research-driven)
 
 - [x] **REST API Documentation** - Document Swagger UI, OpenAPI endpoints, REST tool execution
-- [ ] **Configuration Guide** - Comprehensive DB and env config reference
+- [x] **Configuration Guide** - Comprehensive DB and env config reference (docs/CONFIGURATION.md)
 - [ ] **Middleware Development Guide** - Document functional middleware framework
 
 ### Token Optimization (Research-driven)
@@ -181,6 +181,7 @@
 
 | Version   | Date       | Highlights                                        |
 | :-------- | :--------- | :------------------------------------------------ |
+| **3.2.6** | 2026-01-09 | Configuration Guide (docs/CONFIGURATION.md)       |
 | **3.2.5** | 2026-01-09 | REST API Documentation (docs/REST_API.md)         |
 | **3.2.4** | 2026-01-09 | Documentation correction: Tool Override UI exists |
 | **3.2.3** | 2026-01-09 | Discovered Features Audit (47+ undocumented)      |
