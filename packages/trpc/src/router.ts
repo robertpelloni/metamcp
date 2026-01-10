@@ -17,6 +17,7 @@ export const createAppRouter = (implementations: {
       config: frontendRouters.config,
       logs: frontendRouters.logs,
       savedScripts: frontendRouters.savedScripts,
+      serverHealth: frontendRouters.serverHealth,
       toolSets: frontendRouters.toolSets,
       policies: frontendRouters.policies,
       agent: frontendRouters.agent,

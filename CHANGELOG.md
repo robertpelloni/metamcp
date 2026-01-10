@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.15] - 2026-01-09
+
+### Added
+
+- **apps/backend/src/lib/metamcp/server-health.service.ts**: Server health monitoring service
+  - `ServerHealthService` singleton class for tracking MCP server health status
+  - Health states: `HEALTHY`, `UNHEALTHY`, `UNKNOWN`, `CHECKING`
+  - `checkServerHealth(serverUuid)` - connects to server and lists tools to verify health
+  - `checkMultipleServers(serverUuids?)` - batch health check for multiple/all servers
+  - `getServerHealth(serverUuid)` - retrieve current health status for a server
+  - `getHealthSummary()` - returns aggregate stats (total, healthy, unhealthy, unknown)
+  - Periodic health checks with configurable interval (default 60s)
+  - Consecutive failure tracking - marks server `UNHEALTHY` after 3 failures
+  - Integration with `serverErrorTracker` for error state synchronization
+
+- **packages/zod-types/src/server-health.zod.ts**: Zod schemas for health check types
+  - `ServerHealthStatusEnum` - health status enumeration
+  - `ServerHealthInfoSchema` - health info with status, lastCheck, consecutiveFailures, error
+  - `HealthCheckResultSchema` - individual check result
+  - `HealthSummarySchema` - aggregate health statistics
+  - `CheckHealthRequestSchema`, `GetHealthRequestSchema` - request schemas
+
+- **packages/trpc/src/routers/frontend/server-health.ts**: tRPC router for health endpoints
+  - `checkHealth` mutation - trigger health checks for servers
+  - `getHealth` query - get health status for specific servers
+  - `getSummary` query - get aggregate health summary
+
+- **apps/backend/src/trpc/server-health.impl.ts**: tRPC implementation connecting router to service
+
+### Changed
+
+- **packages/zod-types/src/index.ts**: Added export for `server-health.zod`
+- **packages/trpc/src/routers/frontend/index.ts**: Added `createServerHealthRouter` to frontend router
+- **packages/trpc/src/router.ts**: Added `serverHealth` to frontend router definition
+- **apps/backend/src/routers/trpc.ts**: Added `serverHealthImplementations` to app router
+
 ## [3.2.14] - 2026-01-09
 
 ### Added

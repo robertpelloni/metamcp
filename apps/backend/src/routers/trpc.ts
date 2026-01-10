@@ -13,6 +13,7 @@ import { mcpServersImplementations } from "../trpc/mcp-servers.impl";
 import { namespacesImplementations } from "../trpc/namespaces.impl";
 import { oauthImplementations } from "../trpc/oauth.impl";
 import { savedScriptsImplementations } from "../trpc/saved-scripts.impl";
+import { serverHealthImplementations } from "../trpc/server-health.impl";
 import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
 import { policiesImplementations } from "../trpc/policies.impl";
@@ -30,6 +31,7 @@ const appRouter = createAppRouter({
     config: configImplementations,
     logs: logsImplementations,
     savedScripts: savedScriptsImplementations,
+    serverHealth: serverHealthImplementations,
     toolSets: toolSetsImplementations,
     policies: policiesImplementations,
     agent: agentImplementations,

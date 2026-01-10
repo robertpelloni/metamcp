@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.14  
+**Current Version**: 3.2.15  
 **Last Updated**: 2026-01-09
 
 ---
@@ -114,7 +114,7 @@
 ### Auto-Discovery
 
 - [ ] **mcp.json Auto-discovery** - Automatic detection of MCP servers
-- [ ] **Server Health Checks** - Monitor downstream server status
+- [x] **Server Health Checks** - Monitor downstream server status (v3.2.15)
 - [ ] **Auto-reconnection** - Recover from server disconnections
 - [ ] **npm/Homebrew Scanning** - Auto-detect installed MCP servers (like MCPM)
 
@@ -181,6 +181,7 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.2.15** | 2026-01-09 | Server Health Checks (periodic health monitoring) |
 | **3.2.14** | 2026-01-09 | Deferred Loading Protocol (lazy tool schemas)     |
 | **3.2.13** | 2026-01-09 | Pattern-Based Filtering (glob/regex tool filter)  |
 | **3.2.12** | 2026-01-09 | mcpdir submodule + Hybrid Search RRF              |
