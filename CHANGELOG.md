@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.9] - 2026-01-09
+
+### Added
+
+- **packages/zod-types/src/config-schemas.zod.ts**: JSON Schema validation for configuration files
+  - `ClaudeDesktopConfigSchema` for claude_desktop_config.json validation
+  - `ClaudeStdioServerSchema` and `ClaudeSseServerSchema` for MCP server definitions
+  - `EnvVarsSchema` and `HttpHeadersSchema` for server configuration
+  - Config key validators: `TimeoutConfigValueSchema`, `MaxAttemptsConfigValueSchema`, `SessionLifetimeConfigValueSchema`
+  - `validateClaudeDesktopConfig()` function for full config validation
+  - `validateConfigValue()` for individual config key validation
+  - Type guards: `isStdioServer()`, `isSseServer()`
+
+### Changed
+
+- **config-import.service.ts**: Now uses JSON Schema validation
+  - Validates entire config structure before import
+  - Clear error messages with paths to invalid fields
+  - Type-safe server definition parsing
+
 ## [3.2.8] - 2026-01-09
 
 ### Added

@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.8  
+**Current Version**: 3.2.9  
 **Last Updated**: 2026-01-09
 
 ---
@@ -93,7 +93,7 @@
 
 - [ ] **Hot Reload Improvements** - Faster development cycles
 - [x] **Better Error Messages** - Typed error classes with ErrorCode enum (`errors.ts`)
-- [ ] **Config Validation** - JSON Schema for configuration files
+- [x] **Config Validation** - JSON Schema validation for configuration files (`config-schemas.zod.ts`)
 
 ---
 
