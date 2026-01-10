@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.9  
+**Current Version**: 3.2.10  
 **Last Updated**: 2026-01-09
 
 ---
@@ -91,7 +91,7 @@
 
 ### Developer Experience
 
-- [ ] **Hot Reload Improvements** - Faster development cycles
+- [x] **Hot Reload Improvements** - Faster development cycles (docs/DEVELOPMENT.md)
 - [x] **Better Error Messages** - Typed error classes with ErrorCode enum (`errors.ts`)
 - [x] **Config Validation** - JSON Schema validation for configuration files (`config-schemas.zod.ts`)
 
@@ -179,24 +179,26 @@
 
 ## Version History Summary
 
-| Version   | Date       | Highlights                                        |
-| :-------- | :--------- | :------------------------------------------------ |
-| **3.2.8** | 2026-01-09 | Better Error Messages (typed errors in errors.ts) |
-| **3.2.7** | 2026-01-09 | Middleware Development Guide (docs/MIDDLEWARE.md) |
-| **3.2.6** | 2026-01-09 | Configuration Guide (docs/CONFIGURATION.md)       |
-| **3.2.5** | 2026-01-09 | REST API Documentation (docs/REST_API.md)         |
-| **3.2.4** | 2026-01-09 | Documentation correction: Tool Override UI exists |
-| **3.2.3** | 2026-01-09 | Discovered Features Audit (47+ undocumented)      |
-| **3.2.2** | 2026-01-09 | MCP Directories Library, Feature Parity Plan      |
-| **3.2.1** | 2026-01-09 | Dependency Library Index                          |
-| **3.2.0** | 2026-01-09 | Documentation overhaul, enhanced instructions     |
-| **3.1.0** | 2025-12-27 | Agent implementation, dashboard docs              |
-| **3.0.3** | 2025-12-27 | Enhanced semantic indexing                        |
-| **3.0.2** | 2025-12-27 | Policy Engine implementation                      |
-| **3.0.1** | 2025-12-27 | Centralized versioning system                     |
-| **3.0.0** | 2025-12-15 | Major release: Agent, Code Mode, Semantic Search  |
-| **2.x**   | 2025       | Progressive disclosure, basic hub features        |
-| **1.x**   | 2025       | Initial MCP proxy implementation                  |
+| Version    | Date       | Highlights                                        |
+| :--------- | :--------- | :------------------------------------------------ |
+| **3.2.10** | 2026-01-09 | Hot Reload Improvements (docs/DEVELOPMENT.md)     |
+| **3.2.9**  | 2026-01-09 | Config Validation (config-schemas.zod.ts)         |
+| **3.2.8**  | 2026-01-09 | Better Error Messages (typed errors in errors.ts) |
+| **3.2.7**  | 2026-01-09 | Middleware Development Guide (docs/MIDDLEWARE.md) |
+| **3.2.6**  | 2026-01-09 | Configuration Guide (docs/CONFIGURATION.md)       |
+| **3.2.5**  | 2026-01-09 | REST API Documentation (docs/REST_API.md)         |
+| **3.2.4**  | 2026-01-09 | Documentation correction: Tool Override UI exists |
+| **3.2.3**  | 2026-01-09 | Discovered Features Audit (47+ undocumented)      |
+| **3.2.2**  | 2026-01-09 | MCP Directories Library, Feature Parity Plan      |
+| **3.2.1**  | 2026-01-09 | Dependency Library Index                          |
+| **3.2.0**  | 2026-01-09 | Documentation overhaul, enhanced instructions     |
+| **3.1.0**  | 2025-12-27 | Agent implementation, dashboard docs              |
+| **3.0.3**  | 2025-12-27 | Enhanced semantic indexing                        |
+| **3.0.2**  | 2025-12-27 | Policy Engine implementation                      |
+| **3.0.1**  | 2025-12-27 | Centralized versioning system                     |
+| **3.0.0**  | 2025-12-15 | Major release: Agent, Code Mode, Semantic Search  |
+| **2.x**    | 2025       | Progressive disclosure, basic hub features        |
+| **1.x**    | 2025       | Initial MCP proxy implementation                  |
 
 ---
 

@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.9  
+**Version**: 3.2.10  
 **Last Updated**: 2026-01-09
 
 ---

@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.10] - 2026-01-09
+
+### Added
+
+- **docs/DEVELOPMENT.md**: Comprehensive development guide (~350 lines)
+  - Hot reload architecture documentation
+  - Development scripts reference table
+  - Isolated development workflows (backend-only, frontend-only)
+  - Debugging setup for VS Code
+  - Performance optimization tips
+  - Troubleshooting common issues
+  - IDE configuration recommendations
+  - Common workflow guides (API endpoints, MCP tools, DB schema)
+
+- **docs/WORKSPACE_VISION_SUMMARY.md**: Consolidated vision documentation
+  - MetaMCP's position within AIOS ecosystem
+  - Three pillars overview (AIOS, MetaMCP, Bobcoin)
+  - "Mecha Suit" architecture explanation
+  - Strategic alignment with workspace goals
+
+### Changed
+
+- **turbo.json**: Enhanced task configuration
+  - Added `dependsOn: ["^dev"]` to dev task for proper package ordering
+  - Added `dev:backend` and `dev:frontend` tasks for isolated development
+
+- **package.json** (root): Added isolated dev scripts
+  - `dev:backend`: Start backend only via turborepo filter
+  - `dev:frontend`: Start frontend only via turborepo filter
+
+- **apps/backend/package.json**: Improved hot reload
+  - Added `--clear-screen=false` to tsx watch for cleaner output
+  - Added `dev:backend` script alias
+
+- **apps/frontend/package.json**: Added `dev:frontend` script alias
+
 ## [3.2.9] - 2026-01-09
 
 ### Added
