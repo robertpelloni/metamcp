@@ -9,6 +9,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { toolCallLogsTable } from "../db/schema";
 import { parseToolName } from "../lib/metamcp/tool-name-parser";
+import { DatabaseError, logError, wrapError } from "../lib/errors";
 
 export const logsImplementations = {
   getLogs: async (
@@ -32,7 +33,7 @@ export const logsImplementations = {
       const logs = await query;
 
       // Map to Zod schema format
-      const formattedLogs = logs.map(log => {
+      const formattedLogs = logs.map((log) => {
         const parsed = parseToolName(log.tool_name);
         const serverName = parsed ? parsed.serverName : "metamcp";
 
@@ -40,10 +41,10 @@ export const logsImplementations = {
           id: log.uuid,
           timestamp: log.created_at,
           serverName: serverName,
-          level: log.error ? "error" as const : "info" as const,
+          level: log.error ? ("error" as const) : ("info" as const),
           message: log.error
             ? `Error calling ${log.tool_name}: ${log.error}`
-            : `Called ${log.tool_name} (${log.duration_ms || '?'}ms)`,
+            : `Called ${log.tool_name} (${log.duration_ms || "?"}ms)`,
           error: log.error || undefined,
 
           // Extended fields
@@ -64,12 +65,21 @@ export const logsImplementations = {
         totalCount,
       };
     } catch (error) {
-      console.error("Error getting logs:", error);
-      throw new Error("Failed to get logs");
+      logError(error, "logs.getLogs", {
+        sessionId: input.sessionId,
+        limit: input.limit,
+      });
+      throw new DatabaseError(
+        "query",
+        error instanceof Error ? error.message : "Unknown database error",
+        "tool_call_logs",
+      );
     }
   },
 
-  clearLogs: async (context?: { user?: { id: string } }): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
+  clearLogs: async (context?: {
+    user?: { id: string };
+  }): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
     try {
       await db.delete(toolCallLogsTable);
 
@@ -78,8 +88,12 @@ export const logsImplementations = {
         message: "All logs have been cleared successfully",
       };
     } catch (error) {
-      console.error("Error clearing logs:", error);
-      throw new Error("Failed to clear logs");
+      logError(error, "logs.clearLogs");
+      throw new DatabaseError(
+        "delete",
+        error instanceof Error ? error.message : "Unknown database error",
+        "tool_call_logs",
+      );
     }
   },
 };

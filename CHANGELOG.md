@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.8] - 2026-01-09
+
+### Added
+
+- **apps/backend/src/lib/errors.ts**: Comprehensive error handling system (~350 lines)
+  - `MetaMCPError` base class with error codes, context, timestamps, and serialization
+  - Typed error classes: `NotFoundError`, `AlreadyExistsError`, `ValidationError`, `UnauthorizedError`, `ForbiddenError`
+  - MCP-specific errors: `MCPConnectionError`, `MCPTimeoutError`, `ToolExecutionError`, `MCPServerCrashedError`
+  - Domain errors: `PolicyNotFoundError`, `ToolBlockedByPolicyError`, `DatabaseError`, `ConfigError`
+  - Utility functions: `wrapError()`, `isMetaMCPError()`, `getErrorMessage()`, `createErrorResponse()`, `logError()`
+  - `ErrorCode` enum with 25+ categorized error codes
+
+### Changed
+
+- **policies.impl.ts**: Added comprehensive error handling
+  - Try/catch blocks on all operations (list, create, update, delete)
+  - `NotFoundError` for missing policies
+  - `ValidationError` for duplicate names and constraint violations
+  - Structured logging with operation context
+
+- **config.impl.ts**: Added validation and error handling
+  - Input validation for timeout ranges (1s-1h for MCP, 1s-2h for max total)
+  - Input validation for max attempts (1-10)
+  - Input validation for session lifetime (1min-1year)
+  - `ConfigError` for invalid configuration keys
+  - Structured logging on all operations
+
+- **logs.impl.ts**: Improved error handling with `DatabaseError`
+- **tool-sets.impl.ts**: Added `NotFoundError` checks before delete
+- **saved-scripts.impl.ts**: Added `NotFoundError` checks before delete
+
 ## [3.2.7] - 2026-01-09
 
 ### Added
