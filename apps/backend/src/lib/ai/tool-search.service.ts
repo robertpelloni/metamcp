@@ -3,6 +3,11 @@ import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { toolsTable } from "../../db/schema";
 import { embeddingService } from "./embedding.service";
+import {
+  hybridSearchService,
+  HybridSearchResult,
+  HybridSearchOptions,
+} from "./hybrid-search.service";
 
 export interface ToolSearchResult {
   uuid: string;
@@ -12,13 +17,9 @@ export interface ToolSearchResult {
   mcpServerUuid: string;
 }
 
+export type { HybridSearchResult, HybridSearchOptions };
+
 export class ToolSearchService {
-  /**
-   * Search for tools using vector similarity.
-   * @param query The user's search query
-   * @param limit Max number of results
-   * @param threshold Minimum similarity threshold (0-1)
-   */
   async searchTools(
     query: string,
     limit: number = 10,
@@ -49,6 +50,27 @@ export class ToolSearchService {
       console.error("Error searching tools:", error);
       return [];
     }
+  }
+
+  async hybridSearch(
+    query: string,
+    options?: HybridSearchOptions,
+  ): Promise<HybridSearchResult[]> {
+    return hybridSearchService.search(query, options);
+  }
+
+  async quickSearch(
+    query: string,
+    limit: number = 10,
+  ): Promise<HybridSearchResult[]> {
+    return hybridSearchService.quickSearch(query, limit);
+  }
+
+  async deepSearch(
+    query: string,
+    limit: number = 10,
+  ): Promise<HybridSearchResult[]> {
+    return hybridSearchService.deepSearch(query, limit);
   }
 
   /**

@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.10  
+**Current Version**: 3.2.12  
 **Last Updated**: 2026-01-09
 
 ---
@@ -107,7 +107,7 @@
 
 ### Token Optimization (Research-driven)
 
-- [ ] **Hybrid Search (BM25 + Semantic)** - Combine keyword and vector search for better precision
+- [x] **Hybrid Search (BM25 + Semantic)** - Combine keyword and vector search for better precision (v3.2.11)
 - [ ] **Deferred Loading Protocol** - MCP extension for lazy tool loading (95%+ reduction)
 - [ ] **Pattern-Based Filtering** - Regex tool filtering like Claude Tool Search
 

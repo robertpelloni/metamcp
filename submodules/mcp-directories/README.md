@@ -18,6 +18,7 @@ This library aggregates multiple MCP server listings from various sources to pro
 | `toolsdk-mcp-registry`          | [toolsdk-ai/toolsdk-mcp-registry](https://github.com/toolsdk-ai/toolsdk-mcp-registry) | ToolSDK official MCP registry                        | -     |
 | `awesome-ai-apps`               | [Arindam200/awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps)           | AI apps including MCP servers                        | 2k+   |
 | `mcp-official-servers`          | [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers)       | Official MCP reference servers                       | 75k+  |
+| `mcpdir`                        | [eL1fe/mcpdir](https://github.com/eL1fe/mcpdir)                                       | 8000+ servers from 5+ sources (mcpdir.dev)           | -     |
 
 ### Web-Based Registries (Manual Scrape)
 
@@ -82,7 +83,8 @@ submodules/mcp-directories/
 ├── awesome-mcp-servers-wong2/          # Submodule
 ├── toolsdk-mcp-registry/               # Submodule
 ├── awesome-ai-apps/                    # Submodule
-└── mcp-official-servers/               # Submodule (official reference)
+├── mcp-official-servers/               # Submodule (official reference)
+└── mcpdir/                             # Submodule (8000+ servers, mcpdir.dev)
 ```
 
 ---

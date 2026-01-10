@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.12] - 2026-01-09
+
+### Added
+
+- **submodules/mcpdir**: Added [mcpdir](https://github.com/eL1fe/mcpdir) as git submodule
+  - 7,600+ MCP servers indexed from 5+ sources (MCP Registry, npm, GitHub, Glama, PulseMCP)
+  - Powers [mcpdir.dev](https://mcpdir.dev) directory website
+- **submodules/mcp-directories/scripts/extract-mcpdir.py**: Extraction script for mcpdir data
+  - Parses `data/pulsemcp-slugs.json` structured server data
+  - Generates `MCPDIR_INDEX.md` with categorized server listings
+  - Outputs `mcpdir-servers.json` for programmatic access
+- **submodules/mcp-directories/MCPDIR_INDEX.md**: Generated index of 7,642 servers
+  - 1,002 Official servers, 22 Reference implementations, 6,618 Community servers
+  - Top servers by stars table (MarkItDown 85k, Netdata 77k, etc.)
+
+### Changed
+
+- **submodules/mcp-directories/README.md**: Updated to include mcpdir in registry sources
+- **LLM_INSTRUCTIONS.md**: Added mcpdir to Git Submodules documentation
+  - New MCP Server Directories section explaining aggregation sources
+
+## [3.2.11] - 2026-01-09
+
+### Added
+
+- **apps/backend/src/lib/ai/hybrid-search.service.ts**: Hybrid search combining keyword and semantic search
+  - `HybridSearchService` class with RRF (Reciprocal Rank Fusion) algorithm
+  - `search()` method combining keyword + vector search with configurable options
+  - `quickSearch()` for fast keyword-only search (no embedding API call)
+  - `deepSearch()` for high-accuracy semantic-heavy search
+  - RRF formula: `score(d) = Σ 1/(k + rank_i(d))` with k=60 (standard constant)
+  - Supports `keywordOnly` and `semanticOnly` modes
+  - Over-fetches 2x candidates for better fusion results
+
+### Changed
+
+- **tool-search.service.ts**: Extended with hybrid search methods
+  - Added `hybridSearch()`, `quickSearch()`, `deepSearch()` methods
+  - Re-exports `HybridSearchResult` and `HybridSearchOptions` types
+  - Original `searchTools()` method preserved for backward compatibility
+
 ## [3.2.10] - 2026-01-09
 
 ### Added

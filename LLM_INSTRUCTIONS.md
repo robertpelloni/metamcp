@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.10  
+**Version**: 3.2.12  
 **Last Updated**: 2026-01-09
 
 ---
@@ -376,10 +376,21 @@ metamcp/
 
 ## 🔄 Git Submodules
 
-| Submodule | Location                 | Purpose            |
-| :-------- | :----------------------- | :----------------- |
-| mcp-shark | `apps/backend/mcp-shark` | Traffic inspection |
-| mcp-shark | `submodules/mcp-shark`   | Reference copy     |
+| Submodule       | Location                     | Purpose                                      |
+| :-------------- | :--------------------------- | :------------------------------------------- |
+| mcp-shark       | `apps/backend/mcp-shark`     | Traffic inspection                           |
+| mcp-shark       | `submodules/mcp-shark`       | Reference copy                               |
+| mcp-directories | `submodules/mcp-directories` | Aggregated MCP server registry (951 servers) |
+| mcpdir          | `submodules/mcpdir`          | mcpdir.dev index (7,600+ servers)            |
+
+### MCP Server Directories
+
+MetaMCP aggregates MCP server information from multiple sources:
+
+- **mcp-directories**: Curated from 6 awesome-lists + 7 web registries
+- **mcpdir**: [mcpdir.dev](https://mcpdir.dev) - 8,000+ servers from MCP Registry, npm, GitHub, Glama, PulseMCP
+
+See `submodules/mcp-directories/MCPDIR_INDEX.md` for the full mcpdir server index.
 
 ```bash
 # Initialize submodules
@@ -387,6 +398,9 @@ git submodule update --init --recursive
 
 # Update to latest
 git submodule update --remote --merge
+
+# Regenerate mcpdir index
+python submodules/mcp-directories/scripts/extract-mcpdir.py
 ```
 
 ---

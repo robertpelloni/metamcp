@@ -22,3 +22,6 @@
 [submodule "submodules/mcp-directories/mcp-official-servers"]
 	path = submodules/mcp-directories/mcp-official-servers
 	url = https://github.com/modelcontextprotocol/servers
+[submodule "submodules/mcpdir"]
+	path = submodules/mcpdir
+	url = https://github.com/eL1fe/mcpdir.git

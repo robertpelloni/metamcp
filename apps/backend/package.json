@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "3.2.10",
+  "version": "3.2.12",
   "type": "module",
   "description": "Bare minimum Express 5.1 backend with TypeScript",
   "main": "dist/index.js",
