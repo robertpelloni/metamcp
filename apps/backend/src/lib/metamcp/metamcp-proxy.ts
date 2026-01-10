@@ -30,6 +30,7 @@ import { codeExecutorService } from "../sandbox/code-executor.service";
 import { savedScriptService } from "../sandbox/saved-script.service";
 import { toolSetService } from "./tool-set.service";
 import { toonSerializer } from "../serializers/toon.serializer";
+import { deferredLoadingService } from "./deferred-loading.service";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
 import { mcpServerPool } from "./mcp-server-pool";
@@ -175,13 +176,15 @@ export const createServer = async (
     const metaTools: Tool[] = [
       {
         name: "search_tools",
-        description: "Semantically search for available tools across all connected MCP servers. Use this to find tools for a specific task.",
+        description:
+          "Semantically search for available tools across all connected MCP servers. Use this to find tools for a specific task.",
         inputSchema: {
           type: "object",
           properties: {
             query: {
               type: "string",
-              description: "The search query describing what you want to do (e.g., 'manage github issues', 'query database')",
+              description:
+                "The search query describing what you want to do (e.g., 'manage github issues', 'query database')",
             },
             limit: {
               type: "number",
@@ -193,13 +196,15 @@ export const createServer = async (
       },
       {
         name: "load_tool",
-        description: "Load a specific tool by name into your context so you can use it. Use the names found via search_tools.",
+        description:
+          "Load a specific tool by name into your context so you can use it. Use the names found via search_tools.",
         inputSchema: {
           type: "object",
           properties: {
             name: {
               type: "string",
-              description: "The full name of the tool to load (e.g., 'github__create_issue')",
+              description:
+                "The full name of the tool to load (e.g., 'github__create_issue')",
             },
           },
           required: ["name"],
@@ -207,13 +212,15 @@ export const createServer = async (
       },
       {
         name: "run_code",
-        description: "Execute TypeScript/JavaScript code in a secure sandbox. Use this to chain multiple tool calls, process data, or perform logic. You can call other tools from within this code using `await mcp.call('tool_name', args)`.",
+        description:
+          "Execute TypeScript/JavaScript code in a secure sandbox. Use this to chain multiple tool calls, process data, or perform logic. You can call other tools from within this code using `await mcp.call('tool_name', args)`.",
         inputSchema: {
           type: "object",
           properties: {
             code: {
               type: "string",
-              description: "The TypeScript/JavaScript code to execute. Top-level await is supported.",
+              description:
+                "The TypeScript/JavaScript code to execute. Top-level await is supported.",
             },
           },
           required: ["code"],
@@ -221,31 +228,36 @@ export const createServer = async (
       },
       {
         name: "run_agent",
-        description: "Run an autonomous AI agent to perform a task. The agent will analyze your request, find relevant tools, write its own code, and execute it.",
+        description:
+          "Run an autonomous AI agent to perform a task. The agent will analyze your request, find relevant tools, write its own code, and execute it.",
         inputSchema: {
           type: "object",
           properties: {
             task: {
               type: "string",
-              description: "The natural language description of the task (e.g., 'Find the latest issue in repo X and summarize it').",
+              description:
+                "The natural language description of the task (e.g., 'Find the latest issue in repo X and summarize it').",
             },
             policyId: {
-                type: "string",
-                description: "Optional UUID of a Policy to restrict the agent's tool access.",
-            }
+              type: "string",
+              description:
+                "Optional UUID of a Policy to restrict the agent's tool access.",
+            },
           },
           required: ["task"],
         },
       },
       {
         name: "save_script",
-        description: "Save a successful code snippet as a reusable tool (Saved Script). The script will be available as a tool in future sessions.",
+        description:
+          "Save a successful code snippet as a reusable tool (Saved Script). The script will be available as a tool in future sessions.",
         inputSchema: {
           type: "object",
           properties: {
             name: {
               type: "string",
-              description: "The name of the new tool (must be unique, alphanumeric).",
+              description:
+                "The name of the new tool (must be unique, alphanumeric).",
             },
             description: {
               type: "string",
@@ -261,13 +273,15 @@ export const createServer = async (
       },
       {
         name: "save_tool_set",
-        description: "Save the currently loaded tools as a 'Tool Set' (Profile). This allows you to restore this working environment later.",
+        description:
+          "Save the currently loaded tools as a 'Tool Set' (Profile). This allows you to restore this working environment later.",
         inputSchema: {
           type: "object",
           properties: {
             name: {
               type: "string",
-              description: "Name of the tool set (e.g., 'web_dev', 'data_analysis').",
+              description:
+                "Name of the tool set (e.g., 'web_dev', 'data_analysis').",
             },
             description: {
               type: "string",
@@ -279,7 +293,8 @@ export const createServer = async (
       },
       {
         name: "load_tool_set",
-        description: "Load a previously saved Tool Set (Profile). This will add all tools in the set to your current context.",
+        description:
+          "Load a previously saved Tool Set (Profile). This will add all tools in the set to your current context.",
         inputSchema: {
           type: "object",
           properties: {
@@ -293,7 +308,8 @@ export const createServer = async (
       },
       {
         name: "import_mcp_config",
-        description: "Import MCP servers from a JSON configuration file content (e.g., claude_desktop_config.json).",
+        description:
+          "Import MCP servers from a JSON configuration file content (e.g., claude_desktop_config.json).",
         inputSchema: {
           type: "object",
           properties: {
@@ -305,24 +321,40 @@ export const createServer = async (
           required: ["configJson"],
         },
       },
+      {
+        name: "get_tool_schema",
+        description:
+          "Get the full input schema for a specific tool. Use this to understand exactly what parameters a tool expects before calling it.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              description:
+                "The full name of the tool (e.g., 'github__create_issue')",
+            },
+          },
+          required: ["name"],
+        },
+      },
     ];
 
     // 2. Saved Scripts
     // Fetch user-defined saved scripts and expose them as tools
     try {
-        const savedScripts = await savedScriptService.listScripts();
-        const scriptTools: Tool[] = savedScripts.map(script => ({
-            name: `script__${script.name}`,
-            description: `[Saved Script] ${script.description || "No description"}`,
-            inputSchema: {
-                type: "object",
-                properties: {}, // Scripts currently take no args
-                additionalProperties: true
-            }
-        }));
-        metaTools.push(...scriptTools);
+      const savedScripts = await savedScriptService.listScripts();
+      const scriptTools: Tool[] = savedScripts.map((script) => ({
+        name: `script__${script.name}`,
+        description: `[Saved Script] ${script.description || "No description"}`,
+        inputSchema: {
+          type: "object",
+          properties: {}, // Scripts currently take no args
+          additionalProperties: true,
+        },
+      }));
+      metaTools.push(...scriptTools);
     } catch (e) {
-        console.error("Error fetching saved scripts", e);
+      console.error("Error fetching saved scripts", e);
     }
 
     const serverParams = await getMcpServers(
@@ -334,17 +366,19 @@ export const createServer = async (
     const allServerEntries = Object.entries(serverParams);
     const allAvailableTools: Tool[] = [];
 
-    console.log(`[DEBUG-TOOLS] 📋 Processing ${allServerEntries.length} servers`);
-    
+    console.log(
+      `[DEBUG-TOOLS] 📋 Processing ${allServerEntries.length} servers`,
+    );
+
     await Promise.allSettled(
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
 
         const session = await mcpServerPool.getSession(
-            context.sessionId,
-            mcpServerUuid,
-            params,
-            namespaceUuid,
+          context.sessionId,
+          mcpServerUuid,
+          params,
+          namespaceUuid,
         );
         if (!session) {
           console.log(`[DEBUG-TOOLS] ❌ No session for: ${params.name}`);
@@ -362,66 +396,74 @@ export const createServer = async (
         const capabilities = session.client.getServerCapabilities();
         if (!capabilities?.tools) return;
 
-        const serverName = params.name || session.client.getServerVersion()?.name || "";
+        const serverName =
+          params.name || session.client.getServerVersion()?.name || "";
 
         try {
-            const allServerTools: Tool[] = [];
-            let cursor: string | undefined = undefined;
-            let hasMore = true;
+          const allServerTools: Tool[] = [];
+          let cursor: string | undefined = undefined;
+          let hasMore = true;
 
-            while (hasMore) {
-                const result = await session.client.request(
-                    {
-                        method: "tools/list",
-                        params: { cursor, _meta: request.params?._meta }
-                    },
-                    ListToolsResultSchema
-                );
-                if (result.tools) allServerTools.push(...result.tools);
-                cursor = result.nextCursor;
-                hasMore = !!result.nextCursor;
-            }
+          while (hasMore) {
+            const result: z.infer<typeof ListToolsResultSchema> =
+              await session.client.request(
+                {
+                  method: "tools/list",
+                  params: { cursor, _meta: request.params?._meta },
+                },
+                ListToolsResultSchema,
+              );
+            if (result.tools) allServerTools.push(...result.tools);
+            cursor = result.nextCursor;
+            hasMore = !!result.nextCursor;
+          }
 
-            if (allServerTools.length > 0) {
-                try {
-                    const toolsToSave = await filterOutOverrideTools(
-                        allServerTools,
-                        namespaceUuid,
-                        serverName
-                    );
-                    if (toolsToSave.length > 0) {
-                        await toolsImplementations.create({
-                            tools: toolsToSave,
-                            mcpServerUuid: mcpServerUuid,
-                        });
-                    }
-                } catch (e) {
-                    console.error("DB Save Error", e);
-                }
-            }
-
-            allServerTools.forEach(tool => {
-                const toolName = `${sanitizeName(serverName)}__${tool.name}`;
-                toolToClient[toolName] = session;
-                toolToServerUuid[toolName] = mcpServerUuid;
-                allAvailableTools.push({
-                    ...tool,
-                    name: toolName
+          if (allServerTools.length > 0) {
+            try {
+              const toolsToSave = await filterOutOverrideTools(
+                allServerTools,
+                namespaceUuid,
+                serverName,
+              );
+              if (toolsToSave.length > 0) {
+                await toolsImplementations.create({
+                  tools: toolsToSave,
+                  mcpServerUuid: mcpServerUuid,
                 });
-            });
+              }
+            } catch (e) {
+              console.error("DB Save Error", e);
+            }
+          }
 
+          allServerTools.forEach((tool) => {
+            const toolName = `${sanitizeName(serverName)}__${tool.name}`;
+            toolToClient[toolName] = session;
+            toolToServerUuid[toolName] = mcpServerUuid;
+            deferredLoadingService.cacheToolSchema(toolName, tool);
+            const deferredTool = deferredLoadingService.createDeferredTool(
+              tool,
+              mcpServerUuid,
+            );
+            const minimalTool =
+              deferredLoadingService.createMinimalTool(deferredTool);
+            allAvailableTools.push({
+              ...minimalTool,
+              name: toolName,
+            });
+          });
         } catch (error) {
-            console.error(`Error fetching tools from ${serverName}:`, error);
+          console.error(`Error fetching tools from ${serverName}:`, error);
         }
-      })
+      }),
     );
 
     const resultTools = [...metaTools];
 
-    allAvailableTools.forEach(tool => {
-        if (loadedTools.has(tool.name)) {
-            resultTools.push(tool);
-        }
+    allAvailableTools.forEach((tool) => {
+      if (loadedTools.has(tool.name)) {
+        resultTools.push(tool);
+      }
     });
 
     return { tools: resultTools };
@@ -442,7 +484,7 @@ export const createServer = async (
   // The "delegate" handler simply calls whatever function is currently in the reference.
   const delegateHandler: CallToolHandler = async (request, context) => {
     if (!recursiveCallToolHandlerRef) {
-        throw new Error("Handler not initialized");
+      throw new Error("Handler not initialized");
     }
     return recursiveCallToolHandlerRef(request, context);
   };
@@ -453,35 +495,34 @@ export const createServer = async (
   const _internalCallToolImpl = async (
     name: string,
     args: any,
-    meta?: any
+    meta?: any,
   ): Promise<CallToolResult> => {
-
     // Check for TOON request
     const useToon = meta?.toon === true || meta?.toon === "true";
 
     const formatResult = (result: CallToolResult): CallToolResult => {
-        if (!useToon) return result;
+      if (!useToon) return result;
 
-        // Attempt to compress JSON content
-        const newContent = result.content.map(item => {
-            if (item.type === "text") {
-                try {
-                    // Try to parse as JSON first
-                    const data = JSON.parse(item.text);
-                    const serialized = toonSerializer.serialize(data);
-                    return { ...item, text: serialized };
-                } catch (e) {
-                    // Not JSON, return as is
-                    return item;
-                }
-            }
+      // Attempt to compress JSON content
+      const newContent = result.content.map((item) => {
+        if (item.type === "text") {
+          try {
+            // Try to parse as JSON first
+            const data = JSON.parse(item.text);
+            const serialized = toonSerializer.serialize(data);
+            return { ...item, text: serialized };
+          } catch (e) {
+            // Not JSON, return as is
             return item;
-        });
+          }
+        }
+        return item;
+      });
 
-        return {
-            ...result,
-            content: newContent
-        };
+      return {
+        ...result,
+        content: newContent,
+      };
     };
 
     // 1. Meta Tools
@@ -502,293 +543,438 @@ export const createServer = async (
       const { name: toolName } = args as { name: string };
       if (toolToClient[toolName]) {
         addToLoadedTools(toolName);
+        const cachedSchema = deferredLoadingService.getCachedSchema(toolName);
         return {
-            content: [
-                {
-                    type: "text",
-                    text: `Tool '${toolName}' loaded.`,
-                }
-            ]
+          content: [
+            {
+              type: "text",
+              text: cachedSchema
+                ? `Tool '${toolName}' loaded.\n\nSchema:\n${JSON.stringify(cachedSchema.inputSchema, null, 2)}`
+                : `Tool '${toolName}' loaded.`,
+            },
+          ],
         };
       } else {
         return {
-            content: [
+          content: [
+            {
+              type: "text",
+              text: `Tool '${toolName}' not found.`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "get_tool_schema") {
+      const { name: toolName } = args as { name: string };
+      const clientForTool = toolToClient[toolName];
+      if (!clientForTool) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Tool '${toolName}' not found. Use search_tools to find available tools.`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      const cachedSchema = deferredLoadingService.getCachedSchema(toolName);
+      if (cachedSchema) {
+        return formatResult({
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
                 {
-                    type: "text",
-                    text: `Tool '${toolName}' not found.`,
+                  name: toolName,
+                  description: cachedSchema.description,
+                  inputSchema: cachedSchema.inputSchema,
+                  cached: true,
                 },
-            ],
-            isError: true,
+                null,
+                2,
+              ),
+            },
+          ],
+        });
+      }
+
+      const parsed = parseToolName(toolName);
+      if (!parsed) {
+        return {
+          content: [
+            { type: "text", text: `Invalid tool name format: ${toolName}` },
+          ],
+          isError: true,
+        };
+      }
+
+      try {
+        const schemaResult: z.infer<typeof ListToolsResultSchema> =
+          await clientForTool.client.request(
+            { method: "tools/list", params: {} },
+            ListToolsResultSchema,
+          );
+        const tool = schemaResult.tools?.find(
+          (t) => t.name === parsed.originalToolName,
+        );
+        if (tool) {
+          deferredLoadingService.cacheToolSchema(toolName, tool);
+        }
+        return formatResult({
+          content: [
+            {
+              type: "text",
+              text: tool
+                ? JSON.stringify(
+                    {
+                      name: toolName,
+                      description: tool.description,
+                      inputSchema: tool.inputSchema,
+                      cached: false,
+                    },
+                    null,
+                    2,
+                  )
+                : `Tool schema not found for '${toolName}'`,
+            },
+          ],
+          isError: !tool,
+        });
+      } catch (error: any) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Failed to fetch schema: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
     }
 
     if (name === "save_script") {
-        const { name: scriptName, code, description } = args as { name: string; code: string; description?: string };
-        try {
-            const saved = await savedScriptService.saveScript(scriptName, code, description);
-            return {
-                content: [{ type: "text", text: `Script '${saved.name}' saved successfully.` }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Failed to save script: ${error.message}` }],
-                isError: true
-            };
-        }
+      const {
+        name: scriptName,
+        code,
+        description,
+      } = args as { name: string; code: string; description?: string };
+      try {
+        const saved = await savedScriptService.saveScript(
+          scriptName,
+          code,
+          description,
+        );
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Script '${saved.name}' saved successfully.`,
+            },
+          ],
+        };
+      } catch (error: any) {
+        return {
+          content: [
+            { type: "text", text: `Failed to save script: ${error.message}` },
+          ],
+          isError: true,
+        };
+      }
     }
 
     if (name === "save_tool_set") {
-        const { name: setName, description } = args as { name: string; description?: string };
-        try {
-            const toolsToSave = Array.from(loadedTools);
-            if (toolsToSave.length === 0) {
-                return {
-                    content: [{ type: "text", text: `No tools currently loaded to save.` }],
-                    isError: true
-                };
-            }
-            const saved = await toolSetService.createToolSet(setName, toolsToSave, description);
-            return {
-                content: [{ type: "text", text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.` }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Failed to save tool set: ${error.message}` }],
-                isError: true
-            };
+      const { name: setName, description } = args as {
+        name: string;
+        description?: string;
+      };
+      try {
+        const toolsToSave = Array.from(loadedTools);
+        if (toolsToSave.length === 0) {
+          return {
+            content: [
+              { type: "text", text: `No tools currently loaded to save.` },
+            ],
+            isError: true,
+          };
         }
+        const saved = await toolSetService.createToolSet(
+          setName,
+          toolsToSave,
+          description,
+        );
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Tool Set '${saved.name}' saved with ${saved.tools.length} tools.`,
+            },
+          ],
+        };
+      } catch (error: any) {
+        return {
+          content: [
+            { type: "text", text: `Failed to save tool set: ${error.message}` },
+          ],
+          isError: true,
+        };
+      }
     }
 
     if (name === "load_tool_set") {
-        const { name: setName } = args as { name: string };
-        try {
-            const set = await toolSetService.getToolSet(setName);
-            if (!set) {
-                return {
-                    content: [{ type: "text", text: `Tool Set '${setName}' not found.` }],
-                    isError: true
-                };
-            }
-
-            // Add tools to loadedTools
-            let count = 0;
-            const missing = [];
-            for (const toolName of set.tools) {
-                if (toolToClient[toolName]) {
-                    addToLoadedTools(toolName);
-                    count++;
-                } else {
-                    missing.push(toolName);
-                }
-            }
-
-            let msg = `Loaded ${count} tools from set '${setName}'.`;
-            if (missing.length > 0) {
-                msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
-            }
-
-            return {
-                content: [{ type: "text", text: msg }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Failed to load tool set: ${error.message}` }],
-                isError: true
-            };
+      const { name: setName } = args as { name: string };
+      try {
+        const set = await toolSetService.getToolSet(setName);
+        if (!set) {
+          return {
+            content: [
+              { type: "text", text: `Tool Set '${setName}' not found.` },
+            ],
+            isError: true,
+          };
         }
+
+        // Add tools to loadedTools
+        let count = 0;
+        const missing = [];
+        for (const toolName of set.tools) {
+          if (toolToClient[toolName]) {
+            addToLoadedTools(toolName);
+            count++;
+          } else {
+            missing.push(toolName);
+          }
+        }
+
+        let msg = `Loaded ${count} tools from set '${setName}'.`;
+        if (missing.length > 0) {
+          msg += ` Warning: ${missing.length} tools could not be found (might be offline): ${missing.join(", ")}`;
+        }
+
+        return {
+          content: [{ type: "text", text: msg }],
+        };
+      } catch (error: any) {
+        return {
+          content: [
+            { type: "text", text: `Failed to load tool set: ${error.message}` },
+          ],
+          isError: true,
+        };
+      }
     }
 
     if (name === "import_mcp_config") {
-        const { configJson } = args as { configJson: string };
-        try {
-            const result = await configImportService.importClaudeConfig(configJson);
-            return {
-                content: [{
-                    type: "text",
-                    text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`
-                }]
-            };
-        } catch (error: any) {
-            return {
-                content: [{ type: "text", text: `Import failed: ${error.message}` }],
-                isError: true
-            };
-        }
+      const { configJson } = args as { configJson: string };
+      try {
+        const result = await configImportService.importClaudeConfig(configJson);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}`,
+            },
+          ],
+        };
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Import failed: ${error.message}` }],
+          isError: true,
+        };
+      }
     }
 
     if (name === "run_code") {
-        const { code } = args as { code: string };
-        try {
-            // RECURSION MAGIC: We pass the *delegate* handler to the sandbox.
-            // This ensures that when the sandbox calls 'mcp.call', it goes through
-            // the full middleware stack (logging, auditing, etc.) just like a request from the client.
-            const result = await codeExecutorService.executeCode(
-                code,
-                async (toolName, toolArgs) => {
-                    if (toolName === "run_code" || toolName === "run_agent") {
-                        throw new Error("Cannot call run_code/run_agent from within sandbox");
-                    }
-                    // Call the delegate handler which points to the composed stack
-                    const res = await delegateHandler({
-                        method: "tools/call",
-                        params: {
-                            name: toolName,
-                            arguments: toolArgs,
-                            _meta: meta
-                        }
-                    }, handlerContext);
-
-                    return res;
-                }
+      const { code } = args as { code: string };
+      try {
+        // RECURSION MAGIC: We pass the *delegate* handler to the sandbox.
+        // This ensures that when the sandbox calls 'mcp.call', it goes through
+        // the full middleware stack (logging, auditing, etc.) just like a request from the client.
+        const result = await codeExecutorService.executeCode(
+          code,
+          async (toolName, toolArgs) => {
+            if (toolName === "run_code" || toolName === "run_agent") {
+              throw new Error(
+                "Cannot call run_code/run_agent from within sandbox",
+              );
+            }
+            // Call the delegate handler which points to the composed stack
+            const res = await delegateHandler(
+              {
+                method: "tools/call",
+                params: {
+                  name: toolName,
+                  arguments: toolArgs,
+                  _meta: meta,
+                },
+              },
+              handlerContext,
             );
-            return formatResult({
-                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-            });
-        } catch (error: any) {
-            const errorInfo = {
-                message: error?.message || String(error),
-                name: error?.name || "Error",
-                stack: error?.stack || undefined,
-            };
-            return {
-                content: [{
-                    type: "text",
-                    text: `Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
-                }],
-                isError: true
-            };
-        }
+
+            return res;
+          },
+        );
+        return formatResult({
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        });
+      } catch (error: any) {
+        const errorInfo = {
+          message: error?.message || String(error),
+          name: error?.name || "Error",
+          stack: error?.stack || undefined,
+        };
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`,
+            },
+          ],
+          isError: true,
+        };
+      }
     }
 
     if (name === "run_agent") {
-        const { task, policyId } = args as { task: string; policyId?: string };
-        try {
-            const result = await agentService.runAgent(
-                task,
-                async (toolName, toolArgs, meta) => {
-                    if (toolName === "run_code" || toolName === "run_agent") {
-                         throw new Error("Recursive agent calls restricted.");
-                    }
+      const { task, policyId } = args as { task: string; policyId?: string };
+      try {
+        const result = await agentService.runAgent(
+          task,
+          async (toolName, toolArgs, meta) => {
+            if (toolName === "run_code" || toolName === "run_agent") {
+              throw new Error("Recursive agent calls restricted.");
+            }
 
-                    // Inject policyId into meta if provided
-                    const callMeta = { ...meta, ...(policyId ? { policyId } : {}) };
+            // Inject policyId into meta if provided
+            const callMeta = { ...meta, ...(policyId ? { policyId } : {}) };
 
-                    const res = await delegateHandler({
-                        method: "tools/call",
-                        params: {
-                            name: toolName,
-                            arguments: toolArgs,
-                            _meta: callMeta
-                        }
-                    }, handlerContext);
-                    return res;
+            const res = await delegateHandler(
+              {
+                method: "tools/call",
+                params: {
+                  name: toolName,
+                  arguments: toolArgs,
+                  _meta: callMeta,
                 },
-                policyId
+              },
+              handlerContext,
             );
-            return formatResult({
-                content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-            });
-        } catch (error: any) {
-            const errorInfo = {
-                message: error?.message || String(error),
-                name: error?.name || "Error",
-                stack: error?.stack || undefined,
-            };
-            return {
-                content: [{
-                    type: "text",
-                    text: `Agent Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
-                }],
-                isError: true
-            };
-        }
+            return res;
+          },
+          policyId,
+        );
+        return formatResult({
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        });
+      } catch (error: any) {
+        const errorInfo = {
+          message: error?.message || String(error),
+          name: error?.name || "Error",
+          stack: error?.stack || undefined,
+        };
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Agent Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`,
+            },
+          ],
+          isError: true,
+        };
+      }
     }
 
     // 2. Saved Scripts execution
     if (name.startsWith("script__")) {
-        const scriptName = name.replace("script__", "");
-        const script = await savedScriptService.getScript(scriptName);
+      const scriptName = name.replace("script__", "");
+      const script = await savedScriptService.getScript(scriptName);
 
-        if (script) {
-             try {
-                // Execute saved script using the SAME logic as run_code
-                const result = await codeExecutorService.executeCode(
-                    script.code,
-                    async (toolName, toolArgs) => {
-                        if (toolName === "run_code" || toolName.startsWith("script__")) {
-                            throw new Error("Recursion restricted in saved scripts");
-                        }
-                        const res = await delegateHandler({
-                            method: "tools/call",
-                            params: {
-                                name: toolName,
-                                arguments: toolArgs,
-                                _meta: meta
-                            }
-                        }, handlerContext);
-                        return res;
-                    }
-                );
-                return formatResult({
-                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-                });
-            } catch (error: any) {
-                 const errorInfo = {
-                    message: error?.message || String(error),
-                    name: error?.name || "Error",
-                    stack: error?.stack || undefined,
-                };
-                return {
-                    content: [{
-                        type: "text",
-                        text: `Script Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`
-                    }],
-                    isError: true
-                };
-            }
+      if (script) {
+        try {
+          // Execute saved script using the SAME logic as run_code
+          const result = await codeExecutorService.executeCode(
+            script.code,
+            async (toolName, toolArgs) => {
+              if (toolName === "run_code" || toolName.startsWith("script__")) {
+                throw new Error("Recursion restricted in saved scripts");
+              }
+              const res = await delegateHandler(
+                {
+                  method: "tools/call",
+                  params: {
+                    name: toolName,
+                    arguments: toolArgs,
+                    _meta: meta,
+                  },
+                },
+                handlerContext,
+              );
+              return res;
+            },
+          );
+          return formatResult({
+            content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          });
+        } catch (error: any) {
+          const errorInfo = {
+            message: error?.message || String(error),
+            name: error?.name || "Error",
+            stack: error?.stack || undefined,
+          };
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Script Error: ${errorInfo.message}\nName: ${errorInfo.name}${errorInfo.stack ? `\nStack: ${errorInfo.stack}` : ""}`,
+              },
+            ],
+            isError: true,
+          };
         }
+      }
     }
 
     // 3. Downstream Tools
     const clientForTool = toolToClient[name];
     if (!clientForTool) {
-       throw new Error(`Unknown tool: ${name}`);
+      throw new Error(`Unknown tool: ${name}`);
     }
 
     const parsed = parseToolName(name);
     if (!parsed) throw new Error(`Invalid tool name: ${name}`);
 
     try {
-        const abortController = new AbortController();
-        const mcpRequestOptions: RequestOptions = {
-            signal: abortController.signal,
-            timeout: await configService.getMcpTimeout(),
-        };
+      const abortController = new AbortController();
+      const mcpRequestOptions: RequestOptions = {
+        signal: abortController.signal,
+        timeout: await configService.getMcpTimeout(),
+      };
 
-        const result = await clientForTool.client.request(
-            {
-                method: "tools/call",
-                params: {
-                    name: parsed.originalToolName,
-                    arguments: args || {},
-                    _meta: meta,
-                }
-            },
-            CompatibilityCallToolResultSchema,
-            mcpRequestOptions
-        );
-        return formatResult(result as CallToolResult);
+      const result = await clientForTool.client.request(
+        {
+          method: "tools/call",
+          params: {
+            name: parsed.originalToolName,
+            arguments: args || {},
+            _meta: meta,
+          },
+        },
+        CompatibilityCallToolResultSchema,
+        mcpRequestOptions,
+      );
+      return formatResult(result as CallToolResult);
     } catch (error) {
-        console.error(`Error calling ${name}:`, error);
-        throw error;
+      console.error(`Error calling ${name}:`, error);
+      throw error;
     }
   };
 
-  const implCallToolHandler: CallToolHandler = async (
-    request,
-    _context,
-  ) => {
+  const implCallToolHandler: CallToolHandler = async (request, _context) => {
     const { name, arguments: args, _meta } = request.params;
     return await _internalCallToolImpl(name, args, _meta);
   };
@@ -806,7 +992,6 @@ export const createServer = async (
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
 
-
   const listToolsWithMiddleware = compose(
     createToolOverridesListToolsMiddleware({
       cacheEnabled: true,
@@ -815,14 +1000,14 @@ export const createServer = async (
     createFilterListToolsMiddleware({ cacheEnabled: true }),
   )(originalListToolsHandler);
 
-
   // Set up the handlers
   server.setRequestHandler(ListToolsRequestSchema, async (request) => {
     return await listToolsWithMiddleware(request, handlerContext);
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (!recursiveCallToolHandlerRef) throw new Error("Handler not initialized");
+    if (!recursiveCallToolHandlerRef)
+      throw new Error("Handler not initialized");
     return await recursiveCallToolHandlerRef(request, handlerContext);
   });
 

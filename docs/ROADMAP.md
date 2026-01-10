@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.13  
+**Current Version**: 3.2.14  
 **Last Updated**: 2026-01-09
 
 ---
@@ -109,7 +109,7 @@
 
 - [x] **Hybrid Search (BM25 + Semantic)** - Combine keyword and vector search for better precision (v3.2.11)
 - [x] **Pattern-Based Filtering** - Glob/regex tool filtering like Claude Tool Search (v3.2.13)
-- [ ] **Deferred Loading Protocol** - MCP extension for lazy tool loading (95%+ reduction)
+- [x] **Deferred Loading Protocol** - MCP extension for lazy tool loading (95%+ reduction) (v3.2.14)
 
 ### Auto-Discovery
 
@@ -181,6 +181,7 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.2.14** | 2026-01-09 | Deferred Loading Protocol (lazy tool schemas)     |
 | **3.2.13** | 2026-01-09 | Pattern-Based Filtering (glob/regex tool filter)  |
 | **3.2.12** | 2026-01-09 | mcpdir submodule + Hybrid Search RRF              |
 | **3.2.11** | 2026-01-09 | Hybrid Search (BM25 + Semantic)                   |

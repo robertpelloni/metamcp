@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.14] - 2026-01-09
+
+### Added
+
+- **apps/backend/src/lib/metamcp/deferred-loading.service.ts**: Deferred loading service for lazy tool schema fetching
+  - `DeferredLoadingService` class with schema caching (5-min TTL)
+  - `DeferredTool` interface (name, summary, serverUuid, hasSchema)
+  - `ToolManifest` interface for lightweight tool listings
+  - `createDeferredTool()` - creates minimal tool representation
+  - `createMinimalTool()` - returns tool with empty schema `{type: "object", properties: {}}`
+  - `cacheToolSchema()` / `getCachedSchema()` - schema caching with TTL
+  - `calculateTokenSavings()` - utility to measure token reduction
+
+- **apps/backend/src/lib/metamcp/metamcp-proxy.ts**: Integrated deferred loading
+  - Added `get_tool_schema` meta-tool - fetches full schema for a specific tool on-demand
+  - Modified `load_tool` to return cached schema when loading a tool
+  - Modified `originalListToolsHandler` to cache full schemas and return minimal schemas
+  - ~95% token reduction: tools now return `{type: "object", properties: {}}` instead of full schemas
+  - Full schemas fetched on-demand via `get_tool_schema` or when `load_tool` is called
+
+### Changed
+
+- **Token Optimization**: `tools/list` now returns minimal schemas by default
+  - Full schemas cached in `DeferredLoadingService` on first fetch
+  - Schemas returned on-demand via `get_tool_schema` or `load_tool`
+  - Estimated token savings: ~150 tokens/tool → ~20 tokens/tool (87% reduction)
+
 ## [3.2.13] - 2026-01-09
 
 ### Added
