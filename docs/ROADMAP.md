@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.7  
+**Current Version**: 3.2.8  
 **Last Updated**: 2026-01-09
 
 ---
@@ -92,7 +92,7 @@
 ### Developer Experience
 
 - [ ] **Hot Reload Improvements** - Faster development cycles
-- [ ] **Better Error Messages** - More descriptive error handling
+- [x] **Better Error Messages** - Typed error classes with ErrorCode enum (`errors.ts`)
 - [ ] **Config Validation** - JSON Schema for configuration files
 
 ---
@@ -181,6 +181,7 @@
 
 | Version   | Date       | Highlights                                        |
 | :-------- | :--------- | :------------------------------------------------ |
+| **3.2.8** | 2026-01-09 | Better Error Messages (typed errors in errors.ts) |
 | **3.2.7** | 2026-01-09 | Middleware Development Guide (docs/MIDDLEWARE.md) |
 | **3.2.6** | 2026-01-09 | Configuration Guide (docs/CONFIGURATION.md)       |
 | **3.2.5** | 2026-01-09 | REST API Documentation (docs/REST_API.md)         |

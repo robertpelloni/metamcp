@@ -2,7 +2,7 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.7  
+**Version**: 3.2.8  
 **Last Updated**: 2026-01-09
 
 ---
@@ -164,6 +164,64 @@ curl -X POST http://localhost:12009/metamcp/default/api/read_file \
 | `api-key-oauth.middleware`   | Multi-method auth (API key, OAuth, query param) |
 | `better-auth-mcp.middleware` | Session validation for MCP proxy                |
 | `lookup-endpoint-middleware` | Endpoint resolution and namespace injection     |
+
+---
+
+## 🚨 Error Handling
+
+> **Module**: `apps/backend/src/lib/errors.ts`
+
+### Error Classes
+
+| Error Class                | Use Case                                |
+| :------------------------- | :-------------------------------------- |
+| `NotFoundError`            | Entity not found (policy, tool, server) |
+| `AlreadyExistsError`       | Duplicate entity creation attempt       |
+| `ValidationError`          | Input validation failures               |
+| `UnauthorizedError`        | Missing authentication                  |
+| `ForbiddenError`           | Insufficient permissions                |
+| `MCPConnectionError`       | MCP server connection failed            |
+| `MCPTimeoutError`          | MCP operation timed out                 |
+| `MCPServerCrashedError`    | MCP server process crashed              |
+| `ToolExecutionError`       | Tool execution failed                   |
+| `PolicyNotFoundError`      | Referenced policy doesn't exist         |
+| `ToolBlockedByPolicyError` | Tool blocked by policy rules            |
+| `DatabaseError`            | Database operation failed               |
+| `ConfigError`              | Configuration validation failed         |
+
+### Usage Pattern
+
+```typescript
+import {
+  NotFoundError,
+  ValidationError,
+  DatabaseError,
+  logError,
+  wrapError,
+} from "../lib/errors";
+
+// In tRPC implementations:
+try {
+  const result = await db.query.policies.findFirst({
+    where: eq(policies.id, id),
+  });
+  if (!result) throw new NotFoundError("Policy", id);
+  return result;
+} catch (error) {
+  logError(error, "policies.get", { policyId: id });
+  throw wrapError(error, "Failed to get policy");
+}
+```
+
+### Utilities
+
+| Function                              | Purpose                             |
+| :------------------------------------ | :---------------------------------- |
+| `wrapError(error, message)`           | Wrap unknown errors as MetaMCPError |
+| `logError(error, operation, context)` | Structured error logging            |
+| `isMetaMCPError(error)`               | Type guard for MetaMCPError         |
+| `getErrorMessage(error)`              | Safe error message extraction       |
+| `createErrorResponse(error)`          | Standard HTTP error response        |
 
 ---
 
