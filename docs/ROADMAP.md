@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.12  
+**Current Version**: 3.2.13  
 **Last Updated**: 2026-01-09
 
 ---
@@ -108,8 +108,8 @@
 ### Token Optimization (Research-driven)
 
 - [x] **Hybrid Search (BM25 + Semantic)** - Combine keyword and vector search for better precision (v3.2.11)
+- [x] **Pattern-Based Filtering** - Glob/regex tool filtering like Claude Tool Search (v3.2.13)
 - [ ] **Deferred Loading Protocol** - MCP extension for lazy tool loading (95%+ reduction)
-- [ ] **Pattern-Based Filtering** - Regex tool filtering like Claude Tool Search
 
 ### Auto-Discovery
 
@@ -181,6 +181,9 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.2.13** | 2026-01-09 | Pattern-Based Filtering (glob/regex tool filter)  |
+| **3.2.12** | 2026-01-09 | mcpdir submodule + Hybrid Search RRF              |
+| **3.2.11** | 2026-01-09 | Hybrid Search (BM25 + Semantic)                   |
 | **3.2.10** | 2026-01-09 | Hot Reload Improvements (docs/DEVELOPMENT.md)     |
 | **3.2.9**  | 2026-01-09 | Config Validation (config-schemas.zod.ts)         |
 | **3.2.8**  | 2026-01-09 | Better Error Messages (typed errors in errors.ts) |

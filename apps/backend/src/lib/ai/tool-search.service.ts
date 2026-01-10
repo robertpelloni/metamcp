@@ -1,4 +1,5 @@
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
+import { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 import { db } from "../../db";
 import { toolsTable } from "../../db/schema";
@@ -8,6 +9,11 @@ import {
   HybridSearchResult,
   HybridSearchOptions,
 } from "./hybrid-search.service";
+import {
+  patternFilterService,
+  PatternFilterOptions,
+  FilterResult,
+} from "./pattern-filter.service";
 
 export interface ToolSearchResult {
   uuid: string;
@@ -73,10 +79,41 @@ export class ToolSearchService {
     return hybridSearchService.deepSearch(query, limit);
   }
 
-  /**
-   * Update the embedding for a specific tool.
-   * This should be called when a tool is created or updated.
-   */
+  filterByPattern(
+    tools: Tool[],
+    patterns: string | string[],
+    options?: PatternFilterOptions,
+  ): FilterResult<Tool> {
+    return patternFilterService.filterTools(tools, patterns, options);
+  }
+
+  filterByServer(tools: Tool[], serverPatterns: string | string[]): Tool[] {
+    return patternFilterService.filterByServer(tools, serverPatterns);
+  }
+
+  excludeByPattern(tools: Tool[], excludePatterns: string | string[]): Tool[] {
+    return patternFilterService.excludeTools(tools, excludePatterns);
+  }
+
+  smartFilter(
+    tools: Tool[],
+    query: string,
+    options?: PatternFilterOptions,
+  ): FilterResult<Tool> {
+    return patternFilterService.searchWithPattern(tools, query, options);
+  }
+
+  combineFilters(
+    tools: Tool[],
+    config: {
+      include?: string | string[];
+      exclude?: string | string[];
+      servers?: string | string[];
+    },
+  ): FilterResult<Tool> {
+    return patternFilterService.combineFilters(tools, config);
+  }
+
   async updateToolEmbedding(toolUuid: string): Promise<void> {
     const tool = await db.query.toolsTable.findFirst({
       where: (table, { eq }) => eq(table.uuid, toolUuid),

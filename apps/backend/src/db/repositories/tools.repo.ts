@@ -19,6 +19,10 @@ export class ToolsRepository {
       .orderBy(toolsTable.name);
   }
 
+  async findAll(): Promise<DatabaseTool[]> {
+    return await db.select().from(toolsTable).orderBy(toolsTable.name);
+  }
+
   async create(input: ToolCreateInput): Promise<DatabaseTool> {
     const [createdTool] = await db.insert(toolsTable).values(input).returning();
 

@@ -115,3 +115,51 @@ export const DatabaseToolSchema = z.object({
 });
 
 export type DatabaseTool = z.infer<typeof DatabaseToolSchema>;
+
+export const PatternFilterOptionsSchema = z.object({
+  caseSensitive: z.boolean().optional(),
+  matchDescription: z.boolean().optional(),
+  matchServer: z.boolean().optional(),
+});
+
+export const PatternFilterRequestSchema = z.object({
+  mcpServerUuid: z.string().uuid().optional(),
+  patterns: z.union([z.string(), z.array(z.string())]),
+  options: PatternFilterOptionsSchema.optional(),
+});
+
+export const PatternFilterCombinedRequestSchema = z.object({
+  mcpServerUuid: z.string().uuid().optional(),
+  include: z.union([z.string(), z.array(z.string())]).optional(),
+  exclude: z.union([z.string(), z.array(z.string())]).optional(),
+  servers: z.union([z.string(), z.array(z.string())]).optional(),
+});
+
+export const SmartFilterRequestSchema = z.object({
+  mcpServerUuid: z.string().uuid().optional(),
+  query: z.string(),
+  options: PatternFilterOptionsSchema.optional(),
+});
+
+export const FilterResultSchema = z.object({
+  items: z.array(ToolSchema),
+  matched: z.number(),
+  total: z.number(),
+  patterns: z.array(z.string()),
+});
+
+export const PatternFilterResponseSchema = z.object({
+  success: z.boolean(),
+  data: FilterResultSchema.optional(),
+  message: z.string().optional(),
+  error: z.string().optional(),
+});
+
+export type PatternFilterOptions = z.infer<typeof PatternFilterOptionsSchema>;
+export type PatternFilterRequest = z.infer<typeof PatternFilterRequestSchema>;
+export type PatternFilterCombinedRequest = z.infer<
+  typeof PatternFilterCombinedRequestSchema
+>;
+export type SmartFilterRequest = z.infer<typeof SmartFilterRequestSchema>;
+export type FilterResult = z.infer<typeof FilterResultSchema>;
+export type PatternFilterResponse = z.infer<typeof PatternFilterResponseSchema>;

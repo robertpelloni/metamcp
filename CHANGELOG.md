@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.13] - 2026-01-09
+
+### Added
+
+- **apps/backend/src/lib/ai/pattern-filter.service.ts**: Pattern-based tool filtering service
+  - `PatternFilterService` class with glob, regex, and text pattern support
+  - `filterTools()` - filter tools by patterns with options (caseSensitive, matchDescription, matchServer)
+  - `filterByServer()` - filter tools by server name patterns
+  - `excludeTools()` - exclude tools matching patterns
+  - `combineFilters()` - combine include/exclude/server filters
+  - `searchWithPattern()` - parse query string syntax: "term" (include), "-term" (exclude), "server:name"
+  - Auto-detects pattern type: glob (`*`, `?`, `[]`), regex (`/pattern/flags`), text (substring)
+
+- **packages/zod-types/src/tools.zod.ts**: Added pattern filter Zod schemas
+  - `PatternFilterOptionsSchema`, `PatternFilterRequestSchema`
+  - `PatternFilterCombinedRequestSchema`, `SmartFilterRequestSchema`
+  - `FilterResultSchema`, `PatternFilterResponseSchema`
+
+- **apps/backend/src/trpc/tools.impl.ts**: Added tRPC endpoints for pattern filtering
+  - `filterByPattern` - filter tools by glob/regex/text patterns
+  - `combineFilters` - apply include/exclude/server filters together
+  - `smartFilter` - parse query string with pattern syntax
+
+- **apps/backend/src/db/repositories/tools.repo.ts**: Added `findAll()` method
+
+### Changed
+
+- **tool-search.service.ts**: Extended with pattern filtering methods
+  - Added `filterByPattern()`, `filterByServer()`, `excludeByPattern()`, `smartFilter()`, `combineFilters()`
+  - All methods delegate to `PatternFilterService`
+
 ## [3.2.12] - 2026-01-09
 
 ### Added
