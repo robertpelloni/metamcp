@@ -6,6 +6,7 @@ export const DiscoverySourceTypeEnum = z.enum([
   "vscode",
   "project_mcp",
   "custom",
+  "npm_global",
 ]);
 
 export type DiscoverySourceType = z.infer<typeof DiscoverySourceTypeEnum>;
@@ -130,3 +131,62 @@ export const AddCustomPathResponseSchema = z.object({
 });
 
 export type AddCustomPathResponse = z.infer<typeof AddCustomPathResponseSchema>;
+
+export const NpmMcpServerSchema = z.object({
+  packageName: z.string(),
+  version: z.string(),
+  binName: z.string(),
+  binPath: z.string(),
+  command: z.string(),
+  description: z.string().optional(),
+  hasSdk: z.boolean(),
+  alreadyRegistered: z.boolean().optional(),
+  existingUuid: z.string().optional(),
+});
+
+export type NpmMcpServer = z.infer<typeof NpmMcpServerSchema>;
+
+export const NpmScanResultSchema = z.object({
+  scannedAt: z.date(),
+  globalPath: z.string(),
+  servers: z.array(NpmMcpServerSchema),
+  totalPackages: z.number(),
+  mcpPackages: z.number(),
+  errors: z.array(z.string()),
+});
+
+export type NpmScanResult = z.infer<typeof NpmScanResultSchema>;
+
+export const ScanNpmGlobalRequestSchema = z.object({
+  checkRegistered: z.boolean().default(true),
+});
+
+export type ScanNpmGlobalRequest = z.infer<typeof ScanNpmGlobalRequestSchema>;
+
+export const ScanNpmGlobalResponseSchema = z.object({
+  success: z.boolean(),
+  result: NpmScanResultSchema.optional(),
+  error: z.string().optional(),
+});
+
+export type ScanNpmGlobalResponse = z.infer<typeof ScanNpmGlobalResponseSchema>;
+
+export const ImportNpmServersRequestSchema = z.object({
+  packageNames: z.array(z.string()).min(1, "At least one package required"),
+  skipExisting: z.boolean().default(true),
+});
+
+export type ImportNpmServersRequest = z.infer<
+  typeof ImportNpmServersRequestSchema
+>;
+
+export const ImportNpmServersResponseSchema = z.object({
+  success: z.boolean(),
+  imported: z.number(),
+  skipped: z.array(z.string()),
+  error: z.string().optional(),
+});
+
+export type ImportNpmServersResponse = z.infer<
+  typeof ImportNpmServersResponseSchema
+>;

@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.17  
+**Current Version**: 3.2.18  
 **Last Updated**: 2026-01-11
 
 ---
@@ -116,7 +116,7 @@
 - [x] **mcp.json Auto-discovery** - Automatic detection of MCP servers (v3.2.17)
 - [x] **Server Health Checks** - Monitor downstream server status (v3.2.15)
 - [x] **Auto-reconnection** - Recover from server disconnections (v3.2.16)
-- [ ] **npm/Homebrew Scanning** - Auto-detect installed MCP servers (like MCPM)
+- [x] **npm/Homebrew Scanning** - Auto-detect installed MCP servers (v3.2.18)
 
 ### Enhanced Agent
 
@@ -181,6 +181,7 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.2.18** | 2026-01-11 | npm Global Package Scanning for MCP servers       |
 | **3.2.17** | 2026-01-11 | mcp.json Auto-discovery (Claude/Cursor/VS Code)   |
 | **3.2.16** | 2026-01-11 | Auto-reconnection with exponential backoff        |
 | **3.2.15** | 2026-01-09 | Server Health Checks (periodic health monitoring) |

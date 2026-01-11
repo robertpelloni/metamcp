@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.18] - 2026-01-11
+
+### Added
+
+- **apps/backend/src/lib/metamcp/npm-scanning.service.ts**: npm global package scanning for MCP servers
+  - `NpmScanningService` class for detecting MCP servers from npm global packages
+  - Detection strategies:
+    - Package name contains "mcp-server" (e.g., `mcp-server-filesystem`)
+    - Bin entry name starts with "mcp-server-" (e.g., `@playwright/mcp` has bin `mcp-server-playwright`)
+    - Has `@modelcontextprotocol/sdk` as dependency
+  - `scanGlobalPackages()` - scan npm global node_modules for MCP servers
+  - `toStdioConfig(server)` - convert detected server to STDIO config for import
+  - Returns package info: name, version, bin name/path, command, description, SDK presence
+
+- **packages/zod-types/src/auto-discovery.zod.ts**: Added npm scanning schemas
+  - `npm_global` added to `DiscoverySourceTypeEnum`
+  - `NpmMcpServerSchema` - detected npm MCP server with alreadyRegistered flag
+  - `NpmScanResultSchema` - scan result with servers, stats, and errors
+  - `ScanNpmGlobalRequestSchema` / `ScanNpmGlobalResponseSchema` - tRPC request/response
+  - `ImportNpmServersRequestSchema` / `ImportNpmServersResponseSchema` - import request/response
+
+- **packages/trpc/src/routers/frontend/auto-discovery.ts**: Added npm scanning endpoints
+  - `scanNpmGlobal` mutation - scan npm global packages for MCP servers
+  - `importNpmServers` mutation - import selected npm packages as MCP servers
+
+- **apps/backend/src/trpc/auto-discovery.impl.ts**: Added npm scanning implementations
+  - `scanNpmGlobal` - scans npm global packages, checks against registered servers
+  - `importNpmServers` - imports selected packages as STDIO servers with safe names
+
 ## [3.2.17] - 2026-01-11
 
 ### Added

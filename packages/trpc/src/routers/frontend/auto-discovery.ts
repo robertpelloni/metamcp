@@ -7,6 +7,10 @@ import {
   GetDiscoveryPathsResponseSchema,
   AddCustomPathRequestSchema,
   AddCustomPathResponseSchema,
+  ScanNpmGlobalRequestSchema,
+  ScanNpmGlobalResponseSchema,
+  ImportNpmServersRequestSchema,
+  ImportNpmServersResponseSchema,
 } from "@repo/zod-types";
 import { z } from "zod";
 
@@ -27,6 +31,14 @@ export const createAutoDiscoveryRouter = (implementations: {
   addCustomPath: (
     input: z.infer<typeof AddCustomPathRequestSchema>,
   ) => Promise<z.infer<typeof AddCustomPathResponseSchema>>;
+  scanNpmGlobal: (
+    input: z.infer<typeof ScanNpmGlobalRequestSchema>,
+    userId: string,
+  ) => Promise<z.infer<typeof ScanNpmGlobalResponseSchema>>;
+  importNpmServers: (
+    input: z.infer<typeof ImportNpmServersRequestSchema>,
+    userId: string,
+  ) => Promise<z.infer<typeof ImportNpmServersResponseSchema>>;
 }) => {
   return router({
     scanForConfigs: protectedProcedure
@@ -55,6 +67,20 @@ export const createAutoDiscoveryRouter = (implementations: {
       .output(AddCustomPathResponseSchema)
       .mutation(async ({ input }) => {
         return await implementations.addCustomPath(input);
+      }),
+
+    scanNpmGlobal: protectedProcedure
+      .input(ScanNpmGlobalRequestSchema)
+      .output(ScanNpmGlobalResponseSchema)
+      .mutation(async ({ input, ctx }) => {
+        return await implementations.scanNpmGlobal(input, ctx.user.id);
+      }),
+
+    importNpmServers: protectedProcedure
+      .input(ImportNpmServersRequestSchema)
+      .output(ImportNpmServersResponseSchema)
+      .mutation(async ({ input, ctx }) => {
+        return await implementations.importNpmServers(input, ctx.user.id);
       }),
   });
 };
