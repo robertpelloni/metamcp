@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.16] - 2026-01-11
+
+### Added
+
+- **apps/backend/src/lib/metamcp/auto-reconnect.service.ts**: Auto-reconnection service with exponential backoff
+  - `AutoReconnectService` singleton class for automatic server reconnection
+  - Reconnection states: `IDLE`, `PENDING`, `RECONNECTING`, `SUCCEEDED`, `FAILED`, `CANCELLED`, `MAX_RETRIES_EXCEEDED`
+  - `scheduleReconnection(serverUuid, serverName, reason)` - schedule reconnection with backoff
+  - `attemptReconnection(serverUuid)` - attempt to reconnect a server
+  - `cancelReconnection(serverUuid?)` - cancel pending reconnections (single or all)
+  - `calculateBackoffDelay(attempt)` - exponential backoff with jitter to prevent thundering herd
+  - Configurable: `maxAttempts` (5), `baseDelayMs` (1000), `maxDelayMs` (60000), `jitterFactor` (0.2)
+  - Event listeners: `onReconnectSuccess`, `onReconnectFailure`, `onMaxRetriesExceeded`
+  - Toggle options: `autoReconnectOnCrash`, `autoReconnectOnHealthFailure`
+
+- **packages/zod-types/src/auto-reconnect.zod.ts**: Zod schemas for auto-reconnection types
+  - `ReconnectionStatusEnum` - reconnection status enumeration
+  - `ReconnectionStateSchema` - state with status, serverUuid, serverName, attempt, nextRetryAt, error
+  - `ReconnectionResultSchema` - result of reconnection attempt
+  - `ReconnectionConfigSchema` - configuration options
+  - Request/Response schemas for all tRPC endpoints
+
+- **packages/trpc/src/routers/frontend/auto-reconnect.ts**: tRPC router for auto-reconnection endpoints
+  - `triggerReconnection` mutation - manually trigger reconnection for a server
+  - `cancelReconnection` mutation - cancel pending reconnection(s)
+  - `getState` query - get reconnection state for specific server(s)
+  - `getSummary` query - get aggregate reconnection statistics
+  - `configure` mutation - update reconnection configuration
+  - `setEnabled` mutation - enable/disable auto-reconnection features
+
+- **apps/backend/src/trpc/auto-reconnect.impl.ts**: tRPC implementation connecting router to service
+
+### Changed
+
+- **apps/backend/src/lib/metamcp/mcp-server-pool.ts**: Integrated auto-reconnection on server crash
+  - `handleServerCrash()` now calls `autoReconnectService.scheduleReconnection()` with reason "crash"
+  - `handleServerCrashWithoutNamespace()` also triggers reconnection scheduling
+
+- **apps/backend/src/lib/metamcp/server-health.service.ts**: Integrated auto-reconnection on health failure
+  - `updateHealthState()` triggers `autoReconnectService.scheduleReconnection()` when server becomes UNHEALTHY
+
+- **packages/zod-types/src/index.ts**: Added export for `auto-reconnect.zod`
+- **packages/trpc/src/routers/frontend/index.ts**: Added `createAutoReconnectRouter` to frontend router
+- **packages/trpc/src/router.ts**: Added `autoReconnect` to frontend router definition
+- **apps/backend/src/routers/trpc.ts**: Added `autoReconnectImplementations` to app router
+
 ## [3.2.15] - 2026-01-09
 
 ### Added

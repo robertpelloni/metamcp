@@ -14,6 +14,7 @@ export const createAppRouter = (implementations: {
       oauth: frontendRouters.oauth,
       tools: frontendRouters.tools,
       apiKeys: frontendRouters.apiKeys,
+      autoReconnect: frontendRouters.autoReconnect,
       config: frontendRouters.config,
       logs: frontendRouters.logs,
       savedScripts: frontendRouters.savedScripts,

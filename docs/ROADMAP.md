@@ -1,7 +1,7 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.15  
-**Last Updated**: 2026-01-09
+**Current Version**: 3.2.16  
+**Last Updated**: 2026-01-11
 
 ---
 
@@ -115,7 +115,7 @@
 
 - [ ] **mcp.json Auto-discovery** - Automatic detection of MCP servers
 - [x] **Server Health Checks** - Monitor downstream server status (v3.2.15)
-- [ ] **Auto-reconnection** - Recover from server disconnections
+- [x] **Auto-reconnection** - Recover from server disconnections (v3.2.16)
 - [ ] **npm/Homebrew Scanning** - Auto-detect installed MCP servers (like MCPM)
 
 ### Enhanced Agent
@@ -181,6 +181,7 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.2.16** | 2026-01-11 | Auto-reconnection with exponential backoff        |
 | **3.2.15** | 2026-01-09 | Server Health Checks (periodic health monitoring) |
 | **3.2.14** | 2026-01-09 | Deferred Loading Protocol (lazy tool schemas)     |
 | **3.2.13** | 2026-01-09 | Pattern-Based Filtering (glob/regex tool filter)  |

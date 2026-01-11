@@ -6,6 +6,7 @@ import {
 
 import { mcpServersRepository } from "../../db/repositories";
 import { configService } from "../config.service";
+import { autoReconnectService } from "./auto-reconnect.service";
 import { connectMetaMcpClient } from "./client";
 import { serverErrorTracker } from "./server-error-tracker";
 import { convertDbServerToParams } from "./utils";
@@ -257,12 +258,12 @@ export class ServerHealthService {
     } else {
       const consecutiveFailures = (existing?.consecutiveFailures ?? 0) + 1;
       const unhealthyThreshold = this.DEFAULT_UNHEALTHY_THRESHOLD;
+      const isNowUnhealthy = consecutiveFailures >= unhealthyThreshold;
 
       this.healthStates.set(serverUuid, {
         serverUuid,
         serverName,
-        status:
-          consecutiveFailures >= unhealthyThreshold ? "UNHEALTHY" : "UNKNOWN",
+        status: isNowUnhealthy ? "UNHEALTHY" : "UNKNOWN",
         lastChecked: now,
         lastHealthy: existing?.lastHealthy ?? null,
         responseTimeMs: result.responseTimeMs,
@@ -270,6 +271,14 @@ export class ServerHealthService {
         consecutiveFailures,
         toolCount: existing?.toolCount ?? null,
       });
+
+      if (isNowUnhealthy) {
+        autoReconnectService.scheduleReconnection(
+          serverUuid,
+          serverName,
+          "health_failure",
+        );
+      }
     }
   }
 

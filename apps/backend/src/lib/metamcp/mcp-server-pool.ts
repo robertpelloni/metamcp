@@ -1,6 +1,7 @@
 import { ServerParameters } from "@repo/zod-types";
 
 import { configService } from "../config.service";
+import { autoReconnectService } from "./auto-reconnect.service";
 import { ConnectedClient, connectMetaMcpClient } from "./client";
 import { serverErrorTracker } from "./server-error-tracker";
 
@@ -483,11 +484,12 @@ export class McpServerPool {
       `Handling server crash for ${serverUuid} in namespace ${namespaceUuid}`,
     );
 
-    // Record the crash in the error tracker
     await serverErrorTracker.recordServerCrash(serverUuid, exitCode, signal);
-
-    // Clean up any existing sessions for this server
     await this.cleanupServerSessions(serverUuid);
+
+    const serverName =
+      this.serverParamsCache[serverUuid]?.name ?? `server-${serverUuid}`;
+    autoReconnectService.scheduleReconnection(serverUuid, serverName, "crash");
   }
 
   /**
@@ -503,12 +505,13 @@ export class McpServerPool {
       `Handling server crash for ${serverUuid} (no namespace context)`,
     );
 
-    // Record the crash in the error tracker
     console.log(`Recording crash for server ${serverUuid}`);
     await serverErrorTracker.recordServerCrash(serverUuid, exitCode, signal);
-
-    // Clean up any existing sessions for this server
     await this.cleanupServerSessions(serverUuid);
+
+    const serverName =
+      this.serverParamsCache[serverUuid]?.name ?? `server-${serverUuid}`;
+    autoReconnectService.scheduleReconnection(serverUuid, serverName, "crash");
   }
 
   /**
@@ -591,12 +594,12 @@ export class McpServerPool {
   private async cleanupExpiredSessions(): Promise<void> {
     try {
       const sessionLifetime = await configService.getSessionLifetime();
-      
+
       // If session lifetime is null, sessions are infinite - skip cleanup
       if (sessionLifetime === null) {
         return;
       }
-      
+
       const now = Date.now();
       const expiredSessionIds: string[] = [];
 
