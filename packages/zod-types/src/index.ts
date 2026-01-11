@@ -15,3 +15,4 @@ export * from "./agent.zod";
 export * from "./config-schemas.zod";
 export * from "./server-health.zod";
 export * from "./auto-reconnect.zod";
+export * from "./auto-discovery.zod";

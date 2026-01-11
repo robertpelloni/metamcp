@@ -1,4 +1,5 @@
 import { createApiKeysRouter } from "./api-keys";
+import { createAutoDiscoveryRouter } from "./auto-discovery";
 import { createAutoReconnectRouter } from "./auto-reconnect";
 import { createConfigRouter } from "./config";
 import { createEndpointsRouter } from "./endpoints";
@@ -19,6 +20,7 @@ export { createEndpointsRouter };
 export { createOAuthRouter };
 export { createToolsRouter };
 export { createApiKeysRouter };
+export { createAutoDiscoveryRouter };
 export { createAutoReconnectRouter };
 export { createConfigRouter };
 export { createLogsRouter };
@@ -35,6 +37,7 @@ export const createFrontendRouter = (implementations: {
   oauth: Parameters<typeof createOAuthRouter>[0];
   tools: Parameters<typeof createToolsRouter>[0];
   apiKeys: Parameters<typeof createApiKeysRouter>[0];
+  autoDiscovery: Parameters<typeof createAutoDiscoveryRouter>[0];
   autoReconnect: Parameters<typeof createAutoReconnectRouter>[0];
   config: Parameters<typeof createConfigRouter>[0];
   logs: Parameters<typeof createLogsRouter>[0];
@@ -51,6 +54,7 @@ export const createFrontendRouter = (implementations: {
     oauth: createOAuthRouter(implementations.oauth),
     tools: createToolsRouter(implementations.tools),
     apiKeys: createApiKeysRouter(implementations.apiKeys),
+    autoDiscovery: createAutoDiscoveryRouter(implementations.autoDiscovery),
     autoReconnect: createAutoReconnectRouter(implementations.autoReconnect),
     config: createConfigRouter(implementations.config),
     logs: createLogsRouter(implementations.logs),

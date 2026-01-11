@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.17] - 2026-01-11
+
+### Added
+
+- **apps/backend/src/lib/metamcp/auto-discovery.service.ts**: Auto-discovery service for MCP config files
+  - `AutoDiscoveryService` class for automatic detection of MCP servers from various sources
+  - Discovery sources: `claude_desktop`, `cursor`, `vscode`, `project_mcp`, `custom`
+  - Discovery statuses: `found`, `not_found`, `invalid`, `permission_denied`
+  - `scanForConfigs(options?)` - scan standard locations for MCP config files
+  - `importFromPath(sourcePath, serverNames, userId?, skipExisting?)` - import selected servers
+  - `getDiscoveryPaths(platform?)` - get all discovery paths for a platform
+  - `addCustomPath(path)` / `removeCustomPath(path)` / `getCustomPaths()` - manage custom scan paths
+  - Platform-specific paths:
+    - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`, `%APPDATA%\Cursor\mcp.json`, `.cursor\mcp.json`
+    - **macOS**: `~/Library/Application Support/Claude/...`, `~/Library/Application Support/Cursor/...`
+    - **Linux**: `~/.config/claude/...`, `~/.config/Cursor/...`
+  - Uses `validateClaudeDesktopConfig` from `@repo/zod-types` for config validation
+  - Integrates with `mcpServersRepository` to check which servers already exist
+
+- **packages/zod-types/src/auto-discovery.zod.ts**: Zod schemas for auto-discovery types
+  - `DiscoverySourceTypeEnum` - source type enumeration (claude_desktop, cursor, vscode, project_mcp, custom)
+  - `DiscoveryStatusEnum` - status enumeration (found, not_found, invalid, permission_denied)
+  - `DiscoveredServerSchema` - discovered server with name, config, source, alreadyRegistered flag
+  - `DiscoverySourceResultSchema` - result per source path with status, servers, error
+  - `DiscoveryScanResultSchema` - aggregate scan result with sources array and summary
+  - Request/Response schemas for all tRPC endpoints
+
+- **packages/trpc/src/routers/frontend/auto-discovery.ts**: tRPC router for auto-discovery endpoints
+  - `scanForConfigs` mutation - scan for MCP config files across standard locations
+  - `importDiscovered` mutation - import selected discovered servers into MetaMCP
+  - `getDiscoveryPaths` query - get discovery paths for current or specified platform
+  - `addCustomPath` mutation - add a custom path to scan for MCP configs
+
+- **apps/backend/src/trpc/auto-discovery.impl.ts**: tRPC implementation connecting router to service
+
+### Changed
+
+- **packages/zod-types/src/index.ts**: Added export for `auto-discovery.zod`
+- **packages/trpc/src/routers/frontend/index.ts**: Added `createAutoDiscoveryRouter` to frontend router
+- **packages/trpc/src/router.ts**: Added `autoDiscovery` to frontend router definition
+- **apps/backend/src/routers/trpc.ts**: Added `autoDiscoveryImplementations` to app router
+
 ## [3.2.16] - 2026-01-11
 
 ### Added

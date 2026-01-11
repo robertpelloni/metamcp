@@ -6,6 +6,7 @@ import helmet from "helmet";
 
 import { createContext } from "../trpc";
 import { apiKeysImplementations } from "../trpc/api-keys.impl";
+import { autoDiscoveryImplementations } from "../trpc/auto-discovery.impl";
 import { autoReconnectImplementations } from "../trpc/auto-reconnect.impl";
 import { configImplementations } from "../trpc/config.impl";
 import { endpointsImplementations } from "../trpc/endpoints.impl";
@@ -29,6 +30,7 @@ const appRouter = createAppRouter({
     oauth: oauthImplementations,
     tools: toolsImplementations,
     apiKeys: apiKeysImplementations,
+    autoDiscovery: autoDiscoveryImplementations,
     autoReconnect: autoReconnectImplementations,
     config: configImplementations,
     logs: logsImplementations,
