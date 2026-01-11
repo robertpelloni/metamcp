@@ -148,12 +148,20 @@
 
 ## Ideas/Considerations 💡
 
+### AIOS Integration
+
+- [ ] **Main Executable Integration** - MetaMCP as AIOS's primary tool orchestration layer
+- [ ] **Shared Authentication** - Unified auth between AIOS and MetaMCP
+- [ ] **Cross-module Tool Discovery** - Discover tools across AIOS submodules
+- [ ] **Unified Configuration** - Single config source for AIOS ecosystem
+
 ### Integration
 
 - [ ] **LangChain Integration** - Use as LangChain tool provider
 - [ ] **OpenAI Functions** - Native function calling support
 - [ ] **Anthropic Tools** - Claude tool format support
 - [ ] **UTCP Protocol** - Universal Tool Calling Protocol support
+- [ ] **A2A Protocol** - Agent-to-Agent communication protocol support
 
 ### Advanced Features
 
@@ -162,18 +170,24 @@
 - [ ] **Scheduled Tasks** - Cron-like tool execution
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
 - [ ] **OAuth Server Documentation** - Document existing OAuth 2.0 server capability
+- [ ] **Server Templates** - Pre-configured MCP server templates for common use cases
+- [ ] **One-click Install** - Install popular MCP servers from registry with one click
+- [ ] **Template Marketplace** - Community-contributed server configurations
 
 ### Analytics
 
 - [ ] **Usage Analytics** - Tool usage statistics
 - [ ] **Cost Tracking** - Track API costs per tool/user
 - [ ] **Performance Metrics** - Tool latency tracking
+- [ ] **Token Budget Management** - Per-session/per-user token budgets
 
 ### Infrastructure
 
 - [ ] **Kubernetes Deployment** - K8s session routing (like MS MCP-Gateway)
 - [ ] **OAuth/SSO Integration** - Enterprise SSO support
 - [ ] **Docker Hub Integration** - Pull MCP servers from Docker Hub
+- [ ] **Homebrew Formula Scanning** - Detect MCP servers installed via Homebrew
+- [ ] **pypi/pip Scanning** - Detect Python-based MCP servers from pip
 
 ---
 
