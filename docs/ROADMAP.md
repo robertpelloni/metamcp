@@ -148,12 +148,12 @@
 
 ## Ideas/Considerations 💡
 
-### AIOS Integration
+### Borg Integration
 
-- [ ] **Main Executable Integration** - MetaMCP as AIOS's primary tool orchestration layer
-- [ ] **Shared Authentication** - Unified auth between AIOS and MetaMCP
-- [ ] **Cross-module Tool Discovery** - Discover tools across AIOS submodules
-- [ ] **Unified Configuration** - Single config source for AIOS ecosystem
+- [ ] **Main Executable Integration** - MetaMCP as Borg's primary tool orchestration layer
+- [ ] **Shared Authentication** - Unified auth between Borg and MetaMCP
+- [ ] **Cross-module Tool Discovery** - Discover tools across Borg submodules
+- [ ] **Unified Configuration** - Single config source for Borg ecosystem
 
 ### Integration
 

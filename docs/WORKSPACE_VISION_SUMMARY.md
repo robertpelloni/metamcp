@@ -2,25 +2,25 @@
 
 **Document Version:** 1.0.0  
 **Last Updated:** 2026-01-09  
-**Context:** MetaMCP's position within the broader AIOS ecosystem
+**Context:** MetaMCP's position within the broader Borg ecosystem
 
 ---
 
 ## Executive Summary
 
-MetaMCP is a **critical submodule** within the AIOS (Super AI Plugin) ecosystem—a Meta-Orchestrator for the Model Context Protocol (MCP). This document consolidates vision findings from across the workspace to provide context for MetaMCP's role and development direction.
+MetaMCP is a **critical submodule** within the Borg (Super AI Plugin) ecosystem—a Meta-Orchestrator for the Model Context Protocol (MCP). This document consolidates vision findings from across the workspace to provide context for MetaMCP's role and development direction.
 
 ---
 
 ## The Three Pillars of the Workspace
 
-### 1. AIOS (AI Operating System)
+### 1. Borg (AI Operating System)
 
 **The "Motherboard & OS" for AI Tools**
 
-AIOS is the universal operating system for AI tools, acting as a "Motherboard" that connects, coordinates, and enhances any AI agent, tool, or service.
+Borg is the universal operating system for AI tools, acting as a "Motherboard" that connects, coordinates, and enhances any AI agent, tool, or service.
 
-| Computer Metaphor | AIOS Equivalent                     |
+| Computer Metaphor | Borg Equivalent                     |
 | ----------------- | ----------------------------------- |
 | Motherboard       | Core Service (Hub)                  |
 | CPU               | ModelGateway (LLM abstraction)      |
@@ -95,7 +95,7 @@ The workspace envisions a **unified TUI** called "SuperAI CLI" (codename: "Mecha
 │  └──────┬──────┘  └──────┬──────┘  └───────────┬─────────────┘  │
 │         │                │                     │                │
 │  ┌──────┴────────────────┴─────────────────────┴──────────────┐ │
-│  │                     AIOS HUB (Core)                         │ │
+│  │                     Borg HUB (Core)                         │ │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐       │ │
 │  │  │ MetaMCP  │ │  Memory  │ │  Agents  │ │  Skills  │       │ │
 │  │  │  (Proxy) │ │  (RAG)   │ │ (ReAct)  │ │  (100+)  │       │ │
@@ -106,7 +106,7 @@ The workspace envisions a **unified TUI** called "SuperAI CLI" (codename: "Mecha
 
 **Swiss Army Knife Philosophy:** Integrate best-in-class CLIs rather than recreating them:
 
-| CLI         | Strength                     | Role in AIOS    |
+| CLI         | Strength                     | Role in Borg    |
 | ----------- | ---------------------------- | --------------- |
 | Aider       | SOTA code editing, Repo Map  | Code Editor     |
 | Claude Code | v2.0.74 coding assistant     | Code Assistant  |
@@ -118,10 +118,10 @@ The workspace envisions a **unified TUI** called "SuperAI CLI" (codename: "Mecha
 
 ## MetaMCP's Strategic Position
 
-### Within AIOS Hierarchy
+### Within Borg Hierarchy
 
 ```
-AIOS (Parent Monorepo)
+Borg (Parent Monorepo)
 ├── packages/core/          # The Brain
 ├── packages/ui/            # Control Center
 ├── packages/cli/           # Terminal Interface
@@ -159,7 +159,7 @@ AIOS (Parent Monorepo)
 
 ## Feature Parity Goals
 
-From the broader AIOS vision, MetaMCP should consider:
+From the broader Borg vision, MetaMCP should consider:
 
 | Feature                           | Source   | Status in MetaMCP |
 | --------------------------------- | -------- | ----------------- |
@@ -167,13 +167,13 @@ From the broader AIOS vision, MetaMCP should consider:
 | Librarian (external repo search)  | Amp      | 📋 Planned        |
 | Memory Bank architecture          | KiloCode | 📋 Planned        |
 | Repo Map (AST-based)              | Aider    | 📋 Planned        |
-| Toolboxes (auto-register scripts) | AIOS     | 📋 Planned        |
+| Toolboxes (auto-register scripts) | Borg     | 📋 Planned        |
 
 ---
 
 ## Key Technical Decisions
 
-### From AIOS Conventions
+### From Borg Conventions
 
 | Convention      | Implementation                 |
 | --------------- | ------------------------------ |
@@ -252,7 +252,7 @@ Based on workspace vision, these should be prioritized:
 ### Environment Integration
 
 ```env
-# MetaMCP connects to AIOS via these patterns:
+# MetaMCP connects to Borg via these patterns:
 DATABASE_URL=...          # Shared PostgreSQL
 OPENAI_API_KEY=...        # Embeddings for Tool RAG
 MCP_PROGRESSIVE_MODE=true # Enable progressive disclosure
@@ -262,11 +262,11 @@ MCP_PROGRESSIVE_MODE=true # Enable progressive disclosure
 
 ## Conclusion
 
-MetaMCP is not just an MCP proxy—it's the **progressive disclosure engine** for the entire AIOS ecosystem. Its primary value proposition is reducing token costs while maintaining full tool access through intelligent search and lazy loading.
+MetaMCP is not just an MCP proxy—it's the **progressive disclosure engine** for the entire Borg ecosystem. Its primary value proposition is reducing token costs while maintaining full tool access through intelligent search and lazy loading.
 
 **Key Insight:** The workspace vision emphasizes "aggregate, don't compete." MetaMCP embodies this by being the single gateway that unifies all MCP servers while adding value through semantic search, sandboxed execution, and autonomous agents.
 
 ---
 
 _"We don't compete. We aggregate. We orchestrate. We amplify."_
-— AIOS Vision Document
+— Borg Vision Document

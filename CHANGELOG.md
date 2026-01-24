@@ -269,8 +269,8 @@ All notable changes to this project will be documented in this file.
   - Common workflow guides (API endpoints, MCP tools, DB schema)
 
 - **docs/WORKSPACE_VISION_SUMMARY.md**: Consolidated vision documentation
-  - MetaMCP's position within AIOS ecosystem
-  - Three pillars overview (AIOS, MetaMCP, Bobcoin)
+  - MetaMCP's position within Borg ecosystem
+  - Three pillars overview (Borg, MetaMCP, Bobcoin)
   - "Mecha Suit" architecture explanation
   - Strategic alignment with workspace goals
 

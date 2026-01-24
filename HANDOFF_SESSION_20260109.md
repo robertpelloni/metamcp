@@ -103,9 +103,9 @@ MetaMCP is an **MCP Hub** (proxy/aggregator/gateway) with:
 ## Important Context
 
 ### Submodule Structure
-This repo (`metamcp`) is itself a **Git submodule** within a larger AIOS project:
+This repo (`metamcp`) is itself a **Git submodule** within a larger Borg project:
 ```
-aios/
+borg/
 └── submodules/
     └── metamcp/          # This repo
         ├── apps/backend/mcp-shark/  # Nested submodule
