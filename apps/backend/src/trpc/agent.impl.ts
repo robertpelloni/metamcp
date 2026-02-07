@@ -6,7 +6,7 @@ import { mcpServerPool } from "../lib/metamcp/mcp-server-pool";
 import { parseToolName } from "../lib/metamcp/tool-name-parser";
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { CompatibilityCallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
-import { configService } from "../config.service";
+import { configService } from "../lib/config.service";
 import { db } from "../db";
 import { toolsTable, toolCallLogsTable } from "../db/schema";
 import { eq } from "drizzle-orm";

@@ -52,8 +52,8 @@ tmp
 temp
 
 # Documentation
-docs
-*.md
+# docs - We need docs for the frontend UI
+# *.md - We need markdown files for docs
 
 # Test files
 **/*.test.js
