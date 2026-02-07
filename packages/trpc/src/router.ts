@@ -1,3 +1,4 @@
+import { createCatalogRouter } from "./routers/frontend/catalog";
 import { createFrontendRouter } from "./routers/frontend";
 import { router } from "./trpc";
 
@@ -23,6 +24,7 @@ export const createAppRouter = (implementations: {
       toolSets: frontendRouters.toolSets,
       policies: frontendRouters.policies,
       agent: frontendRouters.agent,
+      catalog: frontendRouters.catalog,
     }),
   });
 };
