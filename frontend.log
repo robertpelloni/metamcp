@@ -1,0 +1,49 @@
+
+> frontend@3.2.14 start /app/apps/frontend
+> next start
+
+   ▲ Next.js 15.4.8
+   - Local:        http://localhost:12008
+   - Network:      http://192.168.0.2:12008
+
+ ✓ Starting...
+ ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+ ✓ Ready in 570ms
+Error: APP_URL or NEXT_PUBLIC_APP_URL environment variable is required but not set
+    at d (.next/server/chunks/810.js:1:10932)
+    at 78342 (.next/server/app/[locale]/register/page.js:2:8573)
+    at c (.next/server/webpack-runtime.js:1:128)
+    at 28850 (.next/server/app/[locale]/register/page.js:1:3719)
+    at Function.c (.next/server/webpack-runtime.js:1:128)
+ ⨯ unhandledRejection:  Error: APP_URL or NEXT_PUBLIC_APP_URL environment variable is required but not set
+    at d (.next/server/chunks/810.js:1:10932)
+    at 78342 (.next/server/app/[locale]/register/page.js:2:8573)
+    at c (.next/server/webpack-runtime.js:1:128)
+    at 28850 (.next/server/app/[locale]/register/page.js:1:3719)
+    at Function.c (.next/server/webpack-runtime.js:1:128)
+ ⨯ Error: APP_URL or NEXT_PUBLIC_APP_URL environment variable is required but not set
+    at d (.next/server/chunks/810.js:1:10932)
+    at 78342 (.next/server/chunks/3615.js:1:22658)
+    at c (.next/server/webpack-runtime.js:1:128)
+    at 43526 (.next/server/app/[locale]/login/page.js:1:4303)
+    at Object.c [as require] (.next/server/webpack-runtime.js:1:128) {
+  digest: '681537778'
+}
+(node:12300) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ⨯ Error: APP_URL or NEXT_PUBLIC_APP_URL environment variable is required but not set
+    at d (.next/server/chunks/810.js:1:10932)
+    at 78342 (.next/server/chunks/3615.js:1:22658)
+    at c (.next/server/webpack-runtime.js:1:128)
+    at 43526 (.next/server/app/[locale]/login/page.js:1:4303)
+    at Object.c [as require] (.next/server/webpack-runtime.js:1:128) {
+  digest: '681537778'
+}
+ ⨯ Error: APP_URL or NEXT_PUBLIC_APP_URL environment variable is required but not set
+    at d (.next/server/chunks/810.js:1:10932)
+    at 78342 (.next/server/chunks/3615.js:1:22658)
+    at c (.next/server/webpack-runtime.js:1:128)
+    at 43526 (.next/server/app/[locale]/login/page.js:1:4303)
+    at Object.c [as require] (.next/server/webpack-runtime.js:1:128) {
+  digest: '681537778'
+}

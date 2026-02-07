@@ -1,0 +1,133 @@
+✓ Better Auth instance created successfully
+✓ OIDC Providers configured: 0
+Server is running on port 12009
+Auth routes available at: http://localhost:12009/api/auth
+Public MetaMCP endpoints available at: http://localhost:12009/metamcp
+MCP Proxy routes available at: http://localhost:12009/mcp-proxy
+tRPC routes available at: http://localhost:12009/trpc
+Waiting for server to be fully ready before initializing idle servers...
+Initializing idle servers for all namespaces and all MCP servers...
+❌ Error initializing idle servers: DrizzleQueryError: Failed query: select "uuid", "name", "description", "created_at", "updated_at", "user_id" from "namespaces" order by "namespaces"."created_at" desc
+params:
+    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22
+    ... 2 lines matching cause stack trace ...
+    at async Server.<anonymous> (file:///app/apps/backend/dist/index.js:15135:3) {
+  query: 'select "uuid", "name", "description", "created_at", "updated_at", "user_id" from "namespaces" order by "namespaces"."created_at" desc',
+  params: [],
+  cause: AggregateError [ECONNREFUSED]:
+      at /app/node_modules/.pnpm/pg-pool@3.10.0_pg@8.16.0/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:124:18
+      at async NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:40:16)
+      at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22
+      at async NamespacesRepository.findAll (file:///app/apps/backend/dist/index.js:873:16)
+      at async initializeIdleServers (file:///app/apps/backend/dist/index.js:8433:24)
+      at async Server.<anonymous> (file:///app/apps/backend/dist/index.js:15135:3) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+[2026-02-07T08:47:14.805Z] [config.getSignupDisabled] {
+  name: 'Error',
+  message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_SIGNUP',
+  stack: 'Error: Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_SIGNUP\n' +
+    '    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22\n' +
+    '    at async Object.getConfig (file:///app/apps/backend/dist/index.js:513:24)\n' +
+    '    at async Object.isSignupDisabled (file:///app/apps/backend/dist/index.js:550:24)\n' +
+    '    at async Object.getSignupDisabled (file:///app/apps/backend/dist/index.js:12947:14)\n' +
+    '    at async file:///app/packages/trpc/dist/index.js:140:12\n' +
+    '    at async resolveMiddleware (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:200:17)\n' +
+    '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
+    '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
+}
+[2026-02-07T08:47:14.807Z] [config.getBasicAuthDisabled] {
+  name: 'Error',
+  message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_BASIC_AUTH',
+  stack: 'Error: Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_BASIC_AUTH\n' +
+    '    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22\n' +
+    '    at async Object.getConfig (file:///app/apps/backend/dist/index.js:513:24)\n' +
+    '    at async Object.isBasicAuthDisabled (file:///app/apps/backend/dist/index.js:576:24)\n' +
+    '    at async Object.getBasicAuthDisabled (file:///app/apps/backend/dist/index.js:12981:14)\n' +
+    '    at async file:///app/packages/trpc/dist/index.js:152:12\n' +
+    '    at async resolveMiddleware (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:200:17)\n' +
+    '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
+    '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
+}
+[2026-02-07T08:47:18.258Z] [config.getSignupDisabled] {
+  name: 'Error',
+  message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_SIGNUP',
+  stack: 'Error: Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_SIGNUP\n' +
+    '    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22\n' +
+    '    at async Object.getConfig (file:///app/apps/backend/dist/index.js:513:24)\n' +
+    '    at async Object.isSignupDisabled (file:///app/apps/backend/dist/index.js:550:24)\n' +
+    '    at async Object.getSignupDisabled (file:///app/apps/backend/dist/index.js:12947:14)\n' +
+    '    at async file:///app/packages/trpc/dist/index.js:140:12\n' +
+    '    at async resolveMiddleware (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:200:17)\n' +
+    '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
+    '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
+}
+[2026-02-07T08:47:18.259Z] [config.getBasicAuthDisabled] {
+  name: 'Error',
+  message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_BASIC_AUTH',
+  stack: 'Error: Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_BASIC_AUTH\n' +
+    '    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22\n' +
+    '    at async Object.getConfig (file:///app/apps/backend/dist/index.js:513:24)\n' +
+    '    at async Object.isBasicAuthDisabled (file:///app/apps/backend/dist/index.js:576:24)\n' +
+    '    at async Object.getBasicAuthDisabled (file:///app/apps/backend/dist/index.js:12981:14)\n' +
+    '    at async file:///app/packages/trpc/dist/index.js:152:12\n' +
+    '    at async resolveMiddleware (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:200:17)\n' +
+    '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
+    '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
+}
+[2026-02-07T08:47:21.424Z] [config.getSignupDisabled] {
+  name: 'Error',
+  message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_SIGNUP',
+  stack: 'Error: Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_SIGNUP\n' +
+    '    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22\n' +
+    '    at async Object.getConfig (file:///app/apps/backend/dist/index.js:513:24)\n' +
+    '    at async Object.isSignupDisabled (file:///app/apps/backend/dist/index.js:550:24)\n' +
+    '    at async Object.getSignupDisabled (file:///app/apps/backend/dist/index.js:12947:14)\n' +
+    '    at async file:///app/packages/trpc/dist/index.js:140:12\n' +
+    '    at async resolveMiddleware (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:200:17)\n' +
+    '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
+    '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
+}
+[2026-02-07T08:47:21.425Z] [config.getBasicAuthDisabled] {
+  name: 'Error',
+  message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_BASIC_AUTH',
+  stack: 'Error: Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
+    'params: DISABLE_BASIC_AUTH\n' +
+    '    at NodePgPreparedQuery.queryWithCache (file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/pg-core/session.js:42:15)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async file:///app/node_modules/.pnpm/drizzle-orm@0.44.2_@types+pg@8.15.4_kysely@0.28.8_pg@8.16.0/node_modules/drizzle-orm/node-postgres/session.js:117:22\n' +
+    '    at async Object.getConfig (file:///app/apps/backend/dist/index.js:513:24)\n' +
+    '    at async Object.isBasicAuthDisabled (file:///app/apps/backend/dist/index.js:576:24)\n' +
+    '    at async Object.getBasicAuthDisabled (file:///app/apps/backend/dist/index.js:12981:14)\n' +
+    '    at async file:///app/packages/trpc/dist/index.js:152:12\n' +
+    '    at async resolveMiddleware (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:200:17)\n' +
+    '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
+    '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
+}

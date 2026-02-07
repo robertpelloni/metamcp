@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -92,31 +93,54 @@ export default function LiveLogsPage() {
           <Badge variant="outline">
             {t("logs:totalLogs", { count: totalCount })}
           </Badge>
-          <Button variant="outline" size="sm" onClick={handleToggleAutoRefresh}>
-            {isAutoRefreshing
-              ? t("logs:stopAutoRefresh")
-              : t("logs:startAutoRefresh")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-            {t("logs:refresh")}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setShowClearDialog(true)}
-            disabled={isLoading || logs.length === 0}
-          >
-            <Trash2 className="h-4 w-4" />
-            {t("logs:clearLogs")}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" onClick={handleToggleAutoRefresh}>
+                {isAutoRefreshing
+                  ? t("logs:stopAutoRefresh")
+                  : t("logs:startAutoRefresh")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isAutoRefreshing ? "Pause real-time updates" : "Enable real-time updates (polls every 5s)"}
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isLoading}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+                {t("logs:refresh")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Manually fetch the latest logs
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowClearDialog(true)}
+                disabled={isLoading || logs.length === 0}
+              >
+                <Trash2 className="h-4 w-4" />
+                {t("logs:clearLogs")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Permanently delete all logs from the database
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
