@@ -25,3 +25,6 @@
 [submodule "submodules/mcpdir"]
 	path = submodules/mcpdir
 	url = https://github.com/eL1fe/mcpdir.git
+[submodule "submodules/cointrade"]
+	path = submodules/cointrade
+	url = https://github.com/mnmballa2323/cointrade
