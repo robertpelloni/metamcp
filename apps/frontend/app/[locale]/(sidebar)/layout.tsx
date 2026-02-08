@@ -2,7 +2,6 @@
 
 import {
   Bot,
-  BrainCircuit,
   ExternalLink,
   FileCode,
   FileTerminal,
@@ -16,7 +15,7 @@ import {
   Settings,
   ShieldCheck,
   Activity,
-  Info,
+  Book,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,6 +54,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     icon: Search,
   },
   {
+    title: "Catalog", // TODO: Add translation key
+    url: getLocalizedPath("/catalog", locale),
+    icon: Layers,
+  },
+  {
     title: t("navigation:mcpServers"),
     url: getLocalizedPath("/mcp-servers", locale),
     icon: Server,
@@ -78,16 +82,6 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: "Agent", // TODO: Add translation key
     url: getLocalizedPath("/agent", locale),
     icon: Bot,
-  },
-  {
-    title: "Agent Memory", // TODO: Add translation key
-    url: getLocalizedPath("/memories", locale),
-    icon: BrainCircuit,
-  },
-  {
-    title: "Registry", // TODO: Add translation key
-    url: getLocalizedPath("/registry", locale),
-    icon: Package,
   },
   {
     title: t("navigation:metamcpNamespaces"),
@@ -120,14 +114,9 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     icon: Activity,
   },
   {
-    title: "System", // TODO: Add translation key
-    url: getLocalizedPath("/system", locale),
-    icon: Info,
-  },
-  {
-    title: "Audit Logs", // TODO: Add translation key
-    url: getLocalizedPath("/audit", locale),
-    icon: ShieldCheck,
+    title: "Documentation", // TODO: Add translation key
+    url: getLocalizedPath("/docs", locale),
+    icon: Book,
   },
 ];
 

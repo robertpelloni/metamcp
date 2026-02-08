@@ -29,7 +29,7 @@ params:
     [errors]: [ [Error], [Error] ]
   }
 }
-[2026-02-07T08:47:14.805Z] [config.getSignupDisabled] {
+[2026-02-07T09:23:31.175Z] [config.getSignupDisabled] {
   name: 'Error',
   message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
     'params: DISABLE_SIGNUP',
@@ -46,7 +46,7 @@ params:
     '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
     '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
 }
-[2026-02-07T08:47:14.807Z] [config.getBasicAuthDisabled] {
+[2026-02-07T09:23:31.179Z] [config.getBasicAuthDisabled] {
   name: 'Error',
   message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
     'params: DISABLE_BASIC_AUTH',
@@ -63,7 +63,7 @@ params:
     '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
     '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
 }
-[2026-02-07T08:47:18.258Z] [config.getSignupDisabled] {
+[2026-02-07T09:23:34.326Z] [config.getSignupDisabled] {
   name: 'Error',
   message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
     'params: DISABLE_SIGNUP',
@@ -80,7 +80,7 @@ params:
     '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
     '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
 }
-[2026-02-07T08:47:18.259Z] [config.getBasicAuthDisabled] {
+[2026-02-07T09:23:34.327Z] [config.getBasicAuthDisabled] {
   name: 'Error',
   message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
     'params: DISABLE_BASIC_AUTH',
@@ -97,7 +97,7 @@ params:
     '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
     '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
 }
-[2026-02-07T08:47:21.424Z] [config.getSignupDisabled] {
+[2026-02-07T09:23:37.472Z] [config.getSignupDisabled] {
   name: 'Error',
   message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
     'params: DISABLE_SIGNUP',
@@ -114,7 +114,7 @@ params:
     '    at async callRecursive (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:236:18)\n' +
     '    at async procedure (file:///app/node_modules/.pnpm/@trpc+server@11.4.1_typescript@5.8.2/node_modules/@trpc/server/dist/initTRPC-COaJMShh.mjs:265:18)'
 }
-[2026-02-07T08:47:21.425Z] [config.getBasicAuthDisabled] {
+[2026-02-07T09:23:37.475Z] [config.getBasicAuthDisabled] {
   name: 'Error',
   message: 'Failed query: select "id", "value", "description", "created_at", "updated_at" from "config" where "config"."id" = $1\n' +
     'params: DISABLE_BASIC_AUTH',

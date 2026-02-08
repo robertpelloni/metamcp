@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { toolSearchService } from "./tool-search.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { policyService } from "../access-control/policy.service";
-import { memoryService } from "../memory/memory.service";
+import { memoryService } from "./memory.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
@@ -30,8 +30,7 @@ export class AgentService {
   async runAgent(
     task: string,
     callToolCallback: (name: string, args: any, meta?: any) => Promise<any>,
-    policyId?: string,
-    userId?: string
+    policyId?: string
   ): Promise<any> {
     const client = this.getClient();
 
@@ -58,25 +57,14 @@ export class AgentService {
         console.warn("[Agent] No tools found for task via search (or all filtered by policy).");
     }
 
-    // Retrieve memories if user is authenticated
-    let memoryContext = "";
-    if (userId) {
-        try {
-            const memories = await memoryService.searchMemories(task, userId, 5);
-            if (memories.length > 0) {
-                memoryContext = `\nRELEVANT MEMORIES (Context from previous interactions):\n${memories.map(m => `- ${m.content}`).join("\n")}\n`;
-            }
-        } catch (e) {
-            console.error("Failed to retrieve agent memories", e);
-        }
-    }
+    // Retrieve simple short-term memory (history of this session is not passed here because session is transient for now,
+    // but we could look up past successful tasks if we tracked them).
+    // For now, we will just use the current task as context.
 
     // 2. Planning & Code Generation
     const prompt = `
 You are an autonomous AI agent running in a secure Code Execution Sandbox.
 Your goal is to complete the following task: "${task}"
-
-${memoryContext}
 
 You have access to the following tools (via the 'mcp' object):
 ${toolsContext}
@@ -84,7 +72,7 @@ ${toolsContext}
 ${policyId ? "NOTE: You are running under a restricted security policy. Access to tools outside your allowed scope will fail." : ""}
 
 INSTRUCTIONS:
-1. Analyze the task, available tools, and any relevant memories.
+1. Analyze the task and available tools.
 2. Write a TypeScript/JavaScript script to accomplish the task.
 3. Use \`await mcp.call('tool_name', { args })\` to use tools.
 4. You can use console.log() to debug or print intermediate steps.
@@ -92,7 +80,6 @@ INSTRUCTIONS:
 6. Do NOT import external libraries. Use standard JS features.
 7. Handle errors gracefully.
 8. If the task is simple, just do it. If complex, break it down.
-9. If you learn something useful about the user or the environment that should be remembered for future tasks, use the 'save_memory' tool (if available/allowed).
 
 Generate ONLY the code. No markdown formatting.
 `;

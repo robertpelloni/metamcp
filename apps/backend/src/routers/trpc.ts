@@ -20,11 +20,7 @@ import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
 import { policiesImplementations } from "../trpc/policies.impl";
 import { agentImplementations } from "../trpc/agent.impl";
-import { analyticsImplementations } from "../trpc/analytics.impl";
-import { memoriesImplementations } from "../trpc/memories.impl";
-import { registryImplementations } from "../trpc/registry.impl";
-import { systemImplementations } from "../trpc/system.impl";
-import { auditImplementations } from "../trpc/audit.impl";
+import { catalogImplementations } from "../trpc/catalog.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -44,11 +40,7 @@ const appRouter = createAppRouter({
     toolSets: toolSetsImplementations,
     policies: policiesImplementations,
     agent: agentImplementations,
-    memories: memoriesImplementations,
-    registry: registryImplementations,
-    analytics: analyticsImplementations,
-    system: systemImplementations,
-    audit: auditImplementations,
+    catalog: catalogImplementations,
   },
 });
 
