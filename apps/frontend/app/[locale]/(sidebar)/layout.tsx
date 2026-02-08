@@ -115,7 +115,11 @@ function UserInfoFooter() {
       <div className="flex flex-col gap-2 p-2">
         <div className="flex items-center justify-between">
           <LanguageSwitcher />
+<<<<<<< HEAD
           <p>Version v2.5.0</p>
+=======
+          <p>Version v2.5.3</p>
+>>>>>>> origin/docker-in-docker
         </div>
         <Separator />
         {user && (

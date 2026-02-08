@@ -12,6 +12,7 @@ import {
 } from "@repo/zod-types";
 import { z } from "zod";
 
+<<<<<<< HEAD
 import logger from "@/utils/logger";
 
 import {
@@ -23,6 +24,11 @@ import { mcpServerPool } from "../lib/metamcp/mcp-server-pool";
 import { clearOverrideCache } from "../lib/metamcp/metamcp-middleware/tool-overrides.functional";
 import { metaMcpServerPool } from "../lib/metamcp/metamcp-server-pool";
 import { serverErrorTracker } from "../lib/metamcp/server-error-tracker";
+=======
+import { mcpServersRepository } from "../db/repositories";
+import { McpServersSerializer } from "../db/serializers";
+import { dockerManager } from "../lib/metamcp/docker-manager/index.js";
+>>>>>>> origin/docker-in-docker
 import { convertDbServerToParams } from "../lib/metamcp/utils";
 import { syncMcpSharkConfig } from "../lib/mcp-shark";
 
@@ -48,9 +54,10 @@ export const mcpServersImplementations = {
         };
       }
 
-      // Ensure idle session for the newly created server (async)
+      // Create Docker container for stdio servers (async)
       const serverParams = await convertDbServerToParams(createdServer);
       if (serverParams) {
+<<<<<<< HEAD
         mcpServerPool
           .ensureIdleSessionForNewServer(createdServer.uuid, serverParams)
           .then(() => {
@@ -64,6 +71,23 @@ export const mcpServersImplementations = {
               error,
             );
           });
+=======
+        if (!serverParams.type || serverParams.type === "STDIO") {
+          dockerManager
+            .createContainer(createdServer.uuid, serverParams)
+            .then(() => {
+              console.log(
+                `Created Docker container for newly created server: ${createdServer.name} (${createdServer.uuid})`,
+              );
+            })
+            .catch((error) => {
+              console.error(
+                `Error creating Docker container for newly created server ${createdServer.name} (${createdServer.uuid}):`,
+                error,
+              );
+            });
+        }
+>>>>>>> origin/docker-in-docker
       }
 
       // Sync MCP Shark config
@@ -156,15 +180,16 @@ export const mcpServersImplementations = {
           await mcpServersRepository.bulkCreate(serversToInsert);
         imported = serversToInsert.length;
 
-        // Ensure idle sessions for all imported servers (async)
+        // Create Docker containers for stdio servers (async)
         if (createdServers && createdServers.length > 0) {
           createdServers.forEach(async (server) => {
             try {
               const params = await convertDbServerToParams(server);
-              if (params) {
-                mcpServerPool
-                  .ensureIdleSessionForNewServer(server.uuid, params)
+              if (params && (!params.type || params.type === "STDIO")) {
+                dockerManager
+                  .createContainer(server.uuid, params)
                   .then(() => {
+<<<<<<< HEAD
                     logger.info(
                       `Ensured idle session for bulk imported server: ${server.name} (${server.uuid})`,
                     );
@@ -172,13 +197,27 @@ export const mcpServersImplementations = {
                   .catch((error) => {
                     logger.error(
                       `Error ensuring idle session for bulk imported server ${server.name} (${server.uuid}):`,
+=======
+                    console.log(
+                      `Created Docker container for bulk imported server: ${server.name} (${server.uuid})`,
+                    );
+                  })
+                  .catch((error) => {
+                    console.error(
+                      `Error creating Docker container for bulk imported server ${server.name} (${server.uuid}):`,
+>>>>>>> origin/docker-in-docker
                       error,
                     );
                   });
               }
             } catch (error) {
+<<<<<<< HEAD
               logger.error(
                 `Error processing idle session for bulk imported server ${server.name} (${server.uuid}):`,
+=======
+              console.error(
+                `Error processing Docker container for bulk imported server ${server.name} (${server.uuid}):`,
+>>>>>>> origin/docker-in-docker
                 error,
               );
             }
@@ -274,14 +313,8 @@ export const mcpServersImplementations = {
         };
       }
 
-      // Find affected namespaces before deleting the server
-      const affectedNamespaceUuids =
-        await namespaceMappingsRepository.findNamespacesByServerUuid(
-          input.uuid,
-        );
-
-      // Clean up any idle sessions for this server
-      await mcpServerPool.cleanupIdleSession(input.uuid);
+      // Clean up Docker container for this server if it's stdio
+      await dockerManager.removeContainer(input.uuid);
 
       const deletedServer = await mcpServersRepository.deleteByUuid(input.uuid);
 
@@ -292,6 +325,7 @@ export const mcpServersImplementations = {
         };
       }
 
+<<<<<<< HEAD
       // Invalidate idle MetaMCP servers for all affected namespaces (async)
       if (affectedNamespaceUuids.length > 0) {
         metaMcpServerPool
@@ -331,6 +365,9 @@ export const mcpServersImplementations = {
           `Cleared tool overrides cache for ${affectedNamespaceUuids.length} namespaces after deleting server: ${deletedServer.name} (${deletedServer.uuid})`,
         );
       }
+=======
+      // Docker containers are already removed, no additional cleanup needed
+>>>>>>> origin/docker-in-docker
 
       // Sync MCP Shark config
       syncMcpSharkConfig().catch((err) => {
@@ -390,6 +427,7 @@ export const mcpServersImplementations = {
         };
       }
 
+<<<<<<< HEAD
       // Reset error status for stdio servers when they are updated
       if (updatedServer.type === McpServerTypeEnum.Enum.STDIO) {
         try {
@@ -466,6 +504,26 @@ export const mcpServersImplementations = {
         logger.info(
           `Cleared tool overrides cache for ${affectedNamespaceUuids.length} namespaces after updating server: ${updatedServer.name} (${updatedServer.uuid})`,
         );
+=======
+      // Update Docker container for stdio servers (async)
+      const serverParams = await convertDbServerToParams(updatedServer);
+      if (serverParams) {
+        if (!serverParams.type || serverParams.type === "STDIO") {
+          dockerManager
+            .updateServer(updatedServer.uuid, serverParams)
+            .then(() => {
+              console.log(
+                `Updated Docker container for server: ${updatedServer.name} (${updatedServer.uuid})`,
+              );
+            })
+            .catch((error) => {
+              console.error(
+                `Error updating Docker container for server ${updatedServer.name} (${updatedServer.uuid}):`,
+                error,
+              );
+            });
+        }
+>>>>>>> origin/docker-in-docker
       }
 
       // Sync MCP Shark config

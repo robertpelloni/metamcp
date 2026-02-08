@@ -33,8 +33,11 @@ import { toonSerializer } from "../serializers/toon.serializer";
 import { deferredLoadingService } from "./deferred-loading.service";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
+<<<<<<< HEAD
 import { mcpServerPool } from "./mcp-server-pool";
 import { toolsSyncCache } from "./tools-sync-cache";
+=======
+>>>>>>> origin/docker-in-docker
 import {
   createFilterCallToolMiddleware,
   createFilterListToolsMiddleware,
@@ -46,6 +49,7 @@ import {
   ListToolsHandler,
   MetaMCPHandlerContext,
 } from "./metamcp-middleware/functional-middleware";
+<<<<<<< HEAD
 import { createLoggingMiddleware } from "./metamcp-middleware/logging.functional";
 import {
   createToolOverridesCallToolMiddleware,
@@ -53,6 +57,9 @@ import {
   mapOverrideNameToOriginal,
 } from "./metamcp-middleware/tool-overrides.functional";
 import { parseToolName } from "./tool-name-parser";
+=======
+import { getOrConnectSessionClient } from "./sessions";
+>>>>>>> origin/docker-in-docker
 import { sanitizeName } from "./utils";
 
 /**
@@ -371,10 +378,15 @@ export const createServer = async (
     );
 
     await Promise.allSettled(
+<<<<<<< HEAD
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
 
         const session = await mcpServerPool.getSession(
+=======
+      Object.entries(serverParams).map(async ([mcpServerUuid, params]) => {
+        const session = await getOrConnectSessionClient(
+>>>>>>> origin/docker-in-docker
           context.sessionId,
           mcpServerUuid,
           params,
@@ -974,10 +986,17 @@ export const createServer = async (
     }
   };
 
+<<<<<<< HEAD
   const implCallToolHandler: CallToolHandler = async (request, _context) => {
     const { name, arguments: args, _meta } = request.params;
     return await _internalCallToolImpl(name, args, _meta);
   };
+=======
+  // Compose middleware with handlers - this is the Express-like functional approach
+  const listToolsWithMiddleware = compose(
+    createFilterListToolsMiddleware({ cacheEnabled: true }),
+  )(originalListToolsHandler);
+>>>>>>> origin/docker-in-docker
 
   // Compose the middleware
   // The composed handler calls implCallToolHandler, which calls _internalCallToolImpl,
@@ -989,8 +1008,12 @@ export const createServer = async (
       cacheEnabled: true,
       customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
     }),
+<<<<<<< HEAD
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
+=======
+  )(originalCallToolHandler);
+>>>>>>> origin/docker-in-docker
 
   const listToolsWithMiddleware = compose(
     createToolOverridesListToolsMiddleware({
@@ -1021,9 +1044,15 @@ export const createServer = async (
     }
 
     try {
+<<<<<<< HEAD
       // Parse the prompt name using shared utility
       const parsed = parseToolName(name);
       if (!parsed) {
+=======
+      // Extract the original prompt name by removing the server prefix
+      const firstDoubleUnderscoreIndex = name.indexOf("__");
+      if (firstDoubleUnderscoreIndex === -1) {
+>>>>>>> origin/docker-in-docker
         throw new Error(`Invalid prompt name format: ${name}`);
       }
 
@@ -1089,12 +1118,20 @@ export const createServer = async (
     );
 
     await Promise.allSettled(
+<<<<<<< HEAD
       validPromptServers.map(async ([uuid, params]) => {
         const session = await mcpServerPool.getSession(
           sessionId,
           uuid,
           params,
           namespaceUuid,
+=======
+      Object.entries(serverParams).map(async ([uuid, params]) => {
+        const session = await getOrConnectSessionClient(
+          sessionId,
+          uuid,
+          params,
+>>>>>>> origin/docker-in-docker
         );
         if (!session) return;
 
@@ -1190,12 +1227,20 @@ export const createServer = async (
     );
 
     await Promise.allSettled(
+<<<<<<< HEAD
       validResourceServers.map(async ([uuid, params]) => {
         const session = await mcpServerPool.getSession(
           sessionId,
           uuid,
           params,
           namespaceUuid,
+=======
+      Object.entries(serverParams).map(async ([uuid, params]) => {
+        const session = await getOrConnectSessionClient(
+          sessionId,
+          uuid,
+          params,
+>>>>>>> origin/docker-in-docker
         );
         if (!session) return;
 
@@ -1321,8 +1366,13 @@ export const createServer = async (
       );
 
       await Promise.allSettled(
+<<<<<<< HEAD
         validTemplateServers.map(async ([uuid, params]) => {
           const session = await mcpServerPool.getSession(
+=======
+        Object.entries(serverParams).map(async ([uuid, params]) => {
+          const session = await getOrConnectSessionClient(
+>>>>>>> origin/docker-in-docker
             sessionId,
             uuid,
             params,
@@ -1387,8 +1437,9 @@ export const createServer = async (
   );
 
   const cleanup = async () => {
-    // Cleanup is now handled by the pool
-    await mcpServerPool.cleanupSession(sessionId);
+    // No need for session cleanup with Docker approach
+    // Each connection is independent
+    console.log("MetaMCP server cleanup - Docker connections are stateless");
   };
 
   return { server, cleanup };

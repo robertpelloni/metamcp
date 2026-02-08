@@ -1,15 +1,24 @@
 import {
   ClearLogsResponseSchema,
+  GetDockerLogsRequestSchema,
+  GetDockerLogsResponseSchema,
   GetLogsRequestSchema,
   GetLogsResponseSchema,
+  ListDockerServersResponseSchema,
 } from "@repo/zod-types";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
+<<<<<<< HEAD
 import { db } from "../db";
 import { toolCallLogsTable } from "../db/schema";
 import { parseToolName } from "../lib/metamcp/tool-name-parser";
 import { DatabaseError, logError, wrapError } from "../lib/errors";
+=======
+import { mcpServersRepository } from "../db/repositories";
+import { dockerManager } from "../lib/metamcp/docker-manager/index.js";
+import { metamcpLogStore } from "../lib/metamcp/log-store";
+>>>>>>> origin/docker-in-docker
 
 export const logsImplementations = {
   getLogs: async (
@@ -94,6 +103,64 @@ export const logsImplementations = {
         error instanceof Error ? error.message : "Unknown database error",
         "tool_call_logs",
       );
+    }
+  },
+
+  listDockerServers: async (
+    userId: string,
+  ): Promise<z.infer<typeof ListDockerServersResponseSchema>> => {
+    try {
+      // Get all running Docker servers
+      const running = await dockerManager.getRunningServers();
+
+      // Get accessible MCP servers for the user (public + user's own)
+      const accessibleServers =
+        await mcpServersRepository.findAllAccessibleToUser(userId);
+      const accessibleServerUuids = new Set(
+        accessibleServers.map((s) => s.uuid),
+      );
+
+      // Filter running servers to only include accessible ones
+      const filteredRunning = running.filter((s) =>
+        accessibleServerUuids.has(s.serverUuid),
+      );
+
+      return {
+        success: true as const,
+        servers: filteredRunning.map((s) => ({
+          serverUuid: s.serverUuid,
+          containerId: s.containerId,
+          containerName: s.containerName,
+          serverName: s.serverName,
+        })),
+      };
+    } catch (error) {
+      console.error("Error listing docker servers:", error);
+      return { success: true as const, servers: [] };
+    }
+  },
+
+  getDockerLogs: async (
+    input: z.infer<typeof GetDockerLogsRequestSchema>,
+  ): Promise<z.infer<typeof GetDockerLogsResponseSchema>> => {
+    const tail = input.tail ?? 500;
+    try {
+      const lines = await dockerManager.getServerLogsTail(
+        input.serverUuid,
+        tail,
+      );
+      return {
+        success: true as const,
+        serverUuid: input.serverUuid,
+        lines,
+      };
+    } catch (error) {
+      console.error("Error getting docker logs:", error);
+      return {
+        success: true as const,
+        serverUuid: input.serverUuid,
+        lines: [],
+      };
     }
   },
 };

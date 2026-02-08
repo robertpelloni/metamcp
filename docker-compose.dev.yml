@@ -7,6 +7,7 @@ services:
     env_file:
       - .env
     ports:
+<<<<<<< HEAD
       - "12008:12008"
       - "12009:12009"
     volumes:
@@ -20,6 +21,9 @@ services:
       - /app/packages/eslint-config/node_modules
       - /app/packages/typescript-config/node_modules
       - mcpshark_data_dev:/mnt/mcpshark
+=======
+      - "12008:12008"  # Frontend
+>>>>>>> origin/docker-in-docker
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-all}
       # Postgres connection details
@@ -37,6 +41,28 @@ services:
       
       # Docker networking fix
       TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL: ${TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL:-true}
+      
+      # Docker socket access
+      DOCKER_HOST: unix:///var/run/docker.sock
+      
+      # Development environment
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: 1
+    volumes:
+      # Mount Docker socket to allow container management
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount source code for hot reload, but exclude node_modules
+      - .:/app
+      # Exclude node_modules from volume mount to use container's
+      - /app/node_modules
+      - /app/apps/frontend/node_modules
+      - /app/apps/backend/node_modules
+      - /app/packages/*/node_modules
+      # Exclude build artifacts
+      - /app/apps/frontend/.next
+      - /app/apps/backend/dist
+      # Ensure pnpm store is preserved
+      - /app/.pnpm-store
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -45,6 +71,9 @@ services:
     restart: "no"
     networks:
       - metamcp-network
+      - metamcp-internal
+    # Use init system for proper signal handling
+    init: true
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -94,4 +123,6 @@ volumes:
 
 networks:
   metamcp-network:
+    driver: bridge
+  metamcp-internal:
     driver: bridge 

@@ -303,4 +303,15 @@ export const configImplementations = {
       throw wrapError(error, "Failed to get authentication providers");
     }
   },
+
+  getDockerMcpProxyImage: async (): Promise<string | undefined> => {
+    return await configService.getDockerMcpProxyImage();
+  },
+
+  setDockerMcpProxyImage: async (input: {
+    imageName: string;
+  }): Promise<{ success: boolean }> => {
+    await configService.setDockerMcpProxyImage(input.imageName);
+    return { success: true };
+  },
 };

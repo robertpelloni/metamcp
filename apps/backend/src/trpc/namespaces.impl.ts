@@ -28,11 +28,14 @@ import {
   toolsRepository,
 } from "../db/repositories";
 import { NamespacesSerializer } from "../db/serializers";
+<<<<<<< HEAD
 import {
   clearOverrideCache,
   mapOverrideNameToOriginal,
 } from "../lib/metamcp/metamcp-middleware/tool-overrides.functional";
 import { metaMcpServerPool } from "../lib/metamcp/metamcp-server-pool";
+=======
+>>>>>>> origin/docker-in-docker
 
 export const namespacesImplementations = {
   create: async (
@@ -91,6 +94,7 @@ export const namespacesImplementations = {
         user_id: effectiveUserId,
       });
 
+<<<<<<< HEAD
       // Ensure idle MetaMCP server exists for the new namespace to improve performance
       // Run this asynchronously to avoid blocking the response
       metaMcpServerPool
@@ -108,6 +112,8 @@ export const namespacesImplementations = {
           // Don't fail the entire create operation if idle server creation fails
         });
 
+=======
+>>>>>>> origin/docker-in-docker
       return {
         success: true as const,
         data: NamespacesSerializer.serializeNamespace(result),
@@ -276,6 +282,7 @@ export const namespacesImplementations = {
         };
       }
 
+<<<<<<< HEAD
       // Clean up idle MetaMCP server for the deleted namespace
       try {
         await metaMcpServerPool.cleanupIdleServer(input.uuid);
@@ -296,6 +303,8 @@ export const namespacesImplementations = {
         `Cleared tool overrides cache for deleted namespace ${input.uuid}`,
       );
 
+=======
+>>>>>>> origin/docker-in-docker
       return {
         success: true as const,
         message: "Namespace deleted successfully",
@@ -387,6 +396,7 @@ export const namespacesImplementations = {
         mcpServerUuids: input.mcpServerUuids,
       });
 
+<<<<<<< HEAD
       // Invalidate idle MetaMCP server for this namespace since the MCP servers list may have changed
       // Run this asynchronously to avoid blocking the response
       metaMcpServerPool
@@ -426,6 +436,8 @@ export const namespacesImplementations = {
         `Cleared tool overrides cache for updated namespace ${input.uuid}`,
       );
 
+=======
+>>>>>>> origin/docker-in-docker
       return {
         success: true as const,
         data: NamespacesSerializer.serializeNamespace(result),
@@ -481,6 +493,7 @@ export const namespacesImplementations = {
         };
       }
 
+<<<<<<< HEAD
       // Invalidate idle MetaMCP server for this namespace since server status changed
       // Run this asynchronously to avoid blocking the response
       metaMcpServerPool
@@ -514,6 +527,8 @@ export const namespacesImplementations = {
           // Don't fail the entire operation if OpenAPI session invalidation fails
         });
 
+=======
+>>>>>>> origin/docker-in-docker
       return {
         success: true as const,
         message: "Server status updated successfully",
@@ -869,6 +884,7 @@ export const namespacesImplementations = {
         );
       }
 
+<<<<<<< HEAD
       // Invalidate idle MetaMCP server for this namespace since tools were refreshed
       // Run this asynchronously to avoid blocking the response
       metaMcpServerPool
@@ -902,6 +918,8 @@ export const namespacesImplementations = {
           // Don't fail the entire operation if OpenAPI session invalidation fails
         });
 
+=======
+>>>>>>> origin/docker-in-docker
       return {
         success: true as const,
         message: `Successfully refreshed ${totalToolsCreated} tools with ${totalMappingsCreated} mappings`,

@@ -56,10 +56,7 @@ import { trpc } from "../lib/trpc";
 interface UseConnectionOptions {
   mcpServerUuid: string;
   transportType: McpServerType;
-  command: string;
-  args: string;
   url: string;
-  env: Record<string, string>;
   bearerToken?: string;
   headerName?: string;
   onNotification?: (notification: Notification) => void;
@@ -76,10 +73,7 @@ interface UseConnectionOptions {
 export function useConnection({
   mcpServerUuid,
   transportType,
-  command,
-  args,
   url,
-  env,
   bearerToken,
   headerName,
   onNotification,
@@ -417,9 +411,11 @@ export function useConnection({
                 `/mcp-proxy/server/stdio`,
                 getAppUrl(),
               );
-              mcpProxyServerUrl.searchParams.append("command", command);
-              mcpProxyServerUrl.searchParams.append("args", args);
-              mcpProxyServerUrl.searchParams.append("env", JSON.stringify(env));
+              // Use Docker-managed stdio containers by server UUID
+              mcpProxyServerUrl.searchParams.append(
+                "mcpServerUuid",
+                mcpServerUuid,
+              );
               transportOptions = {
                 authProvider: authProvider,
                 eventSourceInit: {

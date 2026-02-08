@@ -3,12 +3,17 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "clean": "./scripts/cleanup-managed-containers.sh",
     "dev": "dotenv -e .env.local turbo run dev",
+<<<<<<< HEAD
     "dev:backend": "dotenv -e .env.local turbo run dev:backend --filter=backend",
     "dev:frontend": "dotenv -e .env.local turbo run dev:frontend --filter=frontend",
     "dev:docker": "docker compose -f docker-compose.dev.yml up --build",
     "dev:docker:down": "docker compose -f docker-compose.dev.yml down",
     "dev:docker:clean": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",
+=======
+    "dev:docker": "./scripts/dev-docker.sh",
+>>>>>>> origin/docker-in-docker
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

@@ -16,7 +16,11 @@
     "OIDC_PROVIDER_ID",
     "TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL",
     "NODE_ENV",
+<<<<<<< HEAD
     "POSTGRES_CA_CERT"
+=======
+    "DOCKER_HOST"
+>>>>>>> origin/docker-in-docker
   ],
   "tasks": {
     "build": {

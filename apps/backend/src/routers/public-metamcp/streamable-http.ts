@@ -9,8 +9,13 @@ import {
 } from "@/middleware/api-key-oauth.middleware";
 import { lookupEndpoint } from "@/middleware/lookup-endpoint-middleware";
 
+<<<<<<< HEAD
 import { metaMcpServerPool } from "../../lib/metamcp/metamcp-server-pool";
 import { SessionLifetimeManagerImpl } from "../../lib/session-lifetime-manager";
+=======
+import { createServer } from "../../lib/metamcp/metamcp-proxy";
+import { cleanupSession as cleanupMcpSession } from "../../lib/metamcp/sessions";
+>>>>>>> origin/docker-in-docker
 
 const streamableHttpRouter = express.Router();
 
@@ -31,6 +36,7 @@ const cleanupSession = async (
     // Use provided transport or get from session manager
     const sessionTransport = transport || sessionManager.getSession(sessionId);
 
+<<<<<<< HEAD
     if (sessionTransport) {
       console.log(`Closing transport for session ${sessionId}`);
       await sessionTransport.close();
@@ -53,6 +59,16 @@ const cleanupSession = async (
     console.log(`Removed orphaned session ${sessionId} due to cleanup error`);
     throw error;
   }
+=======
+  // Clean up MCP client sessions associated with this sessionId
+  try {
+    await cleanupMcpSession(sessionId);
+  } catch (err) {
+    console.warn(`Error cleaning up MCP session ${sessionId}:`, err);
+  }
+
+  console.log(`StreamableHTTP session ${sessionId} cleaned up`);
+>>>>>>> origin/docker-in-docker
 };
 
 // Health check endpoint to monitor sessions
@@ -183,17 +199,17 @@ streamableHttpRouter.post(
           `Generated new session ID: ${newSessionId} for endpoint: ${endpointName}`,
         );
 
-        // Get or create MetaMCP server instance from the pool
-        const mcpServerInstance = await metaMcpServerPool.getServer(
-          newSessionId,
+        // Create MetaMCP server instance directly using metamcp-proxy
+        const mcpServerInstance = await createServer(
           namespaceUuid,
+          newSessionId,
         );
         if (!mcpServerInstance) {
-          throw new Error("Failed to get MetaMCP server instance from pool");
+          throw new Error("Failed to create MetaMCP server instance");
         }
 
         console.log(
-          `Using MetaMCP server instance for public endpoint session ${newSessionId} (endpoint: ${endpointName})`,
+          `Created MetaMCP server instance for public endpoint session ${newSessionId} (endpoint: ${endpointName})`,
         );
 
         // Create transport with the predetermined session ID

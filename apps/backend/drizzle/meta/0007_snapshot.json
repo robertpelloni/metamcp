@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
   "id": "54254bd0-a406-43c1-8bc5-c4a34f359cfe",
   "prevId": "83563a96-dde4-476b-b7fb-84c06969c049",
+=======
+  "id": "3127caef-be77-47ad-b927-5395388dcd38",
+  "prevId": "e4bc0ff5-856a-48ad-9b80-a4ac3f4d881f",
+>>>>>>> origin/docker-in-docker
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -284,6 +289,215 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+<<<<<<< HEAD
+=======
+    "public.docker_sessions": {
+      "name": "docker_sessions",
+      "schema": "",
+      "columns": {
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "mcp_server_uuid": {
+          "name": "mcp_server_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "container_id": {
+          "name": "container_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "container_name": {
+          "name": "container_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "port": {
+          "name": "port",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'running'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stopped_at": {
+          "name": "stopped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retry_count": {
+          "name": "retry_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_retry_at": {
+          "name": "last_retry_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_retries": {
+          "name": "max_retries",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        }
+      },
+      "indexes": {
+        "docker_sessions_mcp_server_uuid_idx": {
+          "name": "docker_sessions_mcp_server_uuid_idx",
+          "columns": [
+            {
+              "expression": "mcp_server_uuid",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "docker_sessions_container_id_idx": {
+          "name": "docker_sessions_container_id_idx",
+          "columns": [
+            {
+              "expression": "container_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "docker_sessions_port_idx": {
+          "name": "docker_sessions_port_idx",
+          "columns": [
+            {
+              "expression": "port",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "docker_sessions_status_idx": {
+          "name": "docker_sessions_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "docker_sessions_mcp_server_uuid_mcp_servers_uuid_fk": {
+          "name": "docker_sessions_mcp_server_uuid_mcp_servers_uuid_fk",
+          "tableFrom": "docker_sessions",
+          "tableTo": "mcp_servers",
+          "columnsFrom": [
+            "mcp_server_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "docker_sessions_container_id_unique": {
+          "name": "docker_sessions_container_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "container_id"
+          ]
+        },
+        "docker_sessions_port_unique_idx": {
+          "name": "docker_sessions_port_unique_idx",
+          "nullsNotDistinct": false,
+          "columns": [
+            "port"
+          ]
+        },
+        "docker_sessions_mcp_server_active_idx": {
+          "name": "docker_sessions_mcp_server_active_idx",
+          "nullsNotDistinct": false,
+          "columns": [
+            "mcp_server_uuid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+>>>>>>> origin/docker-in-docker
     "public.endpoints": {
       "name": "endpoints",
       "schema": "",
@@ -486,6 +700,7 @@
           "primaryKey": false,
           "notNull": false
         },
+<<<<<<< HEAD
         "error_status": {
           "name": "error_status",
           "type": "mcp_server_error_status",
@@ -494,6 +709,8 @@
           "notNull": true,
           "default": "'NONE'"
         },
+=======
+>>>>>>> origin/docker-in-docker
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -544,6 +761,7 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+<<<<<<< HEAD
         },
         "mcp_servers_error_status_idx": {
           "name": "mcp_servers_error_status_idx",
@@ -559,6 +777,8 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+=======
+>>>>>>> origin/docker-in-docker
         }
       },
       "foreignKeys": {
@@ -622,6 +842,7 @@
           "notNull": true,
           "default": "'ACTIVE'"
         },
+<<<<<<< HEAD
         "error_status": {
           "name": "error_status",
           "type": "mcp_server_error_status",
@@ -630,6 +851,8 @@
           "notNull": true,
           "default": "'NONE'"
         },
+=======
+>>>>>>> origin/docker-in-docker
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -683,6 +906,7 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+<<<<<<< HEAD
         },
         "namespace_server_mappings_error_status_idx": {
           "name": "namespace_server_mappings_error_status_idx",
@@ -698,6 +922,8 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+=======
+>>>>>>> origin/docker-in-docker
         }
       },
       "foreignKeys": {
@@ -1783,6 +2009,7 @@
     }
   },
   "enums": {
+<<<<<<< HEAD
     "public.mcp_server_error_status": {
       "name": "mcp_server_error_status",
       "schema": "public",
@@ -1791,6 +2018,8 @@
         "ERROR"
       ]
     },
+=======
+>>>>>>> origin/docker-in-docker
     "public.mcp_server_status": {
       "name": "mcp_server_status",
       "schema": "public",

@@ -1,7 +1,11 @@
 # Development Dockerfile with hot reload support
 FROM ghcr.io/astral-sh/uv:debian AS base
 
+<<<<<<< HEAD
 # Install Node.js, pnpm, and Tini
+=======
+# Install Node.js and pnpm
+>>>>>>> origin/docker-in-docker
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
@@ -17,25 +21,35 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+<<<<<<< HEAD
 # Install Tini for proper signal handling and zombie process cleanup
 RUN apt-get update && apt-get install -y tini \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+=======
+>>>>>>> origin/docker-in-docker
 # Development stage
 FROM base AS dev
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV=development
+<<<<<<< HEAD
 ENV WATCHPACK_POLLING=true
 ENV CHOKIDAR_USEPOLLING=true
+=======
+>>>>>>> origin/docker-in-docker
 
 # Copy package files for dependency installation
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY turbo.json ./
 
+<<<<<<< HEAD
 # Copy package.json files from all workspaces (needed for dependency installation)
+=======
+# Copy package.json files from all workspaces
+>>>>>>> origin/docker-in-docker
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/backend/package.json ./apps/backend/
 COPY packages/eslint-config/package.json ./packages/eslint-config/
@@ -46,10 +60,15 @@ COPY packages/zod-types/package.json ./packages/zod-types/
 # Install all dependencies (including dev dependencies)
 RUN pnpm install
 
+<<<<<<< HEAD
 # Copy source code directories (will be overridden by volume mounts, but ensures structure exists)
 # This ensures the directory structure is present even if volumes don't mount correctly
 COPY apps ./apps
 COPY packages ./packages
+=======
+# Copy source code (will be overridden by volume mount in dev)
+COPY . .
+>>>>>>> origin/docker-in-docker
 
 # Expose ports
 EXPOSE 12008 12009
@@ -63,8 +82,11 @@ COPY docker-entrypoint-dev.sh ./
 RUN chmod +x docker-entrypoint-dev.sh && \
     ls -la docker-entrypoint-dev.sh
 
+<<<<<<< HEAD
 # Use Tini as the init process to handle signals and zombie processes properly
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
+=======
+>>>>>>> origin/docker-in-docker
 # Use the development entrypoint script
 CMD ["./docker-entrypoint-dev.sh"] 

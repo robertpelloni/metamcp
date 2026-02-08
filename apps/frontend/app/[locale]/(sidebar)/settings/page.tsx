@@ -28,8 +28,14 @@ export default function SettingsPage() {
   const [mcpResetTimeoutOnProgress, setMcpResetTimeoutOnProgress] =
     useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+<<<<<<< HEAD
   const [isSessionLifetimeEnabled, setIsSessionLifetimeEnabled] =
     useState(false);
+=======
+  const [dockerImage, setDockerImage] = useState("");
+  const [dockerImageInput, setDockerImageInput] = useState("");
+  const [isDockerImageDirty, setIsDockerImageDirty] = useState(false);
+>>>>>>> origin/docker-in-docker
 
   // Form setup
   const form = useForm<SettingsFormData>({
@@ -86,6 +92,7 @@ export default function SettingsPage() {
   } = trpc.frontend.config.getMcpMaxTotalTimeout.useQuery();
 
   const {
+<<<<<<< HEAD
     data: mcpMaxAttemptsData,
     isLoading: mcpMaxAttemptsLoading,
     refetch: refetchMcpMaxAttempts,
@@ -96,6 +103,12 @@ export default function SettingsPage() {
     isLoading: sessionLifetimeLoading,
     refetch: refetchSessionLifetime,
   } = trpc.frontend.config.getSessionLifetime.useQuery();
+=======
+    data: dockerImageData,
+    isLoading: dockerImageLoading,
+    refetch: refetchDockerImage,
+  } = trpc.frontend.config.getDockerMcpProxyImage.useQuery();
+>>>>>>> origin/docker-in-docker
 
   // Mutations
   const setSignupDisabledMutation =
@@ -165,6 +178,7 @@ export default function SettingsPage() {
       },
     });
 
+<<<<<<< HEAD
   const setMcpMaxAttemptsMutation =
     trpc.frontend.config.setMcpMaxAttempts.useMutation({
       onSuccess: (data) => {
@@ -186,6 +200,14 @@ export default function SettingsPage() {
         } else {
           console.error("Failed to update session lifetime setting");
         }
+=======
+  const setDockerImageMutation =
+    trpc.frontend.config.setDockerMcpProxyImage.useMutation({
+      onSuccess: () => {
+        refetchDockerImage();
+        setIsDockerImageDirty(false);
+        toast.success(t("settings:dockerImageUpdatedSuccess"));
+>>>>>>> origin/docker-in-docker
       },
     });
 
@@ -227,6 +249,7 @@ export default function SettingsPage() {
   }, [mcpMaxTotalTimeoutData, form]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (mcpMaxAttemptsData !== undefined) {
       form.setValue("mcpMaxAttempts", mcpMaxAttemptsData);
     }
@@ -243,6 +266,13 @@ export default function SettingsPage() {
       form.setValue("sessionLifetime", lifetimeInMinutes);
     }
   }, [sessionLifetimeData, form]);
+=======
+    if (dockerImageData !== undefined) {
+      setDockerImage(dockerImageData);
+      setDockerImageInput(dockerImageData);
+    }
+  }, [dockerImageData]);
+>>>>>>> origin/docker-in-docker
 
   // Reset form with loaded data to establish proper baseline for change detection
   useEffect(() => {
@@ -393,8 +423,26 @@ export default function SettingsPage() {
     setHasUnsavedChanges(isDirty);
   }, [isDirty]);
 
+  // Check for Docker image changes
+  useEffect(() => {
+    setIsDockerImageDirty(dockerImageInput !== dockerImage);
+  }, [dockerImageInput, dockerImage]);
+
+  // Handle Docker image update
+  const handleDockerImageUpdate = async () => {
+    try {
+      await setDockerImageMutation.mutateAsync({ imageName: dockerImageInput });
+    } catch (error) {
+      console.error("Failed to update Docker image:", error);
+      toast.error(t("settings:dockerImageUpdateError"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
   const isLoading =
     signupLoading ||
+<<<<<<< HEAD
     ssoSignupLoading ||
     basicAuthLoading ||
     mcpResetLoading ||
@@ -402,6 +450,12 @@ export default function SettingsPage() {
     mcpMaxTotalLoading ||
     mcpMaxAttemptsLoading ||
     sessionLifetimeLoading;
+=======
+    mcpResetLoading ||
+    mcpTimeoutLoading ||
+    mcpMaxTotalLoading ||
+    dockerImageLoading;
+>>>>>>> origin/docker-in-docker
 
   if (isLoading) {
     return (
@@ -679,6 +733,53 @@ export default function SettingsPage() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("settings:dockerSettings")}</CardTitle>
+            <CardDescription>
+              {t("settings:dockerSettingsDescription")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="docker-image" className="text-base">
+                {t("settings:dockerImage")}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t("settings:dockerImageDescription")}
+              </p>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="docker-image"
+                  type="text"
+                  value={dockerImageInput}
+                  onChange={(e) => setDockerImageInput(e.target.value)}
+                  placeholder="ghcr.io/metatool-ai/mcp-proxy:latest"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={handleDockerImageUpdate}
+                  disabled={
+                    !isDockerImageDirty || setDockerImageMutation.isPending
+                  }
+                  className="min-w-[100px]"
+                >
+                  {setDockerImageMutation.isPending
+                    ? t("settings:updating")
+                    : t("settings:update")}
+                </Button>
+              </div>
+              {isDockerImageDirty && (
+                <div className="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                  {t("settings:dockerImageUnsavedChanges")}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </form>

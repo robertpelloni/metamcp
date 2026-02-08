@@ -1,7 +1,7 @@
 services:
   app:
     container_name: metamcp
-    image: ghcr.io/metatool-ai/metamcp:latest
+    image: ghcr.io/metatool-ai/metamcp-dind:latest
     pull_policy: always
     env_file:
       - .env
@@ -24,6 +24,7 @@ services:
       # Docker networking fix
       TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL: ${TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL:-true}
       
+<<<<<<< HEAD
       # ========================================================================
       # Bootstrap Configuration Examples
       # ========================================================================
@@ -152,6 +153,13 @@ services:
       #       "update": true
       #     }
       #   ]
+=======
+      # Docker socket access
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      # Mount Docker socket to allow container management
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+>>>>>>> origin/docker-in-docker
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -160,6 +168,9 @@ services:
     restart: "no"
     networks:
       - metamcp-network
+      - metamcp-internal
+    # Use init system for proper signal handling
+    init: true
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -207,4 +218,6 @@ volumes:
 
 networks:
   metamcp-network:
+    driver: bridge
+  metamcp-internal:
     driver: bridge

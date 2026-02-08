@@ -1,6 +1,6 @@
 {
   "title": "Live Logs",
-  "subtitle": "MetaMCP server logs and error messages",
+  "subtitle": "Stdio MCP server logs and error messages",
   "lastUpdated": "Last updated: {{timestamp}}",
   "totalLogs": "{{count}} total logs",
   "autoRefresh": "Auto-refresh",
@@ -56,5 +56,11 @@
   "connecting": "Connecting...",
   "reconnecting": "Reconnecting...",
   "logsCount": "{{count}} logs",
+<<<<<<< HEAD
   "filteredLogsCount": "{{count}} of {{total}} logs shown"
 }
+=======
+  "filteredLogsCount": "{{count}} of {{total}} logs shown",
+  "selectContainer": "Select container"
+} 
+>>>>>>> origin/docker-in-docker

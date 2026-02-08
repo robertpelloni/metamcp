@@ -1,13 +1,20 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+<<<<<<< HEAD
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
+=======
+>>>>>>> origin/docker-in-docker
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { ServerParameters } from "@repo/zod-types";
 
+<<<<<<< HEAD
 import logger from "@/utils/logger";
 
 import { ProcessManagedStdioTransport } from "../stdio-transport/process-managed-transport";
+=======
+import { dockerManager } from "./docker-manager/index.js";
+>>>>>>> origin/docker-in-docker
 import { metamcpLogStore } from "./log-store";
 import { serverErrorTracker } from "./server-error-tracker";
 import { resolveEnvVariables } from "./utils";
@@ -18,7 +25,11 @@ const sleep = (time: number) =>
 export interface ConnectedClient {
   client: Client;
   cleanup: () => Promise<void>;
+<<<<<<< HEAD
   onProcessCrash?: (exitCode: number | null, signal: string | null) => void;
+=======
+  serverUuid: string;
+>>>>>>> origin/docker-in-docker
 }
 
 /**
@@ -35,14 +46,35 @@ export const transformDockerUrl = (url: string): string => {
   return url;
 };
 
-export const createMetaMcpClient = (
+/**
+ * Handles Docker container URLs for internal networking
+ */
+export const handleDockerContainerUrl = (url: string): string => {
+  // If the URL is already an internal container URL (contains container name), use it as-is
+  // Handle both old naming convention (metamcp-stdio-server-) and new naming convention (mcp-stdio-)
+  if (url.includes("metamcp-stdio-server-") || url.includes("mcp-stdio-")) {
+    return url;
+  }
+
+  // Otherwise, apply the standard transformation for external URLs
+  return transformDockerUrl(url);
+};
+
+/**
+ * Creates a client for an MCP server based on its type
+ */
+export const createMetaMcpClient = async (
+  serverUuid: string,
   serverParams: ServerParameters,
-): { client: Client | undefined; transport: Transport | undefined } => {
+): Promise<{
+  client: Client | undefined;
+  transport: Transport | undefined;
+}> => {
   let transport: Transport | undefined;
 
-  // Create the appropriate transport based on server type
-  // Default to "STDIO" if type is undefined
+  // For STDIO servers, use Docker container URL
   if (!serverParams.type || serverParams.type === "STDIO") {
+<<<<<<< HEAD
     // Resolve environment variable placeholders
     const resolvedEnv = serverParams.env
       ? resolveEnvVariables(serverParams.env)
@@ -65,21 +97,38 @@ export const createMetaMcpClient = (
           serverParams.name,
           "error",
           chunk.toString().trim(),
-        );
-      });
+=======
+    let dockerUrl = await dockerManager.getServerUrl(serverUuid);
 
-      stderrStream?.on("error", (error: Error) => {
+    // If container doesn't exist, create it
+    if (!dockerUrl) {
+      try {
+        const dockerServer = await dockerManager.createContainer(
+          serverUuid,
+          serverParams,
+>>>>>>> origin/docker-in-docker
+        );
+        dockerUrl = dockerServer.url;
+      } catch (error) {
         metamcpLogStore.addLog(
           serverParams.name,
           "error",
-          "stderr error",
+          `Failed to create Docker container for stdio server: ${serverUuid}`,
           error,
         );
-      });
+        return { client: undefined, transport: undefined };
+      }
     }
+
+    // Use SSE for Docker containers
+    // Transform localhost to host.docker.internal for Docker container access
+    const transformedDockerUrl = handleDockerContainerUrl(dockerUrl);
+    transport = new SSEClientTransport(new URL(transformedDockerUrl));
+    console.log(`Using Docker container URL: ${dockerUrl}`);
+    console.log(`Connecting to MCP server ${serverUuid} at ${dockerUrl}`);
   } else if (serverParams.type === "SSE" && serverParams.url) {
     // Transform the URL if TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL is set to "true"
-    const transformedUrl = transformDockerUrl(serverParams.url);
+    const transformedUrl = handleDockerContainerUrl(serverParams.url);
 
     // Build headers: start with custom headers, then add auth header
     const headers: Record<string, string> = {
@@ -109,7 +158,7 @@ export const createMetaMcpClient = (
     }
   } else if (serverParams.type === "STREAMABLE_HTTP" && serverParams.url) {
     // Transform the URL if TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL is set to "true"
-    const transformedUrl = transformDockerUrl(serverParams.url);
+    const transformedUrl = handleDockerContainerUrl(serverParams.url);
 
     // Build headers: start with custom headers, then add auth header
     const headers: Record<string, string> = {
@@ -159,16 +208,25 @@ export const createMetaMcpClient = (
   return { client, transport };
 };
 
+/**
+ * Connect to an MCP server without session management
+ */
 export const connectMetaMcpClient = async (
+  serverUuid: string,
   serverParams: ServerParameters,
   onProcessCrash?: (exitCode: number | null, signal: string | null) => void,
 ): Promise<ConnectedClient | undefined> => {
+<<<<<<< HEAD
   const waitFor = 5000;
 
   // Get max attempts from server error tracker instead of hardcoding
   const maxAttempts = await serverErrorTracker.getServerMaxAttempts(
     serverParams.uuid,
   );
+=======
+  const waitFor = 1000;
+  const retries = 1;
+>>>>>>> origin/docker-in-docker
   let count = 0;
   let retry = true;
 
@@ -193,10 +251,17 @@ export const connectMetaMcpClient = async (
       }
 
       // Create fresh client and transport for each attempt
+<<<<<<< HEAD
       const result = createMetaMcpClient(serverParams);
       client = result.client;
       transport = result.transport;
 
+=======
+      const { client, transport } = await createMetaMcpClient(
+        serverUuid,
+        serverParams,
+      );
+>>>>>>> origin/docker-in-docker
       if (!client || !transport) {
         return undefined;
       }
@@ -229,6 +294,7 @@ export const connectMetaMcpClient = async (
 
       return {
         client,
+        serverUuid,
         cleanup: async () => {
           await transport!.close();
           await client!.close();
@@ -246,9 +312,13 @@ export const connectMetaMcpClient = async (
       };
     } catch (error) {
       metamcpLogStore.addLog(
-        "client",
+        serverParams.name,
         "error",
+<<<<<<< HEAD
         `Error connecting to MetaMCP client (attempt ${count + 1}/${maxAttempts})`,
+=======
+        `Error connecting to MCP client (attempt ${count + 1}/${retries})`,
+>>>>>>> origin/docker-in-docker
         error,
       );
 
