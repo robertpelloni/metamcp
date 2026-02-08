@@ -21,6 +21,7 @@ services:
       - /app/packages/typescript-config/node_modules
       - mcpshark_data_dev:/mnt/mcpshark
     environment:
+      LOG_LEVEL: ${LOG_LEVEL:-all}
       # Postgres connection details
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
