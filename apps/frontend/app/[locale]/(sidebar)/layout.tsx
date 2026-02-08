@@ -15,7 +15,6 @@ import {
   Settings,
   ShieldCheck,
   Activity,
-  Book,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,11 +51,6 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:exploreMcpServers"),
     url: getLocalizedPath("/search", locale),
     icon: Search,
-  },
-  {
-    title: "Catalog", // TODO: Add translation key
-    url: getLocalizedPath("/catalog", locale),
-    icon: Layers,
   },
   {
     title: t("navigation:mcpServers"),
@@ -112,11 +106,6 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: "Observability", // TODO: Add translation key
     url: getLocalizedPath("/observability", locale),
     icon: Activity,
-  },
-  {
-    title: "Documentation", // TODO: Add translation key
-    url: getLocalizedPath("/docs", locale),
-    icon: Book,
   },
 ];
 

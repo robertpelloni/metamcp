@@ -12,8 +12,3 @@ export * from "./saved-scripts.zod";
 export * from "./tool-sets.zod";
 export * from "./policies.zod";
 export * from "./agent.zod";
-export * from "./config-schemas.zod";
-export * from "./server-health.zod";
-export * from "./auto-reconnect.zod";
-export * from "./auto-discovery.zod";
-export * from "./catalog.zod";

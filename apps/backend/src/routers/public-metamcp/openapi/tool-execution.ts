@@ -1,13 +1,7 @@
 import { CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 import express from "express";
 
-<<<<<<< HEAD
-import logger from "@/utils/logger";
-
 import { metaMcpServerPool } from "../../../lib/metamcp/metamcp-server-pool";
-=======
-import { createServer } from "../../../lib/metamcp/metamcp-proxy";
->>>>>>> origin/docker-in-docker
 import { createMiddlewareEnabledHandlers } from "./handlers";
 import { ToolExecutionRequest } from "./types";
 
@@ -21,16 +15,13 @@ export const executeToolWithMiddleware = async (
   const toolName = req.params.tool_name;
 
   try {
-    // Create MetaMCP server instance directly using metamcp-proxy for OpenAPI
-    const mcpServerInstance = await createServer(
-      namespaceUuid,
-      `openapi_${namespaceUuid}`,
-    );
+    // Get or create persistent OpenAPI session for this namespace
+    const mcpServerInstance =
+      await metaMcpServerPool.getOpenApiServer(namespaceUuid);
     if (!mcpServerInstance) {
-      throw new Error("Failed to create MetaMCP server instance");
+      throw new Error("Failed to get MetaMCP server instance from pool");
     }
 
-<<<<<<< HEAD
     // Use deterministic session ID for OpenAPI endpoints
     const sessionId = `openapi_${namespaceUuid}`;
 
@@ -40,11 +31,6 @@ export const executeToolWithMiddleware = async (
     // Create middleware-enabled handlers
     const { handlerContext, callToolWithMiddleware } =
       createMiddlewareEnabledHandlers(sessionId, namespaceUuid, userId);
-=======
-    // Create middleware-enabled handlers
-    const { handlerContext, callToolWithMiddleware } =
-      createMiddlewareEnabledHandlers(namespaceUuid);
->>>>>>> origin/docker-in-docker
 
     // Use middleware-enabled call tool handler
     const callToolRequest: CallToolRequest = {
@@ -72,7 +58,7 @@ export const executeToolWithMiddleware = async (
     // Return the result directly (simplified format)
     res.json(result);
   } catch (error) {
-    logger.error(`Error executing tool ${toolName}:`, error);
+    console.error(`Error executing tool ${toolName}:`, error);
 
     // Handle different types of errors
     if (error instanceof Error) {

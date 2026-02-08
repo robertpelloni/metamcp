@@ -6,11 +6,10 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import logger from "@/utils/logger";
-
 import { configService } from "../../../lib/config.service";
 import { ConnectedClient } from "../../../lib/metamcp";
 import { getMcpServers } from "../../../lib/metamcp/fetch-metamcp";
+import { mcpServerPool } from "../../../lib/metamcp/mcp-server-pool";
 import {
   createFilterCallToolMiddleware,
   createFilterListToolsMiddleware,
@@ -21,14 +20,10 @@ import {
   ListToolsHandler,
   MetaMCPHandlerContext,
 } from "../../../lib/metamcp/metamcp-middleware/functional-middleware";
-<<<<<<< HEAD
 import {
   createToolOverridesCallToolMiddleware,
   createToolOverridesListToolsMiddleware,
 } from "../../../lib/metamcp/metamcp-middleware/tool-overrides.functional";
-=======
-import { getOrConnectSessionClient } from "../../../lib/metamcp/sessions";
->>>>>>> origin/docker-in-docker
 import { sanitizeName } from "../../../lib/metamcp/utils";
 
 // Original List Tools Handler (adapted from metamcp-proxy.ts)
@@ -44,7 +39,7 @@ export const createOriginalListToolsHandler = (
 
     await Promise.allSettled(
       Object.entries(serverParams).map(async ([mcpServerUuid, params]) => {
-        const session = await getOrConnectSessionClient(
+        const session = await mcpServerPool.getSession(
           context.sessionId,
           mcpServerUuid,
           params,
@@ -92,7 +87,7 @@ export const createOriginalListToolsHandler = (
 
           allTools.push(...toolsWithSource);
         } catch (error) {
-          logger.error(`Error fetching tools from: ${serverName}`, error);
+          console.error(`Error fetching tools from: ${serverName}`, error);
         }
       }),
     );
@@ -123,7 +118,7 @@ export const createOriginalCallToolHandler = (): CallToolHandler => {
     let targetSession = null;
 
     for (const [mcpServerUuid, params] of Object.entries(serverParams)) {
-      const session = await getOrConnectSessionClient(
+      const session = await mcpServerPool.getSession(
         context.sessionId,
         mcpServerUuid,
         params,
@@ -182,7 +177,7 @@ export const createOriginalCallToolHandler = (): CallToolHandler => {
       // Cast the result to CallToolResult type
       return result as CallToolResult;
     } catch (error) {
-      logger.error(
+      console.error(
         `Error calling tool "${name}" through ${
           targetSession.client.getServerVersion()?.name || "unknown"
         }:`,
@@ -194,7 +189,6 @@ export const createOriginalCallToolHandler = (): CallToolHandler => {
 };
 
 // Helper function to create middleware-enabled handlers
-<<<<<<< HEAD
 export const createMiddlewareEnabledHandlers = (
   sessionId: string,
   namespaceUuid: string,
@@ -205,14 +199,6 @@ export const createMiddlewareEnabledHandlers = (
     namespaceUuid,
     sessionId,
     userId,
-=======
-export const createMiddlewareEnabledHandlers = (namespaceUuid: string) => {
-  // Create the handler context
-  const handlerContext: MetaMCPHandlerContext = {
-    namespaceUuid,
-    // Deterministic, reusable session per namespace for OpenAPI
-    sessionId: `openapi_${namespaceUuid}`,
->>>>>>> origin/docker-in-docker
   };
 
   // Create original handlers

@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "3.6.0",
+  "version": "3.5.0",
   "type": "module",
   "description": "Bare minimum Express 5.1 backend with TypeScript",
   "main": "dist/index.js",
@@ -9,8 +9,7 @@
     "build:dev": "tsup --sourcemap",
     "build:watch": "tsup --watch",
     "start": "node dist/index.js",
-    "dev": "tsx watch --clear-screen=false src/index.ts",
-    "dev:backend": "tsx watch --clear-screen=false src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "clean": "rm -rf dist",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -27,7 +26,6 @@
     "@repo/trpc": "workspace:*",
     "@repo/zod-types": "workspace:*",
     "@trpc/server": "^11.4.1",
-    "@types/uuid": "^11.0.0",
     "basic-auth": "^2.0.1",
     "better-auth": "^1.4.2",
     "cors": "^2.8.5",
@@ -45,7 +43,6 @@
     "pgvector": "^0.2.1",
     "shell-quote": "^1.8.3",
     "spawn-rx": "^5.1.2",
-    "uuid": "^13.0.0",
     "zod": "^3.25.64"
   },
   "devDependencies": {

@@ -7,8 +7,6 @@ services:
     env_file:
       - .env
     ports:
-<<<<<<< HEAD
-<<<<<<< HEAD
       - "12008:12008"
       - "12009:12009"
     volumes:
@@ -22,14 +20,7 @@ services:
       - /app/packages/eslint-config/node_modules
       - /app/packages/typescript-config/node_modules
       - mcpshark_data_dev:/mnt/mcpshark
-=======
-      - "12008:12008"  # Frontend
->>>>>>> origin/docker-in-docker
-=======
-      - "12008:12008"  # Frontend
->>>>>>> origin/docker-per-mcp
     environment:
-      LOG_LEVEL: ${LOG_LEVEL:-all}
       # Postgres connection details
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
@@ -40,33 +31,15 @@ services:
       # Database configuration (composed from above vars)
       DATABASE_URL: postgresql://${POSTGRES_USER:-metamcp_user}:${POSTGRES_PASSWORD:-m3t4mcp}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-metamcp_db}
       
+      # Application URL configuration
+      APP_URL: ${APP_URL:-http://localhost:12008}
+      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:12008}
+      
       # Auth configuration
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-your-super-secret-key-change-this-in-production}
       
       # Docker networking fix
       TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL: ${TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL:-true}
-      
-      # Docker socket access
-      DOCKER_HOST: unix:///var/run/docker.sock
-      
-      # Development environment
-      NODE_ENV: development
-      NEXT_TELEMETRY_DISABLED: 1
-    volumes:
-      # Mount Docker socket to allow container management
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # Mount source code for hot reload, but exclude node_modules
-      - .:/app
-      # Exclude node_modules from volume mount to use container's
-      - /app/node_modules
-      - /app/apps/frontend/node_modules
-      - /app/apps/backend/node_modules
-      - /app/packages/*/node_modules
-      # Exclude build artifacts
-      - /app/apps/frontend/.next
-      - /app/apps/backend/dist
-      # Ensure pnpm store is preserved
-      - /app/.pnpm-store
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -75,9 +48,6 @@ services:
     restart: "no"
     networks:
       - metamcp-network
-      - metamcp-internal
-    # Use init system for proper signal handling
-    init: true
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -127,6 +97,4 @@ volumes:
 
 networks:
   metamcp-network:
-    driver: bridge
-  metamcp-internal:
     driver: bridge 

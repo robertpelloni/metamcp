@@ -174,7 +174,6 @@ export const configService = {
     return providers;
   },
 
-<<<<<<< HEAD
   /**
    * Get the memory limit for Code Mode execution in MB.
    * Defaults to 128MB.
@@ -201,30 +200,4 @@ export const configService = {
       );
     }
   }
-=======
-  async getDockerMcpProxyImage(): Promise<string | undefined> {
-    // First try to get from database config
-    const configImage = await this.getConfig("DOCKER_MCP_PROXY_IMAGE");
-    if (configImage) {
-      return configImage;
-    }
-    
-    // Fallback to environment variable
-    const envImage = process.env.DOCKER_MCP_PROXY_IMAGE;
-    if (envImage) {
-      return envImage;
-    }
-    
-    // Final fallback to default
-    return "ghcr.io/metatool-ai/mcp-proxy:latest";
-  },
-
-  async setDockerMcpProxyImage(imageName: string): Promise<void> {
-    await this.setConfig(
-      "DOCKER_MCP_PROXY_IMAGE",
-      imageName,
-      "Docker image name for MCP proxy server",
-    );
-  },
->>>>>>> origin/docker-in-docker
 };

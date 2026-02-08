@@ -1,19 +1,14 @@
 import { OAuthClientInformation } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js";
 import {
-<<<<<<< HEAD
-  ApiKeyTypeEnum,
-=======
-  DockerSessionStatusEnum,
->>>>>>> origin/docker-in-docker
+  McpServerErrorStatusEnum,
   McpServerStatusEnum,
   McpServerTypeEnum,
 } from "@repo/zod-types";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
-  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -21,6 +16,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const mcpServerTypeEnum = pgEnum(
@@ -31,11 +27,9 @@ export const mcpServerStatusEnum = pgEnum(
   "mcp_server_status",
   McpServerStatusEnum.options,
 );
-export const apiKeyTypeEnum = pgEnum("api_key_type", ApiKeyTypeEnum.options);
-
-export const dockerSessionStatusEnum = pgEnum(
-  "docker_session_status",
-  DockerSessionStatusEnum.options,
+export const mcpServerErrorStatusEnum = pgEnum(
+  "mcp_server_error_status",
+  McpServerErrorStatusEnum.options,
 );
 
 export const mcpServersTable = pgTable(
@@ -57,10 +51,17 @@ export const mcpServersTable = pgTable(
       .notNull()
       .default(sql`'{}'::jsonb`),
     url: text("url"),
+    error_status: mcpServerErrorStatusEnum("error_status")
+      .notNull()
+      .default(McpServerErrorStatusEnum.Enum.NONE),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
     bearerToken: text("bearer_token"),
+    headers: jsonb("headers")
+      .$type<{ [key: string]: string }>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
     user_id: text("user_id").references(() => usersTable.id, {
       onDelete: "cascade",
     }),
@@ -68,6 +69,7 @@ export const mcpServersTable = pgTable(
   (table) => [
     index("mcp_servers_type_idx").on(table.type),
     index("mcp_servers_user_id_idx").on(table.user_id),
+    index("mcp_servers_error_status_idx").on(table.error_status),
     // Allow same name for different users, but unique within user scope (including public)
     unique("mcp_servers_name_user_unique_idx").on(table.name, table.user_id),
     sql`CONSTRAINT mcp_servers_name_regex_check CHECK (
@@ -121,6 +123,9 @@ export const toolsTable = pgTable(
         required?: string[];
       }>()
       .notNull(),
+    rich_description: text("rich_description"),
+    concise_description: text("concise_description"),
+    embedding: vector("embedding", { dimensions: 1536 }),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -133,6 +138,10 @@ export const toolsTable = pgTable(
   },
   (table) => [
     index("tools_mcp_server_uuid_idx").on(table.mcp_server_uuid),
+    index("tools_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
     unique("tools_unique_tool_name_per_server_idx").on(
       table.mcp_server_uuid,
       table.name,
@@ -307,7 +316,7 @@ export const namespaceServerMappingsTable = pgTable(
   ],
 );
 
-// Many-to-many relationship table between namespaces and tools for status control
+// Many-to-many relationship table between namespaces and tools for status control and overrides
 export const namespaceToolMappingsTable = pgTable(
   "namespace_tool_mappings",
   {
@@ -324,6 +333,12 @@ export const namespaceToolMappingsTable = pgTable(
     status: mcpServerStatusEnum("status")
       .notNull()
       .default(McpServerStatusEnum.Enum.ACTIVE),
+    override_name: text("override_name"),
+    override_title: text("override_title"),
+    override_description: text("override_description"),
+    override_annotations: jsonb("override_annotations")
+      .$type<Record<string, unknown> | null>()
+      .default(sql`NULL`),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -358,13 +373,11 @@ export const apiKeysTable = pgTable(
       .notNull()
       .defaultNow(),
     is_active: boolean("is_active").notNull().default(true),
-    type: apiKeyTypeEnum("type").notNull().default("MCP"),
   },
   (table) => [
     index("api_keys_user_id_idx").on(table.user_id),
     index("api_keys_key_idx").on(table.key),
     index("api_keys_is_active_idx").on(table.is_active),
-    index("api_keys_type_idx").on(table.type),
     unique("api_keys_name_per_user_idx").on(table.user_id, table.name),
   ],
 );
@@ -469,49 +482,13 @@ export const oauthAccessTokensTable = pgTable(
   ],
 );
 
-// Docker Sessions table for tracking container instances
-export const dockerSessionsTable = pgTable(
-  "docker_sessions",
+export const savedScriptsTable = pgTable(
+  "saved_scripts",
   {
     uuid: uuid("uuid").primaryKey().defaultRandom(),
-    mcp_server_uuid: uuid("mcp_server_uuid")
-      .notNull()
-      .references(() => mcpServersTable.uuid, { onDelete: "cascade" }),
-    container_id: text("container_id").notNull().unique(),
-    container_name: text("container_name").notNull(),
-    url: text("url").notNull(),
-    status: dockerSessionStatusEnum("status")
-      .notNull()
-      .default(DockerSessionStatusEnum.Enum.RUNNING),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    started_at: timestamp("started_at", { withTimezone: true }),
-    stopped_at: timestamp("stopped_at", { withTimezone: true }),
-    error_message: text("error_message"),
-    retry_count: integer("retry_count").notNull().default(0),
-    last_retry_at: timestamp("last_retry_at", { withTimezone: true }),
-    max_retries: integer("max_retries").notNull().default(3),
-  },
-  (table) => [
-    index("docker_sessions_mcp_server_uuid_idx").on(table.mcp_server_uuid),
-    index("docker_sessions_container_id_idx").on(table.container_id),
-    index("docker_sessions_status_idx").on(table.status),
-    unique("docker_sessions_mcp_server_active_idx").on(table.mcp_server_uuid),
-  ],
-);
-
-export const memoriesTable = pgTable(
-  "memories",
-  {
-    uuid: uuid("uuid").primaryKey().defaultRandom(),
-    content: text("content").notNull(),
-    embedding: vector("embedding", { dimensions: 1536 }),
-    metadata: jsonb("metadata").$type<Record<string, unknown>>().default(sql`'{}'::jsonb`),
-    agent_id: text("agent_id"),
+    name: text("name").notNull(),
+    description: text("description"),
+    code: text("code").notNull(),
     user_id: text("user_id").references(() => usersTable.id, {
       onDelete: "cascade",
     }),
@@ -523,34 +500,106 @@ export const memoriesTable = pgTable(
       .defaultNow(),
   },
   (table) => [
-    index("memories_embedding_idx").using(
-      "hnsw",
-      table.embedding.op("vector_cosine_ops"),
-    ),
-    index("memories_user_id_idx").on(table.user_id),
+    index("saved_scripts_user_id_idx").on(table.user_id),
+    unique("saved_scripts_name_user_idx").on(table.user_id, table.name),
+    sql`CONSTRAINT saved_scripts_name_regex_check CHECK (
+      name ~ '^[a-zA-Z0-9_-]+$'
+    )`,
   ],
 );
 
-export const auditLogsTable = pgTable(
-  "audit_logs",
+export const toolCallLogsTable = pgTable(
+  "tool_call_logs",
   {
     uuid: uuid("uuid").primaryKey().defaultRandom(),
-    user_id: text("user_id").references(() => usersTable.id, {
-      onDelete: "cascade",
-    }),
-    action: text("action").notNull(),
-    resource_type: text("resource_type").notNull(),
-    resource_id: text("resource_id"),
-    details: jsonb("details").$type<Record<string, unknown>>(),
-    ip_address: text("ip_address"),
+    session_id: text("session_id").notNull(),
+    tool_name: text("tool_name").notNull(),
+    arguments: jsonb("arguments").$type<Record<string, unknown>>(),
+    result: jsonb("result").$type<Record<string, unknown>>(),
+    error: text("error"),
+    duration_ms:  text("duration_ms"), // storing as text to avoid bigint issues for now, or integer
+    parent_call_uuid: uuid("parent_call_uuid"), // Self-reference for nested calls
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => [
-    index("audit_logs_user_id_idx").on(table.user_id),
-    index("audit_logs_action_idx").on(table.action),
-    index("audit_logs_resource_type_idx").on(table.resource_type),
-    index("audit_logs_created_at_idx").on(table.created_at),
+    index("tool_call_logs_session_id_idx").on(table.session_id),
+    index("tool_call_logs_parent_call_uuid_idx").on(table.parent_call_uuid),
+    index("tool_call_logs_created_at_idx").on(table.created_at),
+  ],
+);
+
+export const toolSetsTable = pgTable(
+  "tool_sets",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_sets_user_id_idx").on(table.user_id),
+    unique("tool_sets_name_user_idx").on(table.user_id, table.name),
+  ],
+);
+
+export const toolSetItemsTable = pgTable(
+  "tool_set_items",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    tool_set_uuid: uuid("tool_set_uuid")
+      .notNull()
+      .references(() => toolSetsTable.uuid, { onDelete: "cascade" }),
+    tool_name: text("tool_name").notNull(), // Storing name because tools are dynamic/discovered
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_set_items_tool_set_uuid_idx").on(table.tool_set_uuid),
+    unique("tool_set_items_unique_idx").on(table.tool_set_uuid, table.tool_name),
+  ],
+);
+
+export const policiesTable = pgTable(
+  "policies",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    // Stores a list of allowed tool patterns (e.g. ["github__*", "postgres__read_*"])
+    // If empty, policy denies everything by default (strict).
+    rules: jsonb("rules")
+      .$type<{
+        allow: string[];
+        deny?: string[];
+      }>()
+      .notNull()
+      .default(sql`'{"allow": []}'::jsonb`),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("policies_user_id_idx").on(table.user_id),
+    unique("policies_name_user_idx").on(table.user_id, table.name),
+    sql`CONSTRAINT policies_name_regex_check CHECK (
+      name ~ '^[a-zA-Z0-9_-]+$'
+    )`,
   ],
 );

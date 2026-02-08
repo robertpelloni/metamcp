@@ -1,4 +1,3 @@
-import { createCatalogRouter } from "./routers/frontend/catalog";
 import { createFrontendRouter } from "./routers/frontend";
 import { router } from "./trpc";
 
@@ -15,16 +14,12 @@ export const createAppRouter = (implementations: {
       oauth: frontendRouters.oauth,
       tools: frontendRouters.tools,
       apiKeys: frontendRouters.apiKeys,
-      autoDiscovery: frontendRouters.autoDiscovery,
-      autoReconnect: frontendRouters.autoReconnect,
       config: frontendRouters.config,
       logs: frontendRouters.logs,
       savedScripts: frontendRouters.savedScripts,
-      serverHealth: frontendRouters.serverHealth,
       toolSets: frontendRouters.toolSets,
       policies: frontendRouters.policies,
       agent: frontendRouters.agent,
-      catalog: frontendRouters.catalog,
     }),
   });
 };

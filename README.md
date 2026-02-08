@@ -31,9 +31,6 @@
 - **Traffic Inspection**: Persistent logging of tool calls, arguments, and results ("Mcpshark").
 - **Saved Scripts & Tool Sets**: Persist useful scripts and tool profiles.
 - **Config Import**: Easily import existing `claude_desktop_config.json` files.
-- **Agent Memory**: Long-term persistent memory for agents using vector search.
-- **MCP Registry & Templates**: Centralized discovery and one-click installation of community servers.
-- **Analytics Dashboard**: Comprehensive usage metrics and visualization.
 
 ![MetaMCP Diagram](metamcp.svg)
 
@@ -73,9 +70,6 @@ English | [中文](./README_cn.md)
 - 🔍 **Use as Elasticsearch for MCP tool selection** (Semantic Search / Tool RAG).
 - ⚡ **Use Code Mode** to allow agents to write scripts that chain multiple tools together, reducing round-trips and token costs.
 - 🤖 **Run Autonomous Agents** to solve complex tasks by self-generating code and discovering tools.
-- 🧠 **Manage Agent Memory** to persist context and history across sessions.
-- 📦 **Discover & Install** tools from the central MCP Registry with one-click templates.
-- 📊 **Monitor & Debug** with real-time analytics and traffic inspection.
 
 ## 📖 Concepts
 

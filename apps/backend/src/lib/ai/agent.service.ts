@@ -3,7 +3,6 @@ import OpenAI from "openai";
 import { toolSearchService } from "./tool-search.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { policyService } from "../access-control/policy.service";
-import { memoryService } from "./memory.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
@@ -42,7 +41,7 @@ export class AgentService {
     if (policyId) {
         const policy = await policyService.getPolicy(policyId);
         if (policy) {
-            searchResults = searchResults.filter(tool => 
+            searchResults = searchResults.filter(tool =>
                 policyService.evaluateAccess(policy, tool.name)
             );
         }
@@ -56,10 +55,6 @@ export class AgentService {
         // Fallback if no tools found? Or just proceed?
         console.warn("[Agent] No tools found for task via search (or all filtered by policy).");
     }
-
-    // Retrieve simple short-term memory (history of this session is not passed here because session is transient for now,
-    // but we could look up past successful tasks if we tracked them).
-    // For now, we will just use the current task as context.
 
     // 2. Planning & Code Generation
     const prompt = `

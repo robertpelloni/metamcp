@@ -1,6 +1,4 @@
 import { createApiKeysRouter } from "./api-keys";
-import { createAutoDiscoveryRouter } from "./auto-discovery";
-import { createAutoReconnectRouter } from "./auto-reconnect";
 import { createConfigRouter } from "./config";
 import { createEndpointsRouter } from "./endpoints";
 import { createLogsRouter } from "./logs";
@@ -8,12 +6,10 @@ import { createMcpServersRouter } from "./mcp-servers";
 import { createNamespacesRouter } from "./namespaces";
 import { createOAuthRouter } from "./oauth";
 import { createSavedScriptsRouter } from "./saved-scripts";
-import { createServerHealthRouter } from "./server-health";
 import { createToolSetsRouter } from "./tool-sets";
 import { createToolsRouter } from "./tools";
 import { createPoliciesRouter } from "./policies";
 import { createAgentRouter } from "./agent";
-import { createCatalogRouter } from "./catalog";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -21,16 +17,12 @@ export { createEndpointsRouter };
 export { createOAuthRouter };
 export { createToolsRouter };
 export { createApiKeysRouter };
-export { createAutoDiscoveryRouter };
-export { createAutoReconnectRouter };
 export { createConfigRouter };
 export { createLogsRouter };
 export { createSavedScriptsRouter };
-export { createServerHealthRouter };
 export { createToolSetsRouter };
 export { createPoliciesRouter };
 export { createAgentRouter };
-export { createCatalogRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -39,16 +31,12 @@ export const createFrontendRouter = (implementations: {
   oauth: Parameters<typeof createOAuthRouter>[0];
   tools: Parameters<typeof createToolsRouter>[0];
   apiKeys: Parameters<typeof createApiKeysRouter>[0];
-  autoDiscovery: Parameters<typeof createAutoDiscoveryRouter>[0];
-  autoReconnect: Parameters<typeof createAutoReconnectRouter>[0];
   config: Parameters<typeof createConfigRouter>[0];
   logs: Parameters<typeof createLogsRouter>[0];
   savedScripts: Parameters<typeof createSavedScriptsRouter>[0];
-  serverHealth: Parameters<typeof createServerHealthRouter>[0];
   toolSets: Parameters<typeof createToolSetsRouter>[0];
   policies: Parameters<typeof createPoliciesRouter>[0];
   agent: Parameters<typeof createAgentRouter>[0];
-  catalog: Parameters<typeof createCatalogRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -57,15 +45,11 @@ export const createFrontendRouter = (implementations: {
     oauth: createOAuthRouter(implementations.oauth),
     tools: createToolsRouter(implementations.tools),
     apiKeys: createApiKeysRouter(implementations.apiKeys),
-    autoDiscovery: createAutoDiscoveryRouter(implementations.autoDiscovery),
-    autoReconnect: createAutoReconnectRouter(implementations.autoReconnect),
     config: createConfigRouter(implementations.config),
     logs: createLogsRouter(implementations.logs),
     savedScripts: createSavedScriptsRouter(implementations.savedScripts),
-    serverHealth: createServerHealthRouter(implementations.serverHealth),
     toolSets: createToolSetsRouter(implementations.toolSets),
     policies: createPoliciesRouter(implementations.policies),
     agent: createAgentRouter(implementations.agent),
-    catalog: createCatalogRouter(implementations.catalog),
   };
 };

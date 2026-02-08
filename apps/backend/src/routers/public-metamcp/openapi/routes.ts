@@ -5,9 +5,8 @@ import {
   ApiKeyAuthenticatedRequest,
   authenticateApiKey,
 } from "@/middleware/api-key-oauth.middleware";
-import logger from "@/utils/logger";
 
-import { createServer } from "../../../lib/metamcp/metamcp-proxy";
+import { metaMcpServerPool } from "../../../lib/metamcp/metamcp-server-pool";
 import { lookupEndpoint } from "../../../middleware/lookup-endpoint-middleware";
 import { createMiddlewareEnabledHandlers } from "./handlers";
 import { generateOpenApiSchema } from "./schema-generator";
@@ -84,16 +83,13 @@ openApiRouter.get(
     const { namespaceUuid, endpointName, apiKeyUserId, oauthUserId } = req as ApiKeyAuthenticatedRequest;
 
     try {
-      // Create MetaMCP server instance directly using metamcp-proxy for OpenAPI
-      const mcpServerInstance = await createServer(
-        namespaceUuid,
-        `openapi_${namespaceUuid}`,
-      );
+      // Get or create persistent OpenAPI session for this namespace
+      const mcpServerInstance =
+        await metaMcpServerPool.getOpenApiServer(namespaceUuid);
       if (!mcpServerInstance) {
-        throw new Error("Failed to create MetaMCP server instance");
+        throw new Error("Failed to get MetaMCP server instance from pool");
       }
 
-<<<<<<< HEAD
       // Use deterministic session ID for OpenAPI endpoints
       const sessionId = `openapi_${namespaceUuid}`;
 
@@ -103,11 +99,6 @@ openApiRouter.get(
       // Create middleware-enabled handlers
       const { handlerContext, listToolsWithMiddleware } =
         createMiddlewareEnabledHandlers(sessionId, namespaceUuid, userId);
-=======
-      // Create middleware-enabled handlers
-      const { handlerContext, listToolsWithMiddleware } =
-        createMiddlewareEnabledHandlers(namespaceUuid);
->>>>>>> origin/docker-in-docker
 
       // Use middleware-enabled list tools handler
       const listToolsRequest: ListToolsRequest = {
@@ -127,7 +118,7 @@ openApiRouter.get(
 
       res.json(openApiSchema);
     } catch (error) {
-      logger.error("Error generating OpenAPI schema:", error);
+      console.error("Error generating OpenAPI schema:", error);
       res.status(500).json({
         error: "Internal server error",
         message: "Failed to generate OpenAPI schema",

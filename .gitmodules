@@ -1,30 +1,9 @@
 [submodule "apps/backend/mcp-shark"]
 	path = apps/backend/mcp-shark
 	url = https://github.com/mcp-shark/mcp-shark
+[submodule "submodules/bobcoin"]
+	path = submodules/bobcoin
+	url = https://github.com/robertpelloni/bobcoin
 [submodule "submodules/mcp-shark"]
 	path = submodules/mcp-shark
 	url = https://github.com/mcp-shark/mcp-shark
-[submodule "submodules/mcp-directories/awesome-mcp-servers-appcypher"]
-	path = submodules/mcp-directories/awesome-mcp-servers-appcypher
-	url = https://github.com/appcypher/awesome-mcp-servers
-[submodule "submodules/mcp-directories/awesome-mcp-servers-punkpeye"]
-	path = submodules/mcp-directories/awesome-mcp-servers-punkpeye
-	url = https://github.com/punkpeye/awesome-mcp-servers
-[submodule "submodules/mcp-directories/awesome-mcp-servers-wong2"]
-	path = submodules/mcp-directories/awesome-mcp-servers-wong2
-	url = https://github.com/wong2/awesome-mcp-servers
-[submodule "submodules/mcp-directories/toolsdk-mcp-registry"]
-	path = submodules/mcp-directories/toolsdk-mcp-registry
-	url = https://github.com/toolsdk-ai/toolsdk-mcp-registry
-[submodule "submodules/mcp-directories/awesome-ai-apps"]
-	path = submodules/mcp-directories/awesome-ai-apps
-	url = https://github.com/Arindam200/awesome-ai-apps
-[submodule "submodules/mcp-directories/mcp-official-servers"]
-	path = submodules/mcp-directories/mcp-official-servers
-	url = https://github.com/modelcontextprotocol/servers
-[submodule "submodules/mcpdir"]
-	path = submodules/mcpdir
-	url = https://github.com/eL1fe/mcpdir.git
-[submodule "submodules/cointrade"]
-	path = submodules/cointrade
-	url = https://github.com/mnmballa2323/cointrade

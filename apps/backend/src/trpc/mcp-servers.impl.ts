@@ -374,6 +374,11 @@ export const mcpServersImplementations = {
         console.error("Error syncing MCP Shark config:", err);
       });
 
+      // Sync MCP Shark config
+      syncMcpSharkConfig().catch((err) => {
+        console.error("Error syncing MCP Shark config:", err);
+      });
+
       return {
         success: true as const,
         message: "MCP server deleted successfully",

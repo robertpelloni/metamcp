@@ -1,19 +1,8 @@
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 import { db } from "../../db";
 import { toolsTable } from "../../db/schema";
 import { embeddingService } from "./embedding.service";
-import {
-  hybridSearchService,
-  HybridSearchResult,
-  HybridSearchOptions,
-} from "./hybrid-search.service";
-import {
-  patternFilterService,
-  PatternFilterOptions,
-  FilterResult,
-} from "./pattern-filter.service";
 
 export interface ToolSearchResult {
   uuid: string;
@@ -23,9 +12,13 @@ export interface ToolSearchResult {
   mcpServerUuid: string;
 }
 
-export type { HybridSearchResult, HybridSearchOptions };
-
 export class ToolSearchService {
+  /**
+   * Search for tools using vector similarity.
+   * @param query The user's search query
+   * @param limit Max number of results
+   * @param threshold Minimum similarity threshold (0-1)
+   */
   async searchTools(
     query: string,
     limit: number = 10,
@@ -58,62 +51,10 @@ export class ToolSearchService {
     }
   }
 
-  async hybridSearch(
-    query: string,
-    options?: HybridSearchOptions,
-  ): Promise<HybridSearchResult[]> {
-    return hybridSearchService.search(query, options);
-  }
-
-  async quickSearch(
-    query: string,
-    limit: number = 10,
-  ): Promise<HybridSearchResult[]> {
-    return hybridSearchService.quickSearch(query, limit);
-  }
-
-  async deepSearch(
-    query: string,
-    limit: number = 10,
-  ): Promise<HybridSearchResult[]> {
-    return hybridSearchService.deepSearch(query, limit);
-  }
-
-  filterByPattern(
-    tools: Tool[],
-    patterns: string | string[],
-    options?: PatternFilterOptions,
-  ): FilterResult<Tool> {
-    return patternFilterService.filterTools(tools, patterns, options);
-  }
-
-  filterByServer(tools: Tool[], serverPatterns: string | string[]): Tool[] {
-    return patternFilterService.filterByServer(tools, serverPatterns);
-  }
-
-  excludeByPattern(tools: Tool[], excludePatterns: string | string[]): Tool[] {
-    return patternFilterService.excludeTools(tools, excludePatterns);
-  }
-
-  smartFilter(
-    tools: Tool[],
-    query: string,
-    options?: PatternFilterOptions,
-  ): FilterResult<Tool> {
-    return patternFilterService.searchWithPattern(tools, query, options);
-  }
-
-  combineFilters(
-    tools: Tool[],
-    config: {
-      include?: string | string[];
-      exclude?: string | string[];
-      servers?: string | string[];
-    },
-  ): FilterResult<Tool> {
-    return patternFilterService.combineFilters(tools, config);
-  }
-
+  /**
+   * Update the embedding for a specific tool.
+   * This should be called when a tool is created or updated.
+   */
   async updateToolEmbedding(toolUuid: string): Promise<void> {
     const tool = await db.query.toolsTable.findFirst({
       where: (table, { eq }) => eq(table.uuid, toolUuid),

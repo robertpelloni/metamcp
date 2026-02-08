@@ -11,14 +11,13 @@ import { db } from "../db";
 import { toolsTable, toolCallLogsTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { getMcpServers } from "../lib/metamcp/fetch-metamcp";
-import { randomUUID } from "crypto";
-import { AppRouter } from "@repo/trpc";
+import { v4 as uuidv4 } from "uuid";
 
-export const agentImplementations: AppRouter["frontend"]["agent"] = {
-  run: async ({ input, ctx }) => {
+export const agentImplementations = {
+  run: async (input: z.infer<typeof RunAgentRequestSchema>): Promise<z.infer<typeof RunAgentResponseSchema>> => {
     try {
       // Use provided session ID or generate a temporary one
-      const sessionId = input.sessionId || `agent-trpc-${randomUUID()}`;
+      const sessionId = input.sessionId || `agent-trpc-${uuidv4()}`;
 
       const callToolCallback = async (name: string, args: any, meta?: any): Promise<any> => {
           const startTime = Date.now();
@@ -31,7 +30,7 @@ export const agentImplementations: AppRouter["frontend"]["agent"] = {
                 result = await codeExecutorService.executeCode(args.code, callToolCallback);
                 return result;
             }
-            
+
             // 2. Handle Downstream Tools
             const parsed = parseToolName(name);
             if (!parsed) throw new Error(`Invalid tool name: ${name}`);
@@ -52,13 +51,6 @@ export const agentImplementations: AppRouter["frontend"]["agent"] = {
             const namespaceUuid = toolRecord.mcpServer.namespaceUuid;
 
             // Fetch server params (needed for connection)
-            // Note: This logic seems duplicated from metamcp-proxy.ts, maybe should be refactored
-            // For now, keep it simple. We need to know which server instance to use.
-            // But mcpServerPool.getSession handles connection pooling.
-            // However, getMcpServers usually fetches ALL servers in a namespace.
-            // Here we know exactly which server we want.
-
-            // Re-using logic:
             const serverParamsMap = await getMcpServers(namespaceUuid);
             const serverParams = serverParamsMap[mcpServerUuid];
 
@@ -85,7 +77,7 @@ export const agentImplementations: AppRouter["frontend"]["agent"] = {
                 timeout: await configService.getMcpTimeout(),
             };
 
-            const callResult = await session.client.request(
+            result = await session.client.request(
                 {
                     method: "tools/call",
                     params: {
@@ -97,7 +89,6 @@ export const agentImplementations: AppRouter["frontend"]["agent"] = {
                 CompatibilityCallToolResultSchema,
                 mcpRequestOptions
             );
-            result = callResult;
             return result;
 
           } catch (e) {
@@ -106,26 +97,20 @@ export const agentImplementations: AppRouter["frontend"]["agent"] = {
           } finally {
              const duration = Date.now() - startTime;
              // Log to DB
-             // We need to construct result/error strings properly
-             try {
-                await db.insert(toolCallLogsTable).values({
-                    session_id: sessionId,
-                    tool_name: name,
-                    arguments: args ? JSON.stringify(args) : null,
-                    result: result ? JSON.stringify(result) : null,
-                    error: error ? String(error) : null,
-                    duration_ms: String(duration),
-                });
-             } catch (err) {
-                 console.error("Failed to log tool call", err);
-             }
+             db.insert(toolCallLogsTable).values({
+                session_id: sessionId,
+                tool_name: name,
+                arguments: args,
+                result: result,
+                error: error ? String(error) : null,
+                duration_ms: String(duration),
+             }).catch(err => console.error("Failed to log tool call", err));
           }
       };
 
-      const result = await agentService.runAgent(input.task, callToolCallback, input.policyId, ctx.user?.id);
+      const result = await agentService.runAgent(input.task, callToolCallback, input.policyId);
 
-      // Cleanup sessions after run (optional, depends on if we want to keep session alive)
-      // For one-off agent runs, cleanup is good.
+      // Cleanup sessions after run
       await mcpServerPool.cleanupSession(sessionId);
 
       return {

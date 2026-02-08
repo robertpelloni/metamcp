@@ -54,7 +54,7 @@ async function reloadMcpShark() {
     // We mounted mcpshark_data_dev to /root/.mcp-shark in mcp-shark container
     // And to /mnt/mcpshark in app container.
     // So the file we wrote to /mnt/mcpshark/mcp_config.json is at /root/.mcp-shark/mcp_config.json in mcp-shark container.
-    
+
     const configPathInContainer = "/root/.mcp-shark/mcp_config.json";
 
     const response = await fetch(`${MCP_SHARK_API_URL}/api/composite/setup`, {
