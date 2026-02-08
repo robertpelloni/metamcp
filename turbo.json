@@ -16,16 +16,7 @@
     "OIDC_PROVIDER_ID",
     "TRANSFORM_LOCALHOST_TO_DOCKER_INTERNAL",
     "NODE_ENV",
-<<<<<<< HEAD
-<<<<<<< HEAD
     "POSTGRES_CA_CERT"
-=======
-    "DOCKER_HOST"
->>>>>>> origin/docker-in-docker
-=======
-    "DOCKER_HOST",
-    "POSTGRES_CA_CERT"
->>>>>>> origin/docker-per-mcp
   ],
   "tasks": {
     "build": {
@@ -43,6 +34,14 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:backend": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:frontend": {
       "cache": false,
       "persistent": true
     }

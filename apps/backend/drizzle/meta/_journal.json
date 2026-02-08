@@ -76,6 +76,13 @@
       "tag": "0009_absent_ultron",
 >>>>>>> origin/docker-in-docker
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1770534985807,
+      "tag": "0019_clever_firelord",
+      "breakpoints": true
     }
   ]
 }

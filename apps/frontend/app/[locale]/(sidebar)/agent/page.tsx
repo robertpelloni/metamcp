@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Play, Loader2, HelpCircle } from "lucide-react";
+import { Bot, Play, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -95,17 +94,7 @@ export default function AgentPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                Task Description
-                <Tooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-[300px]">
-                    Describe the task you want the agent to perform. The agent will search for relevant tools and generate code to execute the task.
-                  </TooltipContent>
-                </Tooltip>
-              </Label>
+              <Label>Task Description</Label>
               <Textarea
                 placeholder="e.g. Find the latest issue in repo X and summarize it..."
                 className="min-h-[150px]"
@@ -115,17 +104,7 @@ export default function AgentPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                Security Policy
-                <Tooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-[300px]">
-                    Select a policy to restrict which tools the agent can access. 'No Policy' gives full access to all tools.
-                  </TooltipContent>
-                </Tooltip>
-              </Label>
+              <Label>Security Policy</Label>
               <Select
                 value={selectedPolicyId}
                 onValueChange={setSelectedPolicyId}
@@ -185,13 +164,7 @@ export default function AgentPage() {
                         ) : (
                             <div className="space-y-1">
                                 {logsData.data.map((log) => (
-                                    <LogEntry
-                                        key={log.id}
-                                        log={{
-                                            ...log,
-                                            timestamp: new Date(log.timestamp)
-                                        }}
-                                    />
+                                    <LogEntry key={log.id} log={log as any} />
                                 ))}
                             </div>
                         )}

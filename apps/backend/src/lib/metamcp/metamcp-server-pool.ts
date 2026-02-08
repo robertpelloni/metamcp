@@ -1,7 +1,5 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
-import logger from "@/utils/logger";
-
 import { configService } from "../config.service";
 import { mcpServerPool } from "./mcp-server-pool";
 import { createServer } from "./metamcp-proxy";
@@ -9,6 +7,7 @@ import { createServer } from "./metamcp-proxy";
 export interface MetaMcpServerInstance {
   server: Server;
   cleanup: () => Promise<void>;
+  updateContext: (newContext: any) => void;
 }
 
 export interface MetaMcpServerPoolStatus {
@@ -65,6 +64,7 @@ export class MetaMcpServerPool {
     sessionId: string,
     namespaceUuid: string,
     includeInactiveServers: boolean = false,
+    userId?: string,
   ): Promise<MetaMcpServerInstance | undefined> {
     // Check if we already have an active server for this sessionId
     if (this.activeServers[sessionId]) {
@@ -80,7 +80,10 @@ export class MetaMcpServerPool {
       this.sessionToNamespace[sessionId] = namespaceUuid;
       this.sessionTimestamps[sessionId] = Date.now();
 
-      logger.info(
+      // Update context with new sessionId and userId
+      idleServer.updateContext({ sessionId, userId });
+
+      console.log(
         `Converted idle MetaMCP server to active for namespace ${namespaceUuid}, session ${sessionId}`,
       );
 
@@ -95,6 +98,7 @@ export class MetaMcpServerPool {
       sessionId,
       namespaceUuid,
       includeInactiveServers,
+      userId,
     );
     if (!newServer) {
       return undefined;
@@ -104,7 +108,7 @@ export class MetaMcpServerPool {
     this.sessionToNamespace[sessionId] = namespaceUuid;
     this.sessionTimestamps[sessionId] = Date.now();
 
-    logger.info(
+    console.log(
       `Created new active MetaMCP server for namespace ${namespaceUuid}, session ${sessionId}`,
     );
 
@@ -121,6 +125,7 @@ export class MetaMcpServerPool {
     sessionId: string,
     namespaceUuid: string,
     includeInactiveServers: boolean = false,
+    userId?: string,
   ): Promise<MetaMcpServerInstance | undefined> {
     try {
       // Create the MetaMCP server - MCP server pool is pre-warmed during startup
@@ -128,11 +133,12 @@ export class MetaMcpServerPool {
         namespaceUuid,
         sessionId,
         includeInactiveServers,
+        userId,
       );
 
       return serverInstance;
     } catch (error) {
-      logger.error(
+      console.error(
         `Error creating MetaMCP server for namespace ${namespaceUuid}:`,
         error,
       );
@@ -165,10 +171,11 @@ export class MetaMcpServerPool {
       const wrappedServer: MetaMcpServerInstance = {
         server: newServer.server,
         cleanup: newServer.cleanup,
+        updateContext: newServer.updateContext,
       };
 
       this.idleServers[namespaceUuid] = wrappedServer;
-      logger.info(`Created idle MetaMCP server for namespace ${namespaceUuid}`);
+      console.log(`Created idle MetaMCP server for namespace ${namespaceUuid}`);
     }
   }
 
@@ -199,15 +206,16 @@ export class MetaMcpServerPool {
           const wrappedServer: MetaMcpServerInstance = {
             server: newServer.server,
             cleanup: newServer.cleanup,
+            updateContext: newServer.updateContext,
           };
           this.idleServers[namespaceUuid] = wrappedServer;
-          logger.info(
+          console.log(
             `Created background idle MetaMCP server for namespace ${namespaceUuid}`,
           );
         } else if (newServer) {
           // We already have an idle server, cleanup the extra one
           newServer.cleanup().catch((error) => {
-            logger.error(
+            console.error(
               `Error cleaning up extra idle MetaMCP server for ${namespaceUuid}:`,
               error,
             );
@@ -215,7 +223,7 @@ export class MetaMcpServerPool {
         }
       })
       .catch((error) => {
-        logger.error(
+        console.error(
           `Error creating background idle MetaMCP server for ${namespaceUuid}:`,
           error,
         );
@@ -271,7 +279,7 @@ export class MetaMcpServerPool {
       delete this.sessionToNamespace[sessionId];
     }
 
-    logger.info(`Cleaned up MetaMCP server pool session ${sessionId}`);
+    console.log(`Cleaned up MetaMCP server pool session ${sessionId}`);
   }
 
   /**
@@ -307,7 +315,7 @@ export class MetaMcpServerPool {
       this.cleanupTimer = null;
     }
 
-    logger.info("Cleaned up all MetaMCP server pool sessions");
+    console.log("Cleaned up all MetaMCP server pool sessions");
   }
 
   /**
@@ -354,18 +362,18 @@ export class MetaMcpServerPool {
     namespaceUuid: string,
     includeInactiveServers: boolean = false,
   ): Promise<void> {
-    logger.info(`Invalidating idle server for namespace ${namespaceUuid}`);
+    console.log(`Invalidating idle server for namespace ${namespaceUuid}`);
 
     // Cleanup existing idle server if it exists
     const existingIdleServer = this.idleServers[namespaceUuid];
     if (existingIdleServer) {
       try {
         await existingIdleServer.cleanup();
-        logger.info(
+        console.log(
           `Cleaned up existing idle server for namespace ${namespaceUuid}`,
         );
       } catch (error) {
-        logger.error(
+        console.error(
           `Error cleaning up existing idle server for namespace ${namespaceUuid}:`,
           error,
         );
@@ -399,16 +407,16 @@ export class MetaMcpServerPool {
    * This should be called when a namespace is being deleted
    */
   async cleanupIdleServer(namespaceUuid: string): Promise<void> {
-    logger.info(`Cleaning up idle server for namespace ${namespaceUuid}`);
+    console.log(`Cleaning up idle server for namespace ${namespaceUuid}`);
 
     // Cleanup existing idle server if it exists
     const existingIdleServer = this.idleServers[namespaceUuid];
     if (existingIdleServer) {
       try {
         await existingIdleServer.cleanup();
-        logger.info(`Cleaned up idle server for namespace ${namespaceUuid}`);
+        console.log(`Cleaned up idle server for namespace ${namespaceUuid}`);
       } catch (error) {
-        logger.error(
+        console.error(
           `Error cleaning up idle server for namespace ${namespaceUuid}:`,
           error,
         );
@@ -428,7 +436,7 @@ export class MetaMcpServerPool {
     namespaceUuid: string,
     includeInactiveServers: boolean = false,
   ): Promise<void> {
-    logger.info(
+    console.log(
       `Ensuring idle server exists for new namespace ${namespaceUuid}`,
     );
 
@@ -466,7 +474,7 @@ export class MetaMcpServerPool {
       this.sessionToNamespace[sessionId] = namespaceUuid;
       this.sessionTimestamps[sessionId] = Date.now();
 
-      logger.info(
+      console.log(
         `Converted idle MetaMCP server to OpenAPI server for namespace ${namespaceUuid}, session ${sessionId}`,
       );
 
@@ -490,7 +498,7 @@ export class MetaMcpServerPool {
     this.sessionToNamespace[sessionId] = namespaceUuid;
     this.sessionTimestamps[sessionId] = Date.now();
 
-    logger.info(
+    console.log(
       `Created new OpenAPI MetaMCP server for namespace ${namespaceUuid}, session ${sessionId}`,
     );
 
@@ -508,7 +516,7 @@ export class MetaMcpServerPool {
     namespaceUuids: string[],
     includeInactiveServers: boolean = false,
   ): Promise<void> {
-    logger.info(
+    console.log(
       `Invalidating OpenAPI sessions for namespaces: ${namespaceUuids.join(", ")}`,
     );
 
@@ -520,11 +528,11 @@ export class MetaMcpServerPool {
       if (existingServer) {
         try {
           await existingServer.cleanup();
-          logger.info(
+          console.log(
             `Cleaned up existing OpenAPI session for namespace ${namespaceUuid}`,
           );
         } catch (error) {
-          logger.error(
+          console.error(
             `Error cleaning up OpenAPI session for namespace ${namespaceUuid}:`,
             error,
           );
@@ -556,39 +564,31 @@ export class MetaMcpServerPool {
 
   /**
    * Clean up expired sessions based on session lifetime setting
-   * Preserves at least one idle session per namespace for warmup
    */
   private async cleanupExpiredSessions(): Promise<void> {
     try {
       const sessionLifetime = await configService.getSessionLifetime();
-
+      
       // If session lifetime is null, sessions are infinite - skip cleanup
       if (sessionLifetime === null) {
         return;
       }
-
+      
       const now = Date.now();
       const expiredSessionIds: string[] = [];
 
-      // Find expired active sessions (never clean up idle sessions as they are for warmup)
+      // Find expired sessions
       for (const [sessionId, timestamp] of Object.entries(
         this.sessionTimestamps,
       )) {
-        // Only clean up active sessions, never idle sessions
-        if (this.activeServers[sessionId] && now - timestamp > sessionLifetime) {
-          // Check if this is an OpenAPI session (persistent sessions should not be cleaned up automatically)
-          const namespaceUuid = this.sessionToNamespace[sessionId];
-          const isOpenApiSession = sessionId.startsWith(`openapi_${namespaceUuid}`);
-          
-          if (!isOpenApiSession) {
-            expiredSessionIds.push(sessionId);
-          }
+        if (now - timestamp > sessionLifetime) {
+          expiredSessionIds.push(sessionId);
         }
       }
 
       // Clean up expired sessions
       if (expiredSessionIds.length > 0) {
-        logger.info(
+        console.log(
           `Cleaning up ${expiredSessionIds.length} expired MetaMCP server pool sessions: ${expiredSessionIds.join(", ")}`,
         );
 
@@ -597,7 +597,7 @@ export class MetaMcpServerPool {
         );
       }
     } catch (error) {
-      logger.error("Error during automatic MetaMCP session cleanup:", error);
+      console.error("Error during automatic MetaMCP session cleanup:", error);
     }
   }
 

@@ -1,0 +1,92 @@
+
+> metamcp@ dev /app
+> dotenv -e .env.local turbo run dev
+
+turbo 2.5.5
+
+• Packages in scope: @repo/eslint-config, @repo/trpc, @repo/typescript-config, @repo/zod-types, backend, frontend
+• Running dev in 6 packages
+• Remote caching disabled
+frontend:dev: cache bypass, force executing da17ae187eceb99d
+backend:dev: cache bypass, force executing 10d7db6bb609d72a
+@repo/zod-types:dev: cache bypass, force executing caa9137ee632cfd0
+@repo/trpc:dev: cache bypass, force executing 7cfabbc49ce0ea63
+frontend:dev:
+frontend:dev: > frontend@3.5.0 dev /app/apps/frontend
+frontend:dev: > next dev --turbopack --port 12008
+frontend:dev:
+backend:dev:
+backend:dev: > backend@3.5.0 dev /app/apps/backend
+backend:dev: > tsx watch --clear-screen=false src/index.ts
+backend:dev:
+@repo/zod-types:dev:
+@repo/zod-types:dev: > @repo/zod-types@3.5.0 dev /app/packages/zod-types
+@repo/zod-types:dev: > tsup --watch
+@repo/zod-types:dev:
+@repo/trpc:dev:
+@repo/trpc:dev: > @repo/trpc@3.5.0 dev /app/packages/trpc
+@repo/trpc:dev: > tsup --watch
+@repo/trpc:dev:
+@repo/zod-types:dev: CLI Building entry: src/index.ts
+@repo/zod-types:dev: CLI Using tsconfig: tsconfig.json
+@repo/zod-types:dev: CLI tsup v8.5.0
+@repo/zod-types:dev: CLI Using tsup config: /app/packages/zod-types/tsup.config.ts
+@repo/zod-types:dev: CLI Running in watch mode
+@repo/zod-types:dev: CLI Target: node18
+@repo/zod-types:dev: CLI Cleaning output folder
+@repo/zod-types:dev: ESM Build start
+@repo/trpc:dev: CLI Building entry: src/index.ts
+@repo/trpc:dev: CLI Using tsconfig: tsconfig.json
+@repo/trpc:dev: CLI tsup v8.5.0
+@repo/trpc:dev: CLI Using tsup config: /app/packages/trpc/tsup.config.ts
+@repo/trpc:dev: CLI Running in watch mode
+@repo/trpc:dev: CLI Target: node18
+@repo/trpc:dev: CLI Cleaning output folder
+@repo/trpc:dev: ESM Build start
+@repo/zod-types:dev: ESM dist/index.js     59.80 KB
+@repo/zod-types:dev: ESM dist/index.js.map 123.77 KB
+@repo/zod-types:dev: ESM ⚡️ Build success in 103ms
+@repo/zod-types:dev: CLI Watching for changes in "."
+@repo/zod-types:dev: CLI Ignoring changes in "**/{.git,node_modules}/**" | "dist"
+@repo/trpc:dev: ESM dist/index.js     25.88 KB
+@repo/trpc:dev: ESM dist/index.js.map 59.77 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 94ms
+@repo/trpc:dev: CLI Watching for changes in "."
+@repo/trpc:dev: CLI Ignoring changes in "**/{.git,node_modules}/**" | "dist"
+backend:dev:
+backend:dev: node:internal/modules/run_main:123
+backend:dev:     triggerUncaughtException(
+backend:dev:     ^
+backend:dev: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/apps/backend/node_modules/@repo/trpc/dist/index.js' imported from /app/apps/backend/src/routers/trpc.ts
+backend:dev:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+backend:dev:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+backend:dev:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+backend:dev:     at nextResolve (node:internal/modules/esm/hooks:748:28)
+backend:dev:     at resolveBase (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770525781181:2:3811)
+backend:dev:     at resolveDirectory (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770525781181:2:4310)
+backend:dev:     at resolveTsPaths (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770525781181:2:5051)
+backend:dev:     at async resolve (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770525781181:2:5422)
+backend:dev:     at async nextResolve (node:internal/modules/esm/hooks:748:22)
+backend:dev:     at async Hooks.resolve (node:internal/modules/esm/hooks:240:24) {
+backend:dev:   code: 'ERR_MODULE_NOT_FOUND',
+backend:dev:   url: 'file:///app/apps/backend/node_modules/@repo/trpc/dist/index.js'
+backend:dev: }
+backend:dev:
+backend:dev: Node.js v22.22.0
+frontend:dev:    ▲ Next.js 15.4.8 (Turbopack)
+frontend:dev:    - Local:        http://localhost:12008
+frontend:dev:    - Network:      http://192.168.0.2:12008
+frontend:dev:    - Experiments (use with caution):
+frontend:dev:      · proxyTimeout: 120000
+frontend:dev:
+frontend:dev:  ✓ Starting...
+frontend:dev:  ○ Compiling middleware ...
+frontend:dev:  ✓ Compiled middleware in 3.1s
+frontend:dev:  ✓ Ready in 10.3s
+@repo/zod-types:dev: DTS Build start
+@repo/zod-types:dev: DTS ⚡️ Build success in 13856ms
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: DTS ⚡️ Build success in 12006ms
+ ELIFECYCLE  Command failed.
+frontend:dev: [?25h
+ ERROR  run failed: command  exited (1)

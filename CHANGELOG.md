@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.6.0] - 2026-01-26
+
+### Added
+
+- **Audit Logging System**: Security and administrative event tracking
+  - **Backend**: `audit_logs` table and `AuditService`
+  - **Frontend**: `/audit` page for viewing security events
+  - **Features**: Tracks Policy changes, Server installations, Config updates, and Logins
+
+## [3.5.0] - 2026-01-26
+
+### Added
+
+- **Agent Memory System**: Comprehensive long-term memory for agents
+  - **Backend**: `MemoryService` with `pgvector` for semantic storage and retrieval
+  - **Frontend**: `/memories` page for managing memories
+  - **Tools**: `save_memory`, `search_memory`, `list_memories`, `delete_memory`
+  - **Integration**: Automatic context injection into `run_agent` prompts
+
+- **MCP Registry & Templates**: Centralized server discovery and installation
+  - **Backend**: `RegistryService` aggregating 950+ servers
+  - **Frontend**: `/registry` page with search, filtering, and "Verified" badges
+  - **Templates**: `server-templates.json` and `TemplateService` for one-click configuration
+  - **One-Click Install**: Streamlined UI for installing community tools
+
+- **Analytics Dashboard**: Observability and usage metrics
+  - **Backend**: `AnalyticsService` for aggregating `tool_call_logs`
+  - **Frontend**: `/observability` page with "Dashboard" and "Inspector" tabs
+  - **Visualizations**: Charts for Total Calls, Success/Error Rates, Daily Activity, Top Tools
+  - **Inspector**: Embedded MCP Shark traffic inspector
+
+- **System Dashboard**: In-app overview of the project state
+  - **Backend**: `SystemService` to retrieve version, environment info, and changelogs
+  - **Frontend**: `/system` page displaying application version, build info, submodules list, and latest changelog
+
+### Changed
+
+- **Documentation**: Major overhaul of project documentation
+  - Updated `README.md`, `ROADMAP.md`, `AGENTS.md`, `WORKSPACE_VISION_SUMMARY.md`
+  - Created new guides: `docs/guides/memory.md`, `docs/guides/registry.md`, `docs/guides/analytics.md`
+  - Updated `docs/DASHBOARD.md` with feature highlights
+
 ## [3.2.18] - 2026-01-11
 
 ### Added

@@ -29,15 +29,13 @@ import { configService } from "../config.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { savedScriptService } from "../sandbox/saved-script.service";
 import { toolSetService } from "./tool-set.service";
+import { memoryService } from "../memory/memory.service";
 import { toonSerializer } from "../serializers/toon.serializer";
 import { deferredLoadingService } from "./deferred-loading.service";
 import { ConnectedClient } from "./client";
 import { getMcpServers } from "./fetch-metamcp";
-<<<<<<< HEAD
 import { mcpServerPool } from "./mcp-server-pool";
 import { toolsSyncCache } from "./tools-sync-cache";
-=======
->>>>>>> origin/docker-in-docker
 import {
   createFilterCallToolMiddleware,
   createFilterListToolsMiddleware,
@@ -49,7 +47,6 @@ import {
   ListToolsHandler,
   MetaMCPHandlerContext,
 } from "./metamcp-middleware/functional-middleware";
-<<<<<<< HEAD
 import { createLoggingMiddleware } from "./metamcp-middleware/logging.functional";
 import {
   createToolOverridesCallToolMiddleware,
@@ -57,9 +54,6 @@ import {
   mapOverrideNameToOriginal,
 } from "./metamcp-middleware/tool-overrides.functional";
 import { parseToolName } from "./tool-name-parser";
-=======
-import { getOrConnectSessionClient } from "./sessions";
->>>>>>> origin/docker-in-docker
 import { sanitizeName } from "./utils";
 
 /**
@@ -116,6 +110,7 @@ export const createServer = async (
   namespaceUuid: string,
   sessionId: string,
   includeInactiveServers: boolean = false,
+  userId?: string,
 ) => {
   const toolToClient: Record<string, ConnectedClient> = {};
   const toolToServerUuid: Record<string, string> = {};
@@ -169,6 +164,7 @@ export const createServer = async (
   const handlerContext: MetaMCPHandlerContext = {
     namespaceUuid,
     sessionId,
+    userId,
   };
 
   // ----------------------------------------------------------------------
@@ -344,6 +340,75 @@ export const createServer = async (
           required: ["name"],
         },
       },
+      {
+        name: "save_memory",
+        description:
+          "Save a piece of information to your long-term memory. Use this to remember user preferences, facts, or context for future sessions.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            content: {
+              type: "string",
+              description: "The text content to remember.",
+            },
+            metadata: {
+              type: "object",
+              description: "Optional key-value pairs for additional context.",
+            },
+          },
+          required: ["content"],
+        },
+      },
+      {
+        name: "search_memory",
+        description:
+          "Search your long-term memory for relevant information using semantic search.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search query to find relevant memories.",
+            },
+            limit: {
+              type: "number",
+              description: "Max number of results to return (default: 5).",
+            },
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "list_memories",
+        description: "List your most recent memories.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: {
+              type: "number",
+              description: "Number of memories to return (default: 20).",
+            },
+            offset: {
+              type: "number",
+              description: "Pagination offset (default: 0).",
+            },
+          },
+        },
+      },
+      {
+        name: "delete_memory",
+        description: "Delete a specific memory by its UUID.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            uuid: {
+              type: "string",
+              description: "The UUID of the memory to delete.",
+            },
+          },
+          required: ["uuid"],
+        },
+      },
     ];
 
     // 2. Saved Scripts
@@ -378,25 +443,10 @@ export const createServer = async (
     );
 
     await Promise.allSettled(
-<<<<<<< HEAD
-<<<<<<< HEAD
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
 
         const session = await mcpServerPool.getSession(
-=======
-      Object.entries(serverParams).map(async ([mcpServerUuid, params]) => {
-        const session = await getOrConnectSessionClient(
->>>>>>> origin/docker-in-docker
-=======
-      allServerEntries.map(async ([mcpServerUuid, params]) => {
-        // Skip if we've already visited this server to prevent circular references
-        if (visitedServers.has(mcpServerUuid)) {
-          return;
-        }
-
-        const session = await getOrConnectSessionClient(
->>>>>>> origin/docker-per-mcp
           context.sessionId,
           mcpServerUuid,
           params,
@@ -525,7 +575,6 @@ export const createServer = async (
     const formatResult = (result: CallToolResult): CallToolResult => {
       if (!useToon) return result;
 
-<<<<<<< HEAD
       // Attempt to compress JSON content
       const newContent = result.content.map((item) => {
         if (item.type === "text") {
@@ -537,62 +586,6 @@ export const createServer = async (
           } catch (e) {
             // Not JSON, return as is
             return item;
-=======
-    // If not found in mappings, dynamically find the server and route the call
-    if (!clientForTool || !serverUuid) {
-      try {
-        // Get all MCP servers for this namespace
-        const serverParams = await getMcpServers(
-          namespaceUuid,
-          includeInactiveServers,
-        );
-
-        // Find the server with the matching name prefix
-        for (const [mcpServerUuid, params] of Object.entries(serverParams)) {
-          const session = await getOrConnectSessionClient(
-            sessionId,
-            mcpServerUuid,
-            params,
-          );
-
-          if (session) {
-            const capabilities = session.client.getServerCapabilities();
-            if (!capabilities?.tools) continue;
-
-            // Use name assigned by user, fallback to name from server
-            const serverName =
-              params.name || session.client.getServerVersion()?.name || "";
-
-            if (sanitizeName(serverName) === serverPrefix) {
-              // Found the server, now check if it has this tool
-              try {
-                const result = await session.client.request(
-                  {
-                    method: "tools/list",
-                    params: {},
-                  },
-                  ListToolsResultSchema,
-                );
-
-                if (
-                  result.tools?.some((tool) => tool.name === originalToolName)
-                ) {
-                  // Tool exists, populate mappings for future use and use it
-                  clientForTool = session;
-                  serverUuid = mcpServerUuid;
-                  toolToClient[name] = session;
-                  toolToServerUuid[name] = mcpServerUuid;
-                  break;
-                }
-              } catch (error) {
-                console.error(
-                  `Error checking tools for server ${serverName}:`,
-                  error,
-                );
-                continue;
-              }
-            }
->>>>>>> origin/docker-per-mcp
           }
         }
         return item;
@@ -968,6 +961,97 @@ export const createServer = async (
       }
     }
 
+    if (name === "save_memory") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { content, metadata } = args as { content: string; metadata?: Record<string, unknown> };
+      try {
+        const saved = await memoryService.saveMemory(content, metadata, handlerContext.userId);
+        return {
+          content: [{ type: "text", text: `Memory saved. UUID: ${saved.uuid}` }],
+        };
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to save memory: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "search_memory") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { query, limit } = args as { query: string; limit?: number };
+      try {
+        const memories = await memoryService.searchMemories(query, handlerContext.userId, limit);
+        return formatResult({
+          content: [{ type: "text", text: JSON.stringify(memories, null, 2) }],
+        });
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to search memories: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "list_memories") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { limit, offset } = args as { limit?: number; offset?: number };
+      try {
+        const memories = await memoryService.listMemories(handlerContext.userId, limit, offset);
+        return formatResult({
+          content: [{ type: "text", text: JSON.stringify(memories, null, 2) }],
+        });
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to list memories: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "delete_memory") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { uuid } = args as { uuid: string };
+      try {
+        const deleted = await memoryService.deleteMemory(uuid, handlerContext.userId);
+        if (deleted) {
+          return {
+            content: [{ type: "text", text: `Memory ${uuid} deleted.` }],
+          };
+        } else {
+          return {
+            content: [{ type: "text", text: `Memory ${uuid} not found.` }],
+            isError: true,
+          };
+        }
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to delete memory: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
     // 2. Saved Scripts execution
     if (name.startsWith("script__")) {
       const scriptName = name.replace("script__", "");
@@ -1053,17 +1137,10 @@ export const createServer = async (
     }
   };
 
-<<<<<<< HEAD
   const implCallToolHandler: CallToolHandler = async (request, _context) => {
     const { name, arguments: args, _meta } = request.params;
     return await _internalCallToolImpl(name, args, _meta);
   };
-=======
-  // Compose middleware with handlers - this is the Express-like functional approach
-  const listToolsWithMiddleware = compose(
-    createFilterListToolsMiddleware({ cacheEnabled: true }),
-  )(originalListToolsHandler);
->>>>>>> origin/docker-in-docker
 
   // Compose the middleware
   // The composed handler calls implCallToolHandler, which calls _internalCallToolImpl,
@@ -1075,12 +1152,8 @@ export const createServer = async (
       cacheEnabled: true,
       customErrorMessage: (toolName, reason) => `Access denied: ${reason}`,
     }),
-<<<<<<< HEAD
     createToolOverridesCallToolMiddleware({ cacheEnabled: true }),
   )(implCallToolHandler);
-=======
-  )(originalCallToolHandler);
->>>>>>> origin/docker-in-docker
 
   const listToolsWithMiddleware = compose(
     createToolOverridesListToolsMiddleware({
@@ -1111,15 +1184,9 @@ export const createServer = async (
     }
 
     try {
-<<<<<<< HEAD
       // Parse the prompt name using shared utility
       const parsed = parseToolName(name);
       if (!parsed) {
-=======
-      // Extract the original prompt name by removing the server prefix
-      const firstDoubleUnderscoreIndex = name.indexOf("__");
-      if (firstDoubleUnderscoreIndex === -1) {
->>>>>>> origin/docker-in-docker
         throw new Error(`Invalid prompt name format: ${name}`);
       }
 
@@ -1185,24 +1252,12 @@ export const createServer = async (
     );
 
     await Promise.allSettled(
-<<<<<<< HEAD
-<<<<<<< HEAD
       validPromptServers.map(async ([uuid, params]) => {
         const session = await mcpServerPool.getSession(
           sessionId,
           uuid,
           params,
           namespaceUuid,
-=======
-      Object.entries(serverParams).map(async ([uuid, params]) => {
-=======
-      validPromptServers.map(async ([uuid, params]) => {
->>>>>>> origin/docker-per-mcp
-        const session = await getOrConnectSessionClient(
-          sessionId,
-          uuid,
-          params,
->>>>>>> origin/docker-in-docker
         );
         if (!session) return;
 
@@ -1298,24 +1353,12 @@ export const createServer = async (
     );
 
     await Promise.allSettled(
-<<<<<<< HEAD
-<<<<<<< HEAD
       validResourceServers.map(async ([uuid, params]) => {
         const session = await mcpServerPool.getSession(
           sessionId,
           uuid,
           params,
           namespaceUuid,
-=======
-      Object.entries(serverParams).map(async ([uuid, params]) => {
-=======
-      validResourceServers.map(async ([uuid, params]) => {
->>>>>>> origin/docker-per-mcp
-        const session = await getOrConnectSessionClient(
-          sessionId,
-          uuid,
-          params,
->>>>>>> origin/docker-in-docker
         );
         if (!session) return;
 
@@ -1441,18 +1484,8 @@ export const createServer = async (
       );
 
       await Promise.allSettled(
-<<<<<<< HEAD
-<<<<<<< HEAD
         validTemplateServers.map(async ([uuid, params]) => {
           const session = await mcpServerPool.getSession(
-=======
-        Object.entries(serverParams).map(async ([uuid, params]) => {
-          const session = await getOrConnectSessionClient(
->>>>>>> origin/docker-in-docker
-=======
-        validTemplateServers.map(async ([uuid, params]) => {
-          const session = await getOrConnectSessionClient(
->>>>>>> origin/docker-per-mcp
             sessionId,
             uuid,
             params,
@@ -1517,10 +1550,13 @@ export const createServer = async (
   );
 
   const cleanup = async () => {
-    // No need for session cleanup with Docker approach
-    // Each connection is independent
-    console.log("MetaMCP server cleanup - Docker connections are stateless");
+    // Cleanup is now handled by the pool
+    await mcpServerPool.cleanupSession(handlerContext.sessionId);
   };
 
-  return { server, cleanup };
+  const updateContext = (newContext: Partial<MetaMCPHandlerContext>) => {
+    Object.assign(handlerContext, newContext);
+  };
+
+  return { server, cleanup, updateContext };
 };

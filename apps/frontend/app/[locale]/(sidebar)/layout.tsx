@@ -1,14 +1,22 @@
 "use client";
 
 import {
+  Bot,
+  BrainCircuit,
+  ExternalLink,
+  FileCode,
   FileTerminal,
   Key,
+  Layers,
   Link as LinkIcon,
   Package,
   Search,
   SearchCode,
   Server,
   Settings,
+  ShieldCheck,
+  Activity,
+  Info,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,9 +41,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
+import packageJson from "../../../package.json";
 
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
@@ -48,6 +58,36 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:mcpServers"),
     url: getLocalizedPath("/mcp-servers", locale),
     icon: Server,
+  },
+  {
+    title: t("navigation:savedScripts"),
+    url: getLocalizedPath("/scripts", locale),
+    icon: FileCode,
+  },
+  {
+    title: t("navigation:toolSets"),
+    url: getLocalizedPath("/tool-sets", locale),
+    icon: Layers,
+  },
+  {
+    title: "Policies", // TODO: Add translation key
+    url: getLocalizedPath("/policies", locale),
+    icon: ShieldCheck,
+  },
+  {
+    title: "Agent", // TODO: Add translation key
+    url: getLocalizedPath("/agent", locale),
+    icon: Bot,
+  },
+  {
+    title: "Agent Memory", // TODO: Add translation key
+    url: getLocalizedPath("/memories", locale),
+    icon: BrainCircuit,
+  },
+  {
+    title: "Registry", // TODO: Add translation key
+    url: getLocalizedPath("/registry", locale),
+    icon: Package,
   },
   {
     title: t("navigation:metamcpNamespaces"),
@@ -73,6 +113,21 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: t("navigation:settings"),
     url: getLocalizedPath("/settings", locale),
     icon: Settings,
+  },
+  {
+    title: "Observability", // TODO: Add translation key
+    url: getLocalizedPath("/observability", locale),
+    icon: Activity,
+  },
+  {
+    title: "System", // TODO: Add translation key
+    url: getLocalizedPath("/system", locale),
+    icon: Info,
+  },
+  {
+    title: "Audit Logs", // TODO: Add translation key
+    url: getLocalizedPath("/audit", locale),
+    icon: ShieldCheck,
   },
 ];
 
@@ -112,27 +167,18 @@ function UserInfoFooter() {
 
   return (
     <SidebarFooter>
-      <div className="flex flex-col gap-2 p-2">
+      <div className="flex flex-col gap-4 p-3">
         <div className="flex items-center justify-between">
-<<<<<<< HEAD
-          <LanguageSwitcher />
-<<<<<<< HEAD
-          <p>Version v2.5.0</p>
-=======
-          <p>Version v2.5.3</p>
->>>>>>> origin/docker-in-docker
-=======
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
           </div>
-          <p className="text-xs text-muted-foreground">v2.5.7-docker-per-mcp</p>
->>>>>>> origin/docker-per-mcp
+          <p className="text-xs text-muted-foreground">v{packageJson.version}</p>
         </div>
         <Separator />
         {user && (
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
               <span className="text-sm font-medium">
                 {user.name || user.email}
               </span>
@@ -140,7 +186,12 @@ function UserInfoFooter() {
                 {user.email}
               </span>
             </div>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="w-full"
+            >
               {t("auth:signOut")}
             </Button>
           </div>
@@ -162,15 +213,17 @@ export default function SidebarLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="flex flex-col justify-center items-center px-2 py-4">
-          <div className="flex items-center gap-4 mb-2">
-            <Image
-              src="/favicon.ico"
-              alt="MetaMCP Logo"
-              width={256}
-              height={256}
-              className="h-12 w-12"
-            />
-            <h2 className="text-2xl font-semibold">MetaMCP</h2>
+          <div className="flex items-center justify-center w-full mb-2">
+            <div className="flex items-center gap-4">
+              <Image
+                src="/favicon.ico"
+                alt="MetaMCP Logo"
+                width={256}
+                height={256}
+                className="h-12 w-12"
+              />
+              <h2 className="text-2xl font-semibold">MetaMCP</h2>
+            </div>
           </div>
         </SidebarHeader>
 
@@ -190,6 +243,22 @@ export default function SidebarLayout({
                   </SidebarMenuItem>
                 ))}
                 <LiveLogsMenuItem />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>External Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="http://localhost:9853" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink />
+                      <span>MCP Shark</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
