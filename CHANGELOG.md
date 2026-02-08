@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.6.0] - 2026-01-26
+
+### Added
+
+- **Audit Logging System**: Security and administrative event tracking
+  - **Backend**: `audit_logs` table and `AuditService`
+  - **Frontend**: `/audit` page for viewing security events
+  - **Features**: Tracks Policy changes, Server installations, Config updates, and Logins
+
 ## [3.5.0] - 2026-01-26
 
 ### Added

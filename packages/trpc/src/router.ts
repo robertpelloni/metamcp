@@ -27,6 +27,7 @@ export const createAppRouter = (implementations: {
       registry: frontendRouters.registry,
       analytics: frontendRouters.analytics,
       system: frontendRouters.system,
+      audit: frontendRouters.audit,
     }),
   });
 };

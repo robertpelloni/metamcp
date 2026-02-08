@@ -630,3 +630,27 @@ export const memoriesTable = pgTable(
     index("memories_user_id_idx").on(table.user_id),
   ],
 );
+
+export const auditLogsTable = pgTable(
+  "audit_logs",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    action: text("action").notNull(),
+    resource_type: text("resource_type").notNull(),
+    resource_id: text("resource_id"),
+    details: jsonb("details").$type<Record<string, unknown>>(),
+    ip_address: text("ip_address"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("audit_logs_user_id_idx").on(table.user_id),
+    index("audit_logs_action_idx").on(table.action),
+    index("audit_logs_resource_type_idx").on(table.resource_type),
+    index("audit_logs_created_at_idx").on(table.created_at),
+  ],
+);

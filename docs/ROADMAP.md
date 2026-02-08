@@ -118,7 +118,7 @@
 
 ### Security Enhancements
 
-- [ ] **Audit Logging** - Comprehensive audit trail
+- [x] **Audit Logging** - Comprehensive audit trail (v3.6.0)
 - [ ] **Rate Limiting** - Per-user/per-tool rate limits
 - [ ] **Cost Tracking** - Token usage and API cost estimation
 - [ ] **Encryption at Rest** - Encrypted tool configurations

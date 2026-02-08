@@ -124,6 +124,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     url: getLocalizedPath("/system", locale),
     icon: Info,
   },
+  {
+    title: "Audit Logs", // TODO: Add translation key
+    url: getLocalizedPath("/audit", locale),
+    icon: ShieldCheck,
+  },
 ];
 
 function LiveLogsMenuItem() {

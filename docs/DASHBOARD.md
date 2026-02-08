@@ -23,6 +23,7 @@ This dashboard provides a comprehensive view of the MetaMCP project structure, i
 *   **[Agent Memory](guides/memory.md)**: Persistent long-term memory with semantic search.
 *   **[MCP Registry](guides/registry.md)**: Centralized discovery and one-click installation of MCP servers.
 *   **[Analytics Dashboard](guides/analytics.md)**: Real-time monitoring, usage trends, and traffic inspection.
+*   **[Audit Logging](guides/audit-logging.md)**: Security event tracking and administrative accountability.
 
 ---
 
