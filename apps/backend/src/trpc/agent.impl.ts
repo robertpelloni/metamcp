@@ -108,7 +108,7 @@ export const agentImplementations = {
           }
       };
 
-      const result = await agentService.runAgent(input.task, callToolCallback, input.policyId);
+      const result = await agentService.runAgent(input.task, callToolCallback, input.policyId, ctx.user.id);
 
       // Cleanup sessions after run
       await mcpServerPool.cleanupSession(sessionId);

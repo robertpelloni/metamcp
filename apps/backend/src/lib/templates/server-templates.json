@@ -1,0 +1,58 @@
+[
+  {
+    "id": "github",
+    "name": "GitHub",
+    "description": "Official GitHub MCP Server",
+    "packageName": "@modelcontextprotocol/server-github",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": { "description": "GitHub Personal Access Token", "required": true }
+    },
+    "matchUrlPattern": "github.com/modelcontextprotocol/servers/tree/main/src/github"
+  },
+  {
+    "id": "postgres",
+    "name": "PostgreSQL",
+    "description": "PostgreSQL Database Server",
+    "packageName": "@modelcontextprotocol/server-postgres",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"],
+    "env": {},
+    "matchUrlPattern": "github.com/modelcontextprotocol/servers/tree/main/src/postgres"
+  },
+  {
+    "id": "filesystem",
+    "name": "FileSystem",
+    "description": "Local File System Access",
+    "packageName": "@modelcontextprotocol/server-filesystem",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/dir"],
+    "env": {},
+    "matchUrlPattern": "github.com/modelcontextprotocol/servers/tree/main/src/filesystem"
+  },
+  {
+    "id": "brave-search",
+    "name": "Brave Search",
+    "description": "Web Search via Brave",
+    "packageName": "@modelcontextprotocol/server-brave-search",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+    "env": {
+      "BRAVE_API_KEY": { "description": "Brave Search API Key", "required": true }
+    },
+    "matchUrlPattern": "github.com/modelcontextprotocol/servers/tree/main/src/brave-search"
+  },
+  {
+    "id": "google-maps",
+    "name": "Google Maps",
+    "description": "Google Maps API",
+    "packageName": "@modelcontextprotocol/server-google-maps",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-google-maps"],
+    "env": {
+      "GOOGLE_MAPS_API_KEY": { "description": "Google Maps API Key", "required": true }
+    },
+    "matchUrlPattern": "github.com/modelcontextprotocol/servers/tree/main/src/google-maps"
+  }
+]

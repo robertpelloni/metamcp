@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { templateService, ServerTemplate } from "../templates/template.service";
 
 export interface RegistryItem {
   url: string;
@@ -7,6 +8,7 @@ export interface RegistryItem {
   description: string;
   categories: string[];
   sources: string[];
+  template?: ServerTemplate;
 }
 
 export interface ListRegistryOptions {
@@ -29,13 +31,17 @@ export class RegistryService {
       const data = await fs.readFile(this.registryPath, "utf-8");
       const json = JSON.parse(data);
 
-      this.cache = Object.entries(json).map(([url, item]: [string, any]) => ({
-        url,
-        name: item.name,
-        description: item.description,
-        categories: item.categories || [],
-        sources: item.sources || [],
-      }));
+      this.cache = Object.entries(json).map(([url, item]: [string, any]) => {
+        const template = templateService.findTemplateForUrl(url);
+        return {
+          url,
+          name: item.name,
+          description: item.description,
+          categories: item.categories || [],
+          sources: item.sources || [],
+          template,
+        };
+      });
 
       return this.cache!;
     } catch (error) {
