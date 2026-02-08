@@ -8,8 +8,6 @@ import {
   authenticateApiKey,
 } from "@/middleware/api-key-oauth.middleware";
 import { lookupEndpoint } from "@/middleware/lookup-endpoint-middleware";
-import { rateLimitMiddleware } from "@/middleware/rate-limit.middleware";
-import logger from "@/utils/logger";
 
 import { metaMcpServerPool } from "../../lib/metamcp/metamcp-server-pool";
 import { SessionLifetimeManagerImpl } from "../../lib/session-lifetime-manager";
@@ -27,18 +25,18 @@ const cleanupSession = async (
   sessionId: string,
   transport?: StreamableHTTPServerTransport,
 ) => {
-  logger.info(`Cleaning up StreamableHTTP session ${sessionId}`);
+  console.log(`Cleaning up StreamableHTTP session ${sessionId}`);
 
   try {
     // Use provided transport or get from session manager
     const sessionTransport = transport || sessionManager.getSession(sessionId);
 
     if (sessionTransport) {
-      logger.info(`Closing transport for session ${sessionId}`);
+      console.log(`Closing transport for session ${sessionId}`);
       await sessionTransport.close();
-      logger.info(`Transport cleaned up for session ${sessionId}`);
+      console.log(`Transport cleaned up for session ${sessionId}`);
     } else {
-      logger.info(`No transport found for session ${sessionId}`);
+      console.log(`No transport found for session ${sessionId}`);
     }
 
     // Remove from session manager
@@ -47,12 +45,12 @@ const cleanupSession = async (
     // Clean up MetaMCP server pool session
     await metaMcpServerPool.cleanupSession(sessionId);
 
-    logger.info(`Session ${sessionId} cleanup completed successfully`);
+    console.log(`Session ${sessionId} cleanup completed successfully`);
   } catch (error) {
-    logger.error(`Error during cleanup of session ${sessionId}:`, error);
+    console.error(`Error during cleanup of session ${sessionId}:`, error);
     // Even if cleanup fails, remove the session from manager to prevent memory leaks
     sessionManager.removeSession(sessionId);
-    logger.info(`Removed orphaned session ${sessionId} due to cleanup error`);
+    console.log(`Removed orphaned session ${sessionId} due to cleanup error`);
     throw error;
   }
 };
@@ -77,32 +75,84 @@ streamableHttpRouter.get(
   "/:endpoint_name/mcp",
   lookupEndpoint,
   authenticateApiKey,
-  rateLimitMiddleware,
   async (req, res) => {
-    // const authReq = req as ApiKeyAuthenticatedRequest;
-    // const { namespaceUuid, endpointName } = authReq;
+    const authReq = req as ApiKeyAuthenticatedRequest;
+    const { namespaceUuid, endpointName } = authReq;
     const sessionId = req.headers["mcp-session-id"] as string;
 
-    // logger.info(
-    //   `Received GET message for public endpoint ${endpointName} -> namespace ${namespaceUuid} sessionId ${sessionId}`,
-    // );
+    console.log(
+      `Received GET message for public endpoint ${endpointName} -> namespace ${namespaceUuid} sessionId ${sessionId}`,
+    );
 
     try {
-      logger.info(`Looking up existing session: ${sessionId}`);
-      logger.info(`Available sessions:`, sessionManager.getSessionIds());
+      console.log(`Looking up existing session: ${sessionId}`);
+      console.log(`Available sessions:`, sessionManager.getSessionIds());
 
-      const transport = sessionManager.getSession(sessionId);
+      let transport = sessionManager.getSession(sessionId);
       if (!transport) {
-        logger.info(`Session ${sessionId} not found in session manager`);
-        res.status(404).end("Session not found");
-        return;
+        console.log(
+          `Session ${sessionId} not found, creating new StreamableHTTP session`,
+        );
+
+        // Get or create MetaMCP server instance from the pool
+        const mcpServerInstance = await metaMcpServerPool.getServer(
+          sessionId,
+          namespaceUuid,
+        );
+        if (!mcpServerInstance) {
+          throw new Error("Failed to get MetaMCP server instance from pool");
+        }
+
+        console.log(
+          `Using MetaMCP server instance for recreated StreamableHTTP session ${sessionId} (endpoint: ${endpointName})`,
+        );
+
+        // Create transport with the predetermined session ID
+        const newTransport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => sessionId,
+          onsessioninitialized: async (sessionId) => {
+            try {
+              console.log(
+                `Session initialized for recreated sessionId: ${sessionId}`,
+              );
+            } catch (error) {
+              console.error(
+                `Error initializing recreated public endpoint session ${sessionId}:`,
+                error,
+              );
+            }
+          },
+        });
+
+        // Store transport reference
+        sessionManager.addSession(sessionId, newTransport);
+
+        console.log(
+          `Recreated Public Endpoint Client <-> Proxy sessionId: ${sessionId} for endpoint ${endpointName} -> namespace ${namespaceUuid}`,
+        );
+        console.log(`Stored transport for recreated sessionId: ${sessionId}`);
+        console.log(`Current stored sessions:`, sessionManager.getSessionIds());
+
+        // Connect the server to the transport before handling the request
+        await mcpServerInstance.server.connect(newTransport);
+        transport = newTransport;
       } else {
-        logger.info(`Found session ${sessionId}, handling request`);
-        await transport.handleRequest(req, res);
+        console.log(`Found session ${sessionId}, handling request`);
       }
+
+      await transport.handleRequest(req, res);
     } catch (error) {
-      logger.error("Error in public endpoint /mcp route:", error);
-      res.status(500).json(error);
+      console.error("Error in public endpoint /mcp GET route:", error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({
+        error: "Internal server error",
+        message: errorMessage,
+        session_id: sessionId,
+        endpoint: endpointName,
+        timestamp: new Date().toISOString(),
+      });
     }
   },
 );
@@ -111,26 +161,25 @@ streamableHttpRouter.post(
   "/:endpoint_name/mcp",
   lookupEndpoint,
   authenticateApiKey,
-  rateLimitMiddleware,
   async (req, res) => {
     const authReq = req as ApiKeyAuthenticatedRequest;
     const { namespaceUuid, endpointName } = authReq;
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
     // Log authentication information for debugging
-    logger.info(`POST /mcp request for endpoint: ${endpointName}`);
-    logger.info(`Authentication method: ${authReq.authMethod || "none"}`);
-    logger.info(`Session ID: ${sessionId || "new session"}`);
+    console.log(`POST /mcp request for endpoint: ${endpointName}`);
+    console.log(`Authentication method: ${authReq.authMethod || "none"}`);
+    console.log(`Session ID: ${sessionId || "new session"}`);
 
     if (!sessionId) {
       try {
-        logger.info(
+        console.log(
           `New public endpoint StreamableHttp connection request for ${endpointName} -> namespace ${namespaceUuid}`,
         );
 
         // Generate session ID upfront
         const newSessionId = randomUUID();
-        logger.info(
+        console.log(
           `Generated new session ID: ${newSessionId} for endpoint: ${endpointName}`,
         );
 
@@ -143,7 +192,7 @@ streamableHttpRouter.post(
           throw new Error("Failed to get MetaMCP server instance from pool");
         }
 
-        logger.info(
+        console.log(
           `Using MetaMCP server instance for public endpoint session ${newSessionId} (endpoint: ${endpointName})`,
         );
 
@@ -152,9 +201,9 @@ streamableHttpRouter.post(
           sessionIdGenerator: () => newSessionId,
           onsessioninitialized: async (sessionId) => {
             try {
-              logger.info(`Session initialized for sessionId: ${sessionId}`);
+              console.log(`Session initialized for sessionId: ${sessionId}`);
             } catch (error) {
-              logger.error(
+              console.error(
                 `Error initializing public endpoint session ${sessionId}:`,
                 error,
               );
@@ -164,20 +213,20 @@ streamableHttpRouter.post(
 
         // Note: Cleanup is handled explicitly via DELETE requests
         // StreamableHTTP is designed to persist across multiple requests
-        logger.info("Created public endpoint StreamableHttp transport");
-        logger.info(
+        console.log("Created public endpoint StreamableHttp transport");
+        console.log(
           `Session ${newSessionId} will be cleaned up when DELETE request is received`,
         );
 
         // Store transport reference
         sessionManager.addSession(newSessionId, transport);
 
-        logger.info(
+        console.log(
           `Public Endpoint Client <-> Proxy sessionId: ${newSessionId} for endpoint ${endpointName} -> namespace ${namespaceUuid}`,
         );
-        logger.info(`Stored transport for sessionId: ${newSessionId}`);
-        logger.info(`Current stored sessions:`, sessionManager.getSessionIds());
-        logger.info(
+        console.log(`Stored transport for sessionId: ${newSessionId}`);
+        console.log(`Current stored sessions:`, sessionManager.getSessionIds());
+        console.log(
           `Total active sessions: ${sessionManager.getSessionCount()}`,
         );
 
@@ -187,7 +236,7 @@ streamableHttpRouter.post(
         // Now handle the request - server is guaranteed to be ready
         await transport.handleRequest(req, res);
       } catch (error) {
-        logger.error("Error in public endpoint /mcp POST route:", error);
+        console.error("Error in public endpoint /mcp POST route:", error);
 
         // Provide more detailed error information
         const errorMessage =
@@ -200,33 +249,73 @@ streamableHttpRouter.post(
         });
       }
     } else {
-      // logger.info(
+      // console.log(
       //   `Received POST message for public endpoint ${endpointName} -> namespace ${namespaceUuid} sessionId ${sessionId}`,
       // );
-      logger.info(`Available session IDs:`, sessionManager.getSessionIds());
-      logger.info(`Looking for sessionId: ${sessionId}`);
+      console.log(`Available session IDs:`, sessionManager.getSessionIds());
+      console.log(`Looking for sessionId: ${sessionId}`);
       try {
-        logger.info(`Looking up existing session: ${sessionId}`);
-        logger.info(`Available sessions:`, sessionManager.getSessionIds());
+        console.log(`Looking up existing session: ${sessionId}`);
+        console.log(`Available sessions:`, sessionManager.getSessionIds());
 
-        const transport = sessionManager.getSession(sessionId);
+        let transport = sessionManager.getSession(sessionId);
         if (!transport) {
-          logger.error(
-            `Transport not found for sessionId ${sessionId}. Available sessions:`,
+          console.log(
+            `Session ${sessionId} not found, creating new StreamableHTTP session`,
+          );
+
+          // Get or create MetaMCP server instance from the pool
+          const mcpServerInstance = await metaMcpServerPool.getServer(
+            sessionId,
+            namespaceUuid,
+          );
+          if (!mcpServerInstance) {
+            throw new Error("Failed to get MetaMCP server instance from pool");
+          }
+
+          console.log(
+            `Using MetaMCP server instance for recreated StreamableHTTP session ${sessionId} (endpoint: ${endpointName})`,
+          );
+
+          // Create transport with the predetermined session ID
+          const newTransport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => sessionId,
+            onsessioninitialized: async (sessionId) => {
+              try {
+                console.log(
+                  `Session initialized for recreated sessionId: ${sessionId}`,
+                );
+              } catch (error) {
+                console.error(
+                  `Error initializing recreated public endpoint session ${sessionId}:`,
+                  error,
+                );
+              }
+            },
+          });
+
+          // Store transport reference
+          sessionManager.addSession(sessionId, newTransport);
+
+          console.log(
+            `Recreated Public Endpoint Client <-> Proxy sessionId: ${sessionId} for endpoint ${endpointName} -> namespace ${namespaceUuid}`,
+          );
+          console.log(`Stored transport for recreated sessionId: ${sessionId}`);
+          console.log(
+            `Current stored sessions:`,
             sessionManager.getSessionIds(),
           );
-          res.status(404).json({
-            error: "Session not found",
-            message: `Transport not found for sessionId ${sessionId}`,
-            available_sessions: sessionManager.getSessionIds(),
-            timestamp: new Date().toISOString(),
-          });
+
+          // Connect the server to the transport before handling the request
+          await mcpServerInstance.server.connect(newTransport);
+          transport = newTransport;
         } else {
-          logger.info(`Found session ${sessionId}, handling request`);
-          await transport.handleRequest(req, res);
+          console.log(`Found session ${sessionId}, handling request`);
         }
+
+        await transport.handleRequest(req, res);
       } catch (error) {
-        logger.error("Error in public endpoint /mcp route:", error);
+        console.error("Error in public endpoint /mcp route:", error);
 
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
@@ -246,30 +335,29 @@ streamableHttpRouter.delete(
   "/:endpoint_name/mcp",
   lookupEndpoint,
   authenticateApiKey,
-  rateLimitMiddleware,
   async (req, res) => {
     const authReq = req as ApiKeyAuthenticatedRequest;
     const { namespaceUuid, endpointName } = authReq;
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
-    logger.info(
+    console.log(
       `Received DELETE message for public endpoint ${endpointName} -> namespace ${namespaceUuid} sessionId ${sessionId}`,
     );
 
     if (sessionId) {
       try {
-        logger.info(`Starting cleanup for session ${sessionId}`);
-        logger.info(
+        console.log(`Starting cleanup for session ${sessionId}`);
+        console.log(
           `Available sessions before cleanup:`,
           sessionManager.getSessionIds(),
         );
 
         await cleanupSession(sessionId);
 
-        logger.info(
+        console.log(
           `Public endpoint session ${sessionId} cleaned up successfully`,
         );
-        logger.info(
+        console.log(
           `Available sessions after cleanup:`,
           sessionManager.getSessionIds(),
         );
@@ -280,7 +368,7 @@ streamableHttpRouter.delete(
           remainingSessions: sessionManager.getSessionIds(),
         });
       } catch (error) {
-        logger.error("Error in public endpoint /mcp DELETE route:", error);
+        console.error("Error in public endpoint /mcp DELETE route:", error);
         res.status(500).json({
           error: "Cleanup failed",
           message: error instanceof Error ? error.message : "Unknown error",

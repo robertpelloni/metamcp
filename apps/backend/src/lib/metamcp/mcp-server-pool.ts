@@ -590,6 +590,7 @@ export class McpServerPool {
 
   /**
    * Clean up expired sessions based on session lifetime setting
+   * Preserves idle sessions for warmup
    */
   private async cleanupExpiredSessions(): Promise<void> {
     try {
@@ -603,11 +604,12 @@ export class McpServerPool {
       const now = Date.now();
       const expiredSessionIds: string[] = [];
 
-      // Find expired sessions
+      // Find expired active sessions (never clean up idle sessions as they are for warmup)
       for (const [sessionId, timestamp] of Object.entries(
         this.sessionTimestamps,
       )) {
-        if (now - timestamp > sessionLifetime) {
+        // Only clean up active sessions, never idle sessions
+        if (this.activeSessions[sessionId] && now - timestamp > sessionLifetime) {
           expiredSessionIds.push(sessionId);
         }
       }
