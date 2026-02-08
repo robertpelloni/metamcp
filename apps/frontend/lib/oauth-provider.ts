@@ -8,8 +8,11 @@ import {
   OAuthTokensSchema,
 } from "@modelcontextprotocol/sdk/shared/auth.js";
 
+<<<<<<< HEAD
 import { getServerSpecificKey, SESSION_KEYS } from "./constants";
 import { getAppUrl } from "./env";
+=======
+>>>>>>> origin/2.3-no-cors
 import { vanillaTrpcClient } from "./trpc";
 
 // OAuth client provider that works with a specific MCP server
@@ -25,7 +28,12 @@ class DbOAuthClientProvider implements OAuthClientProvider {
   }
 
   get redirectUrl() {
+<<<<<<< HEAD
     return getAppUrl() + "/fe-oauth/callback";
+=======
+    // Use window.location.origin for dynamic origin detection
+    return window.location.origin + "/oauth/callback";
+>>>>>>> origin/2.3-no-cors
   }
 
   get clientMetadata(): OAuthClientMetadata {

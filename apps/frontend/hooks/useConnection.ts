@@ -39,9 +39,13 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { SESSION_KEYS } from "@/lib/constants";
+<<<<<<< HEAD
+=======
+import { getAppUrl } from "@/lib/env";
+import { trpc } from "@/lib/trpc";
+>>>>>>> origin/2.3-no-cors
 
 import { ConnectionStatus } from "../lib/constants";
-import { getAppUrl } from "../lib/env";
 import {
   Notification,
   StdErrNotificationSchema,
