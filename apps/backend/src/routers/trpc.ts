@@ -6,21 +6,13 @@ import helmet from "helmet";
 
 import { createContext } from "../trpc";
 import { apiKeysImplementations } from "../trpc/api-keys.impl";
-import { autoDiscoveryImplementations } from "../trpc/auto-discovery.impl";
-import { autoReconnectImplementations } from "../trpc/auto-reconnect.impl";
 import { configImplementations } from "../trpc/config.impl";
 import { endpointsImplementations } from "../trpc/endpoints.impl";
 import { logsImplementations } from "../trpc/logs.impl";
 import { mcpServersImplementations } from "../trpc/mcp-servers.impl";
 import { namespacesImplementations } from "../trpc/namespaces.impl";
 import { oauthImplementations } from "../trpc/oauth.impl";
-import { savedScriptsImplementations } from "../trpc/saved-scripts.impl";
-import { serverHealthImplementations } from "../trpc/server-health.impl";
-import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
-import { policiesImplementations } from "../trpc/policies.impl";
-import { agentImplementations } from "../trpc/agent.impl";
-import { catalogImplementations } from "../trpc/catalog.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -31,16 +23,8 @@ const appRouter = createAppRouter({
     oauth: oauthImplementations,
     tools: toolsImplementations,
     apiKeys: apiKeysImplementations,
-    autoDiscovery: autoDiscoveryImplementations,
-    autoReconnect: autoReconnectImplementations,
     config: configImplementations,
     logs: logsImplementations,
-    savedScripts: savedScriptsImplementations,
-    serverHealth: serverHealthImplementations,
-    toolSets: toolSetsImplementations,
-    policies: policiesImplementations,
-    agent: agentImplementations,
-    catalog: catalogImplementations,
   },
 });
 
@@ -52,12 +36,9 @@ const trpcRouter = express.Router();
 
 // Apply security middleware for frontend communication
 trpcRouter.use(helmet());
-trpcRouter.use(
-  cors({
-    origin: true, // Allow all origins
-    credentials: true,
-  }),
-);
+
+// CORS setup for trpc routes
+trpcRouter.use(cors());
 
 // Better-auth integration now handled in tRPC context
 

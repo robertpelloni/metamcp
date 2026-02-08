@@ -1,4 +1,8 @@
-import { ApiKeyCreateInput, ApiKeyUpdateInput } from "@repo/zod-types";
+import {
+  ApiKeyCreateInput,
+  ApiKeyType,
+  ApiKeyUpdateInput,
+} from "@repo/zod-types";
 import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 
@@ -25,6 +29,7 @@ export class ApiKeysRepository {
     uuid: string;
     name: string;
     key: string;
+    type: ApiKeyType;
     user_id: string | null;
     created_at: Date;
   }> {
@@ -35,12 +40,14 @@ export class ApiKeysRepository {
       .values({
         name: input.name,
         key: key,
+        type: input.type ?? "MCP",
         user_id: input.user_id,
         is_active: input.is_active ?? true,
       })
       .returning({
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
+        type: apiKeysTable.type,
         user_id: apiKeysTable.user_id,
         created_at: apiKeysTable.created_at,
       });
@@ -61,6 +68,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
       })
@@ -76,6 +84,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
         user_id: apiKeysTable.user_id,
@@ -91,6 +100,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
         user_id: apiKeysTable.user_id,
@@ -107,6 +117,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
         user_id: apiKeysTable.user_id,
@@ -127,6 +138,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
         user_id: apiKeysTable.user_id,
@@ -146,6 +158,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
         user_id: apiKeysTable.user_id,
@@ -170,11 +183,13 @@ export class ApiKeysRepository {
     valid: boolean;
     user_id?: string | null;
     key_uuid?: string;
+    type?: ApiKeyType;
   }> {
     const [apiKey] = await db
       .select({
         uuid: apiKeysTable.uuid,
         user_id: apiKeysTable.user_id,
+        type: apiKeysTable.type,
         is_active: apiKeysTable.is_active,
       })
       .from(apiKeysTable)
@@ -193,6 +208,7 @@ export class ApiKeysRepository {
       valid: true,
       user_id: apiKey.user_id,
       key_uuid: apiKey.uuid,
+      type: apiKey.type,
     };
   }
 
@@ -201,6 +217,7 @@ export class ApiKeysRepository {
       .update(apiKeysTable)
       .set({
         ...(input.name && { name: input.name }),
+        ...(input.type && { type: input.type }),
         ...(input.is_active !== undefined && { is_active: input.is_active }),
       })
       .where(
@@ -213,6 +230,7 @@ export class ApiKeysRepository {
         uuid: apiKeysTable.uuid,
         name: apiKeysTable.name,
         key: apiKeysTable.key,
+        type: apiKeysTable.type,
         created_at: apiKeysTable.created_at,
         is_active: apiKeysTable.is_active,
       });

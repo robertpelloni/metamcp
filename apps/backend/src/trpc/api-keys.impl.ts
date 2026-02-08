@@ -29,6 +29,7 @@ export const apiKeysImplementations = {
 
       const result = await apiKeysRepository.create({
         name: input.name,
+        type: input.type,
         user_id: apiKeyUserId,
         is_active: true,
       });
@@ -64,6 +65,7 @@ export const apiKeysImplementations = {
     try {
       const result = await apiKeysRepository.update(input.uuid, userId, {
         name: input.name,
+        type: input.type,
         is_active: input.is_active,
       });
 

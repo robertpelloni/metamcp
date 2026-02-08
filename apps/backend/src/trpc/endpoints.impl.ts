@@ -9,8 +9,6 @@ import {
 } from "@repo/zod-types";
 import { z } from "zod";
 
-import logger from "@/utils/logger";
-
 import {
   ApiKeysRepository,
   endpointsRepository,
@@ -68,21 +66,11 @@ export const endpointsImplementations = {
         };
       }
 
-      logger.info(input);
-
       const result = await endpointsRepository.create({
         name: input.name,
         description: input.description,
         namespace_uuid: input.namespaceUuid,
         enable_api_key_auth: input.enableApiKeyAuth ?? true,
-        enable_max_rate: input.enableMaxRate ?? false,
-        enable_client_max_rate: input.enableClientMaxRate ?? false,
-        max_rate: input.maxRate,
-        max_rate_seconds: input.maxRateSeconds,
-        client_max_rate: input.clientMaxRate,
-        client_max_rate_seconds: input.clientMaxRateSeconds,
-        client_max_rate_strategy: input.clientMaxRateStrategy,
-        client_max_rate_strategy_key: input.clientMaxRateStrategyKey,
         enable_oauth: input.enableOauth ?? false,
         use_query_param_auth: input.useQueryParamAuth ?? false,
         user_id: effectiveUserId,
@@ -94,36 +82,30 @@ export const endpointsImplementations = {
           const mcpServerName = `${input.name}-endpoint`;
           const mcpServerDescription = `Auto-generated MCP server for endpoint "${input.name}"`;
 
-          // Use the origin from the frontend or fallback to a generic URL
-          const endpointUrl = input.origin
-            ? `${input.origin}/metamcp/${input.name}/mcp`
-            : `<YOUR_DOMAIN>/metamcp/${input.name}/mcp`;
+          const baseUrl = process.env.APP_URL;
+          const endpointUrl = `${baseUrl}/metamcp/${input.name}/mcp`;
 
-          // Get or create API key for bearer token only if API key auth is enabled
+          // Get or create API key for bearer token
           let bearerToken = "";
-          if (input.enableApiKeyAuth) {
-            try {
-              const userApiKeys = await apiKeysRepository.findByUserId(userId);
-              const activeApiKey = userApiKeys.find((key) => key.is_active);
+          try {
+            const userApiKeys = await apiKeysRepository.findByUserId(userId);
+            const activeApiKey = userApiKeys.find((key) => key.is_active);
 
-              if (activeApiKey) {
-                bearerToken = activeApiKey.key;
-              } else {
-                // Create a new API key if none exists
-                const newApiKey = await apiKeysRepository.create({
-                  name: "Auto-generated for MCP Server",
-                  user_id: userId,
-                  is_active: true,
-                });
-                bearerToken = newApiKey.key;
-              }
-            } catch (apiKeyError) {
-              logger.error(
-                "Error getting API key for MCP server:",
-                apiKeyError,
-              );
-              // Continue without bearer token if API key operation fails
+            if (activeApiKey) {
+              bearerToken = activeApiKey.key;
+            } else {
+              // Create a new API key if none exists
+              const newApiKey = await apiKeysRepository.create({
+                name: "Auto-generated for MCP Server",
+                type: "MCP",
+                user_id: userId,
+                is_active: true,
+              });
+              bearerToken = newApiKey.key;
             }
+          } catch (apiKeyError) {
+            console.error("Error getting API key for MCP server:", apiKeyError);
+            // Continue without bearer token if API key operation fails
           }
 
           await mcpServersRepository.create({
@@ -138,7 +120,7 @@ export const endpointsImplementations = {
             user_id: effectiveUserId,
           });
         } catch (mcpError) {
-          logger.error("Error creating MCP server:", mcpError);
+          console.error("Error creating MCP server:", mcpError);
           // Don't fail the endpoint creation if MCP server creation fails
           // Just log the error and continue
         }
@@ -150,7 +132,7 @@ export const endpointsImplementations = {
         message: "Endpoint created successfully",
       };
     } catch (error) {
-      logger.error("Error creating endpoint:", error);
+      console.error("Error creating endpoint:", error);
       return {
         success: false as const,
         message:
@@ -173,7 +155,7 @@ export const endpointsImplementations = {
         message: "Endpoints retrieved successfully",
       };
     } catch (error) {
-      logger.error("Error fetching endpoints:", error);
+      console.error("Error fetching endpoints:", error);
       return {
         success: false as const,
         data: [],
@@ -215,7 +197,7 @@ export const endpointsImplementations = {
         message: "Endpoint retrieved successfully",
       };
     } catch (error) {
-      logger.error("Error fetching endpoint:", error);
+      console.error("Error fetching endpoint:", error);
       return {
         success: false as const,
         message: "Failed to fetch endpoint",
@@ -265,7 +247,7 @@ export const endpointsImplementations = {
         message: "Endpoint deleted successfully",
       };
     } catch (error) {
-      logger.error("Error deleting endpoint:", error);
+      console.error("Error deleting endpoint:", error);
       return {
         success: false as const,
         message:
@@ -346,14 +328,6 @@ export const endpointsImplementations = {
         description: input.description,
         namespace_uuid: input.namespaceUuid,
         enable_api_key_auth: input.enableApiKeyAuth,
-        enable_max_rate: input.enableMaxRate ?? false,
-        enable_client_max_rate: input.enableClientMaxRate ?? false,
-        max_rate: input.maxRate,
-        max_rate_seconds: input.maxRateSeconds,
-        client_max_rate: input.clientMaxRate,
-        client_max_rate_seconds: input.clientMaxRateSeconds,
-        client_max_rate_strategy: input.clientMaxRateStrategy,
-        client_max_rate_strategy_key: input.clientMaxRateStrategyKey,
         enable_oauth: input.enableOauth,
         use_query_param_auth: input.useQueryParamAuth,
       });
@@ -364,7 +338,7 @@ export const endpointsImplementations = {
         message: "Endpoint updated successfully",
       };
     } catch (error) {
-      logger.error("Error updating endpoint:", error);
+      console.error("Error updating endpoint:", error);
       return {
         success: false as const,
         message:
