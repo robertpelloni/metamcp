@@ -379,6 +379,7 @@ export const createServer = async (
 
     await Promise.allSettled(
 <<<<<<< HEAD
+<<<<<<< HEAD
       allServerEntries.map(async ([mcpServerUuid, params]) => {
         if (visitedServers.has(mcpServerUuid)) return;
 
@@ -387,6 +388,15 @@ export const createServer = async (
       Object.entries(serverParams).map(async ([mcpServerUuid, params]) => {
         const session = await getOrConnectSessionClient(
 >>>>>>> origin/docker-in-docker
+=======
+      allServerEntries.map(async ([mcpServerUuid, params]) => {
+        // Skip if we've already visited this server to prevent circular references
+        if (visitedServers.has(mcpServerUuid)) {
+          return;
+        }
+
+        const session = await getOrConnectSessionClient(
+>>>>>>> origin/docker-per-mcp
           context.sessionId,
           mcpServerUuid,
           params,
@@ -515,6 +525,7 @@ export const createServer = async (
     const formatResult = (result: CallToolResult): CallToolResult => {
       if (!useToon) return result;
 
+<<<<<<< HEAD
       // Attempt to compress JSON content
       const newContent = result.content.map((item) => {
         if (item.type === "text") {
@@ -526,6 +537,62 @@ export const createServer = async (
           } catch (e) {
             // Not JSON, return as is
             return item;
+=======
+    // If not found in mappings, dynamically find the server and route the call
+    if (!clientForTool || !serverUuid) {
+      try {
+        // Get all MCP servers for this namespace
+        const serverParams = await getMcpServers(
+          namespaceUuid,
+          includeInactiveServers,
+        );
+
+        // Find the server with the matching name prefix
+        for (const [mcpServerUuid, params] of Object.entries(serverParams)) {
+          const session = await getOrConnectSessionClient(
+            sessionId,
+            mcpServerUuid,
+            params,
+          );
+
+          if (session) {
+            const capabilities = session.client.getServerCapabilities();
+            if (!capabilities?.tools) continue;
+
+            // Use name assigned by user, fallback to name from server
+            const serverName =
+              params.name || session.client.getServerVersion()?.name || "";
+
+            if (sanitizeName(serverName) === serverPrefix) {
+              // Found the server, now check if it has this tool
+              try {
+                const result = await session.client.request(
+                  {
+                    method: "tools/list",
+                    params: {},
+                  },
+                  ListToolsResultSchema,
+                );
+
+                if (
+                  result.tools?.some((tool) => tool.name === originalToolName)
+                ) {
+                  // Tool exists, populate mappings for future use and use it
+                  clientForTool = session;
+                  serverUuid = mcpServerUuid;
+                  toolToClient[name] = session;
+                  toolToServerUuid[name] = mcpServerUuid;
+                  break;
+                }
+              } catch (error) {
+                console.error(
+                  `Error checking tools for server ${serverName}:`,
+                  error,
+                );
+                continue;
+              }
+            }
+>>>>>>> origin/docker-per-mcp
           }
         }
         return item;
@@ -1119,6 +1186,7 @@ export const createServer = async (
 
     await Promise.allSettled(
 <<<<<<< HEAD
+<<<<<<< HEAD
       validPromptServers.map(async ([uuid, params]) => {
         const session = await mcpServerPool.getSession(
           sessionId,
@@ -1127,6 +1195,9 @@ export const createServer = async (
           namespaceUuid,
 =======
       Object.entries(serverParams).map(async ([uuid, params]) => {
+=======
+      validPromptServers.map(async ([uuid, params]) => {
+>>>>>>> origin/docker-per-mcp
         const session = await getOrConnectSessionClient(
           sessionId,
           uuid,
@@ -1228,6 +1299,7 @@ export const createServer = async (
 
     await Promise.allSettled(
 <<<<<<< HEAD
+<<<<<<< HEAD
       validResourceServers.map(async ([uuid, params]) => {
         const session = await mcpServerPool.getSession(
           sessionId,
@@ -1236,6 +1308,9 @@ export const createServer = async (
           namespaceUuid,
 =======
       Object.entries(serverParams).map(async ([uuid, params]) => {
+=======
+      validResourceServers.map(async ([uuid, params]) => {
+>>>>>>> origin/docker-per-mcp
         const session = await getOrConnectSessionClient(
           sessionId,
           uuid,
@@ -1367,12 +1442,17 @@ export const createServer = async (
 
       await Promise.allSettled(
 <<<<<<< HEAD
+<<<<<<< HEAD
         validTemplateServers.map(async ([uuid, params]) => {
           const session = await mcpServerPool.getSession(
 =======
         Object.entries(serverParams).map(async ([uuid, params]) => {
           const session = await getOrConnectSessionClient(
 >>>>>>> origin/docker-in-docker
+=======
+        validTemplateServers.map(async ([uuid, params]) => {
+          const session = await getOrConnectSessionClient(
+>>>>>>> origin/docker-per-mcp
             sessionId,
             uuid,
             params,

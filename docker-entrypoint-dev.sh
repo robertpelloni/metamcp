@@ -3,6 +3,7 @@
 set -e
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 echo "🚀 Starting MetaMCP development services..."
 echo "📁 Working directory: $(pwd)"
 echo "🔍 Node version: $(node --version)"
@@ -20,6 +21,8 @@ else
     echo "ℹ️ pg_isready not found; relying on docker-compose healthcheck"
 fi
 =======
+=======
+>>>>>>> origin/docker-per-mcp
 echo "Starting MetaMCP development services..."
 
 # Function to cleanup Docker containers and networks
@@ -56,7 +59,10 @@ cleanup_managed_containers() {
     
     echo "🧹 CLEANUP: Cleanup process completed"
 }
+<<<<<<< HEAD
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
 
 # Function to cleanup on exit
 cleanup_on_exit() {
@@ -85,6 +91,7 @@ cleanup_on_exit() {
 trap cleanup_on_exit TERM INT EXIT
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 echo "🔧 Setting up development environment..."
 echo "📊 Backend will run on port 12009"
 echo "🌐 Frontend will run on port 12008"
@@ -112,6 +119,8 @@ echo "🛠 Running database migrations (dev)..."
 echo "🚀 Starting pnpm dev with turborepo..."
 echo "💡 This will start both frontend and backend in development mode"
 =======
+=======
+>>>>>>> origin/docker-per-mcp
 # Initialize - clean up any existing managed containers
 echo "🚀 INIT: Cleaning up any existing managed containers..."
 cleanup_managed_containers
@@ -122,7 +131,10 @@ echo "Frontend will run on port 12008"
 
 # Start the development servers with proper signal handling
 echo "🚀 Starting pnpm dev..."
+<<<<<<< HEAD
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
 pnpm dev &
 PNPM_PID=$!
 echo "🚀 pnpm dev started with PID: $PNPM_PID"

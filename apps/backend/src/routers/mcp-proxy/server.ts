@@ -5,9 +5,12 @@ import {
   SseError,
 } from "@modelcontextprotocol/sdk/client/sse.js";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { getDefaultEnvironment } from "@modelcontextprotocol/sdk/client/stdio.js";
 =======
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -30,7 +33,10 @@ import mcpProxy from "../../lib/mcp-proxy";
 import { handleDockerContainerUrl } from "../../lib/metamcp/client";
 import { dockerManager } from "../../lib/metamcp/docker-manager/index.js";
 import { convertDbServerToParams } from "../../lib/metamcp/utils";
+<<<<<<< HEAD
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
 import { betterAuthMcpMiddleware } from "../../middleware/better-auth-mcp.middleware";
 
 const SSE_HEADERS_PASSTHROUGH = ["authorization"];
@@ -205,6 +211,7 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
 
   if (transportType === McpServerTypeEnum.Enum.STDIO) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const command = query.command as string;
     const origArgs = shellParseArgs(query.args as string) as string[];
     const queryEnv = query.env ? JSON.parse(query.env as string) : {};
@@ -222,10 +229,13 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
       const cooldownEnd = stdioCommandCooldowns.get(
         createStdioKey(cmd, args, env),
 =======
+=======
+>>>>>>> origin/docker-per-mcp
     const mcpServerUuid = query.mcpServerUuid as string;
     if (!mcpServerUuid) {
       throw new Error(
         "Missing required parameter: mcpServerUuid for STDIO transport",
+<<<<<<< HEAD
 >>>>>>> origin/docker-in-docker
       );
     }
@@ -266,6 +276,14 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
     if (!dbServer) {
       throw new Error(`MCP server not found for uuid: ${mcpServerUuid}`);
 >>>>>>> origin/docker-in-docker
+=======
+      );
+    }
+
+    const dbServer = await mcpServersRepository.findByUuid(mcpServerUuid);
+    if (!dbServer) {
+      throw new Error(`MCP server not found for uuid: ${mcpServerUuid}`);
+>>>>>>> origin/docker-per-mcp
     }
     const serverParams = await convertDbServerToParams(dbServer);
     if (!serverParams) {
@@ -601,6 +619,7 @@ serverRouter.get("/stdio", async (req, res) => {
     await webAppTransport.start();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     const stdinTransport = serverTransport as ProcessManagedStdioTransport;
 
     // Set up crash detection for the server pool
@@ -738,6 +757,8 @@ serverRouter.get("/stdio", async (req, res) => {
 
 =======
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
     mcpProxy({
       transportToClient: webAppTransport,
       transportToServer: serverTransport,

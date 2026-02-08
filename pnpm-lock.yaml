@@ -52,7 +52,11 @@ importers:
         version: 16.5.0
       drizzle-orm:
         specifier: ^0.44.2
+<<<<<<< HEAD
         version: 0.44.2(@types/pg@8.15.4)(kysely@0.28.2)(pg@8.16.0)(postgres@3.4.7)
+=======
+        version: 0.44.2(@types/pg@8.15.4)(kysely@0.28.2)(pg@8.16.0)
+>>>>>>> origin/docker-per-mcp
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -2749,10 +2753,13 @@ packages:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}
     engines: {node: '>= 0.8'}
 
+<<<<<<< HEAD
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
     engines: {node: '>=0.10.0'}
 
+=======
+>>>>>>> origin/docker-per-mcp
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
@@ -3216,9 +3223,12 @@ packages:
       sass:
         optional: true
 
+<<<<<<< HEAD
   node-mock-http@1.0.1:
     resolution: {integrity: sha512-0gJJgENizp4ghds/Ywu2FCmcRsgBTmRQzYPZm61wy+Em2sBarSka0OhQS5huLBg6od1zkNpnWMCZloQDFVvOMQ==}
 
+=======
+>>>>>>> origin/docker-per-mcp
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
@@ -4143,12 +4153,15 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+<<<<<<< HEAD
   zod-openapi@4.2.4:
     resolution: {integrity: sha512-tsrQpbpqFCXqVXUzi3TPwFhuMtLN3oNZobOtYnK6/5VkXsNdnIgyNr4r8no4wmYluaxzN3F7iS+8xCW8BmMQ8g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.21.4
 
+=======
+>>>>>>> origin/docker-per-mcp
   zod-to-json-schema@3.24.5:
     resolution: {integrity: sha512-/AuWwMP+YqiPbsJx5D6TfgRTc4kTLjsh5SOcd4bLsfUg2RcEXrFMJl1DGgdHy2aCfsIA/cr/1JM0xcB2GZji8g==}
     peerDependencies:
@@ -6511,10 +6524,13 @@ snapshots:
       statuses: 2.0.1
       toidentifier: 1.0.1
 
+<<<<<<< HEAD
   iconv-lite@0.4.24:
     dependencies:
       safer-buffer: 2.1.2
 
+=======
+>>>>>>> origin/docker-per-mcp
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
@@ -6919,8 +6935,11 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
+<<<<<<< HEAD
   node-mock-http@1.0.1: {}
 
+=======
+>>>>>>> origin/docker-per-mcp
   object-assign@4.1.1: {}
 
   object-inspect@1.13.4: {}
@@ -7987,10 +8006,13 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
+<<<<<<< HEAD
   zod-openapi@4.2.4(zod@3.25.64):
     dependencies:
       zod: 3.25.64
 
+=======
+>>>>>>> origin/docker-per-mcp
   zod-to-json-schema@3.24.5(zod@3.25.64):
     dependencies:
       zod: 3.25.64

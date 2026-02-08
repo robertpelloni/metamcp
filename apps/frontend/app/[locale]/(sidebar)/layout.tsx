@@ -114,12 +114,20 @@ function UserInfoFooter() {
     <SidebarFooter>
       <div className="flex flex-col gap-2 p-2">
         <div className="flex items-center justify-between">
+<<<<<<< HEAD
           <LanguageSwitcher />
 <<<<<<< HEAD
           <p>Version v2.5.0</p>
 =======
           <p>Version v2.5.3</p>
 >>>>>>> origin/docker-in-docker
+=======
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
+          <p className="text-xs text-muted-foreground">v2.5.7-docker-per-mcp</p>
+>>>>>>> origin/docker-per-mcp
         </div>
         <Separator />
         {user && (

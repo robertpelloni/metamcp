@@ -1,13 +1,17 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
 =======
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { ServerParameters } from "@repo/zod-types";
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 import logger from "@/utils/logger";
 
@@ -18,6 +22,10 @@ import { dockerManager } from "./docker-manager/index.js";
 import { metamcpLogStore } from "./log-store";
 import { serverErrorTracker } from "./server-error-tracker";
 import { resolveEnvVariables } from "./utils";
+=======
+import { dockerManager } from "./docker-manager/index.js";
+import { metamcpLogStore } from "./log-store";
+>>>>>>> origin/docker-per-mcp
 
 const sleep = (time: number) =>
   new Promise<void>((resolve) => setTimeout(() => resolve(), time));
@@ -75,6 +83,7 @@ export const createMetaMcpClient = async (
   // For STDIO servers, use Docker container URL
   if (!serverParams.type || serverParams.type === "STDIO") {
 <<<<<<< HEAD
+<<<<<<< HEAD
     // Resolve environment variable placeholders
     const resolvedEnv = serverParams.env
       ? resolveEnvVariables(serverParams.env)
@@ -98,6 +107,8 @@ export const createMetaMcpClient = async (
           "error",
           chunk.toString().trim(),
 =======
+=======
+>>>>>>> origin/docker-per-mcp
     let dockerUrl = await dockerManager.getServerUrl(serverUuid);
 
     // If container doesn't exist, create it
@@ -106,7 +117,10 @@ export const createMetaMcpClient = async (
         const dockerServer = await dockerManager.createContainer(
           serverUuid,
           serverParams,
+<<<<<<< HEAD
 >>>>>>> origin/docker-in-docker
+=======
+>>>>>>> origin/docker-per-mcp
         );
         dockerUrl = dockerServer.url;
       } catch (error) {

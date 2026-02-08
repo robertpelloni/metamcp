@@ -8,6 +8,7 @@ services:
       - .env
     ports:
 <<<<<<< HEAD
+<<<<<<< HEAD
       - "12008:12008"
       - "12009:12009"
     volumes:
@@ -24,6 +25,9 @@ services:
 =======
       - "12008:12008"  # Frontend
 >>>>>>> origin/docker-in-docker
+=======
+      - "12008:12008"  # Frontend
+>>>>>>> origin/docker-per-mcp
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-all}
       # Postgres connection details

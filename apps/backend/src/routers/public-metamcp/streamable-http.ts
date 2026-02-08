@@ -45,6 +45,7 @@ const cleanupSession = async (
       console.log(`No transport found for session ${sessionId}`);
     }
 
+<<<<<<< HEAD
     // Remove from session manager
     sessionManager.removeSession(sessionId);
 
@@ -87,6 +88,25 @@ streamableHttpRouter.get("/health/sessions", (req, res) => {
   });
 });
 
+=======
+    // Clean up MCP client sessions associated with this sessionId
+    await cleanupMcpSession(sessionId);
+
+    console.log(`Session ${sessionId} cleanup completed successfully`);
+  } catch (error) {
+    console.error(`Error during cleanup of session ${sessionId}:`, error);
+    // Even if cleanup fails, remove the transport from our map to prevent memory leaks
+    if (transports[sessionId]) {
+      delete transports[sessionId];
+      console.log(
+        `Removed orphaned transport for session ${sessionId} due to cleanup error`,
+      );
+    }
+    throw error;
+  }
+};
+
+>>>>>>> origin/docker-per-mcp
 streamableHttpRouter.get(
   "/:endpoint_name/mcp",
   lookupEndpoint,

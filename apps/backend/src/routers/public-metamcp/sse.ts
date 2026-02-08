@@ -38,6 +38,7 @@ const cleanupSession = async (sessionId: string, transport?: Transport) => {
       console.log(`No transport found for session ${sessionId}`);
     }
 
+<<<<<<< HEAD
     // Remove from session manager
     sessionManager.removeSession(sessionId);
 
@@ -62,6 +63,23 @@ const cleanupSession = async (sessionId: string, transport?: Transport) => {
 
   console.log(`SSE session ${sessionId} cleaned up`);
 >>>>>>> origin/docker-in-docker
+=======
+    // Clean up MCP client sessions associated with this sessionId
+    await cleanupMcpSession(sessionId);
+
+    console.log(`Session ${sessionId} cleanup completed successfully`);
+  } catch (error) {
+    console.error(`Error during cleanup of session ${sessionId}:`, error);
+    // Even if cleanup fails, remove the transport from our map to prevent memory leaks
+    if (webAppTransports.has(sessionId)) {
+      webAppTransports.delete(sessionId);
+      console.log(
+        `Removed orphaned transport for session ${sessionId} due to cleanup error`,
+      );
+    }
+    throw error;
+  }
+>>>>>>> origin/docker-per-mcp
 };
 
 sseRouter.get(
