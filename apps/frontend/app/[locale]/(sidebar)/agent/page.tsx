@@ -164,7 +164,7 @@ export default function AgentPage() {
                         ) : (
                             <div className="space-y-1">
                                 {logsData.data.map((log) => (
-                                    <LogEntry key={log.id} log={log} />
+                                    <LogEntry key={log.id} log={log as any} />
                                 ))}
                             </div>
                         )}

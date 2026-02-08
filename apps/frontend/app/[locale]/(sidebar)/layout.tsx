@@ -2,6 +2,7 @@
 
 import {
   Bot,
+  BrainCircuit,
   ExternalLink,
   FileCode,
   FileTerminal,
@@ -76,6 +77,16 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: "Agent", // TODO: Add translation key
     url: getLocalizedPath("/agent", locale),
     icon: Bot,
+  },
+  {
+    title: "Agent Memory", // TODO: Add translation key
+    url: getLocalizedPath("/memories", locale),
+    icon: BrainCircuit,
+  },
+  {
+    title: "Registry", // TODO: Add translation key
+    url: getLocalizedPath("/registry", locale),
+    icon: Package,
   },
   {
     title: t("navigation:metamcpNamespaces"),

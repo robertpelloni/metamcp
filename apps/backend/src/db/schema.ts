@@ -603,3 +603,30 @@ export const policiesTable = pgTable(
     )`,
   ],
 );
+
+export const memoriesTable = pgTable(
+  "memories",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default(sql`'{}'::jsonb`),
+    agent_id: text("agent_id"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("memories_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
+    index("memories_user_id_idx").on(table.user_id),
+  ],
+);

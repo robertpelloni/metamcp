@@ -120,8 +120,8 @@
 
 ### Enhanced Agent
 
+- [x] **Memory/Context** - Agent memory across conversations (v3.3.0)
 - [ ] **Multi-step Planning** - Complex task decomposition
-- [ ] **Memory/Context** - Agent memory across conversations
 - [ ] **Tool Learning** - Agent learns from tool usage patterns
 - [ ] **Tool Composition** - Chain tools together in pipelines
 
@@ -165,13 +165,13 @@
 
 ### Advanced Features
 
+- [x] **MCP Registry** - Discover and install community MCP servers (v3.3.0)
 - [ ] **Tool Personas** - Profile-based tool sets (like HyperTool)
 - [ ] **Workflow Builder** - Visual tool chain builder
 - [ ] **Scheduled Tasks** - Cron-like tool execution
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
 - [ ] **OAuth Server Documentation** - Document existing OAuth 2.0 server capability
 - [ ] **Server Templates** - Pre-configured MCP server templates for common use cases
-- [ ] **One-click Install** - Install popular MCP servers from registry with one click
 - [ ] **Template Marketplace** - Community-contributed server configurations
 
 ### Analytics

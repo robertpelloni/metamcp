@@ -29,6 +29,7 @@ import { configService } from "../config.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { savedScriptService } from "../sandbox/saved-script.service";
 import { toolSetService } from "./tool-set.service";
+import { memoryService } from "../memory/memory.service";
 import { toonSerializer } from "../serializers/toon.serializer";
 import { deferredLoadingService } from "./deferred-loading.service";
 import { ConnectedClient } from "./client";
@@ -109,6 +110,7 @@ export const createServer = async (
   namespaceUuid: string,
   sessionId: string,
   includeInactiveServers: boolean = false,
+  userId?: string,
 ) => {
   const toolToClient: Record<string, ConnectedClient> = {};
   const toolToServerUuid: Record<string, string> = {};
@@ -162,6 +164,7 @@ export const createServer = async (
   const handlerContext: MetaMCPHandlerContext = {
     namespaceUuid,
     sessionId,
+    userId,
   };
 
   // ----------------------------------------------------------------------
@@ -335,6 +338,75 @@ export const createServer = async (
             },
           },
           required: ["name"],
+        },
+      },
+      {
+        name: "save_memory",
+        description:
+          "Save a piece of information to your long-term memory. Use this to remember user preferences, facts, or context for future sessions.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            content: {
+              type: "string",
+              description: "The text content to remember.",
+            },
+            metadata: {
+              type: "object",
+              description: "Optional key-value pairs for additional context.",
+            },
+          },
+          required: ["content"],
+        },
+      },
+      {
+        name: "search_memory",
+        description:
+          "Search your long-term memory for relevant information using semantic search.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search query to find relevant memories.",
+            },
+            limit: {
+              type: "number",
+              description: "Max number of results to return (default: 5).",
+            },
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "list_memories",
+        description: "List your most recent memories.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: {
+              type: "number",
+              description: "Number of memories to return (default: 20).",
+            },
+            offset: {
+              type: "number",
+              description: "Pagination offset (default: 0).",
+            },
+          },
+        },
+      },
+      {
+        name: "delete_memory",
+        description: "Delete a specific memory by its UUID.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            uuid: {
+              type: "string",
+              description: "The UUID of the memory to delete.",
+            },
+          },
+          required: ["uuid"],
         },
       },
     ];
@@ -889,6 +961,97 @@ export const createServer = async (
       }
     }
 
+    if (name === "save_memory") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { content, metadata } = args as { content: string; metadata?: Record<string, unknown> };
+      try {
+        const saved = await memoryService.saveMemory(content, metadata, handlerContext.userId);
+        return {
+          content: [{ type: "text", text: `Memory saved. UUID: ${saved.uuid}` }],
+        };
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to save memory: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "search_memory") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { query, limit } = args as { query: string; limit?: number };
+      try {
+        const memories = await memoryService.searchMemories(query, handlerContext.userId, limit);
+        return formatResult({
+          content: [{ type: "text", text: JSON.stringify(memories, null, 2) }],
+        });
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to search memories: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "list_memories") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { limit, offset } = args as { limit?: number; offset?: number };
+      try {
+        const memories = await memoryService.listMemories(handlerContext.userId, limit, offset);
+        return formatResult({
+          content: [{ type: "text", text: JSON.stringify(memories, null, 2) }],
+        });
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to list memories: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "delete_memory") {
+      if (!handlerContext.userId) {
+        return {
+          content: [{ type: "text", text: "Error: No user context found. Memories require an authenticated user." }],
+          isError: true,
+        };
+      }
+      const { uuid } = args as { uuid: string };
+      try {
+        const deleted = await memoryService.deleteMemory(uuid, handlerContext.userId);
+        if (deleted) {
+          return {
+            content: [{ type: "text", text: `Memory ${uuid} deleted.` }],
+          };
+        } else {
+          return {
+            content: [{ type: "text", text: `Memory ${uuid} not found.` }],
+            isError: true,
+          };
+        }
+      } catch (error: any) {
+        return {
+          content: [{ type: "text", text: `Failed to delete memory: ${error.message}` }],
+          isError: true,
+        };
+      }
+    }
+
     // 2. Saved Scripts execution
     if (name.startsWith("script__")) {
       const scriptName = name.replace("script__", "");
@@ -1388,8 +1551,12 @@ export const createServer = async (
 
   const cleanup = async () => {
     // Cleanup is now handled by the pool
-    await mcpServerPool.cleanupSession(sessionId);
+    await mcpServerPool.cleanupSession(handlerContext.sessionId);
   };
 
-  return { server, cleanup };
+  const updateContext = (newContext: Partial<MetaMCPHandlerContext>) => {
+    Object.assign(handlerContext, newContext);
+  };
+
+  return { server, cleanup, updateContext };
 };

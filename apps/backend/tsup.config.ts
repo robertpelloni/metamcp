@@ -28,5 +28,6 @@ export default defineConfig({
     "shell-quote",
     "spawn-rx",
     "zod",
+    "uuid",
   ],
 });
