@@ -1,0 +1,90 @@
+
+> metamcp@ dev /app
+> dotenv -e .env.local turbo run dev
+
+turbo 2.5.5
+
+• Packages in scope: @repo/eslint-config, @repo/trpc, @repo/typescript-config, @repo/zod-types, backend, frontend
+• Running dev in 6 packages
+• Remote caching disabled
+backend:dev: cache bypass, force executing 121ce41200ca3d1c
+frontend:dev: cache bypass, force executing da17ae187eceb99d
+@repo/trpc:dev: cache bypass, force executing 6a91d252ccebbf9d
+@repo/zod-types:dev: cache bypass, force executing f985941cec437f5e
+frontend:dev:
+frontend:dev: > frontend@3.5.0 dev /app/apps/frontend
+frontend:dev: > next dev --turbopack --port 12008
+frontend:dev:
+backend:dev:
+backend:dev: > backend@3.5.0 dev /app/apps/backend
+backend:dev: > tsx watch --clear-screen=false src/index.ts
+backend:dev:
+@repo/zod-types:dev:
+@repo/zod-types:dev: > @repo/zod-types@3.5.0 dev /app/packages/zod-types
+@repo/zod-types:dev: > tsup --watch
+@repo/zod-types:dev:
+@repo/trpc:dev:
+@repo/trpc:dev: > @repo/trpc@3.5.0 dev /app/packages/trpc
+@repo/trpc:dev: > tsup --watch
+@repo/trpc:dev:
+backend:dev:
+backend:dev: node:internal/modules/run_main:123
+backend:dev:     triggerUncaughtException(
+backend:dev:     ^
+backend:dev: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/apps/backend/src/trpc/memories.impl' imported from /app/apps/backend/src/routers/trpc.ts
+backend:dev:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+backend:dev:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+backend:dev:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+backend:dev:     at nextResolve (node:internal/modules/esm/hooks:748:28)
+backend:dev:     at resolveBase (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770526475278:2:3811)
+backend:dev:     at async resolveDirectory (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770526475278:2:4304)
+backend:dev:     at async resolve (file:///app/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1770526475278:2:5422)
+backend:dev:     at async nextResolve (node:internal/modules/esm/hooks:748:22)
+backend:dev:     at async Hooks.resolve (node:internal/modules/esm/hooks:240:24)
+backend:dev:     at async handleMessage (node:internal/modules/esm/worker:199:18) {
+backend:dev:   code: 'ERR_MODULE_NOT_FOUND',
+backend:dev:   url: 'file:///app/apps/backend/src/trpc/memories.impl'
+backend:dev: }
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/trpc:dev: CLI Building entry: src/index.ts
+@repo/trpc:dev: CLI Using tsconfig: tsconfig.json
+@repo/trpc:dev: CLI tsup v8.5.0
+@repo/trpc:dev: CLI Using tsup config: /app/packages/trpc/tsup.config.ts
+@repo/trpc:dev: CLI Running in watch mode
+@repo/zod-types:dev: CLI Building entry: src/index.ts
+@repo/zod-types:dev: CLI Using tsconfig: tsconfig.json
+@repo/zod-types:dev: CLI tsup v8.5.0
+@repo/zod-types:dev: CLI Using tsup config: /app/packages/zod-types/tsup.config.ts
+@repo/zod-types:dev: CLI Running in watch mode
+@repo/trpc:dev: CLI Target: node18
+@repo/zod-types:dev: CLI Target: node18
+@repo/trpc:dev: ESM Build start
+@repo/zod-types:dev: ESM Build start
+@repo/trpc:dev: ESM dist/index.js     25.88 KB
+@repo/trpc:dev: ESM dist/index.js.map 59.77 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 92ms
+@repo/trpc:dev: CLI Watching for changes in "."
+@repo/trpc:dev: CLI Ignoring changes in "**/{.git,node_modules}/**" | "dist"
+@repo/zod-types:dev: ESM dist/index.js     59.80 KB
+@repo/zod-types:dev: ESM dist/index.js.map 123.77 KB
+@repo/zod-types:dev: ESM ⚡️ Build success in 185ms
+@repo/zod-types:dev: CLI Watching for changes in "."
+@repo/zod-types:dev: CLI Ignoring changes in "**/{.git,node_modules}/**" | "dist"
+frontend:dev:  ⨯ Failed to start server
+frontend:dev: Error: listen EADDRINUSE: address already in use :::12008
+frontend:dev:     at <unknown> (Error: listen EADDRINUSE: address already in use :::12008)
+frontend:dev:     at new Promise (<anonymous>) {
+frontend:dev:   code: 'EADDRINUSE',
+frontend:dev:   errno: -98,
+frontend:dev:   syscall: 'listen',
+frontend:dev:   address: '::',
+frontend:dev:   port: 12008
+frontend:dev: }
+frontend:dev: [?25h
+@repo/zod-types:dev: DTS Build start
+@repo/zod-types:dev: DTS ⚡️ Build success in 7589ms
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: DTS ⚡️ Build success in 6119ms
+ ELIFECYCLE  Command failed.
+ ERROR  run failed: command  exited (1)

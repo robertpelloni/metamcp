@@ -16,6 +16,7 @@ import { createAgentRouter } from "./agent";
 import { createAnalyticsRouter } from "./analytics";
 import { createMemoriesRouter } from "./memories";
 import { createRegistryRouter } from "./registry";
+import { createSystemRouter } from "./system";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -35,6 +36,7 @@ export { createAgentRouter };
 export { createAnalyticsRouter };
 export { createMemoriesRouter };
 export { createRegistryRouter };
+export { createSystemRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -55,6 +57,7 @@ export const createFrontendRouter = (implementations: {
   analytics: Parameters<typeof createAnalyticsRouter>[0];
   memories: Parameters<typeof createMemoriesRouter>[0];
   registry: Parameters<typeof createRegistryRouter>[0];
+  system: Parameters<typeof createSystemRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -75,5 +78,6 @@ export const createFrontendRouter = (implementations: {
     analytics: createAnalyticsRouter(implementations.analytics),
     memories: createMemoriesRouter(implementations.memories),
     registry: createRegistryRouter(implementations.registry),
+    system: createSystemRouter(implementations.system),
   };
 };

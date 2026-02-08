@@ -19,3 +19,4 @@ export * from "./auto-discovery.zod";
 export * from "./memories.zod";
 export * from "./registry.zod";
 export * from "./analytics.zod";
+export * from "./system.zod";

@@ -26,6 +26,7 @@ export const createAppRouter = (implementations: {
       memories: frontendRouters.memories,
       registry: frontendRouters.registry,
       analytics: frontendRouters.analytics,
+      system: frontendRouters.system,
     }),
   });
 };

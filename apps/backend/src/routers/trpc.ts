@@ -21,6 +21,9 @@ import { toolsImplementations } from "../trpc/tools.impl";
 import { policiesImplementations } from "../trpc/policies.impl";
 import { agentImplementations } from "../trpc/agent.impl";
 import { analyticsImplementations } from "../trpc/analytics.impl";
+import { memoriesImplementations } from "../trpc/memories.impl";
+import { registryImplementations } from "../trpc/registry.impl";
+import { systemImplementations } from "../trpc/system.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -43,6 +46,7 @@ const appRouter = createAppRouter({
     memories: memoriesImplementations,
     registry: registryImplementations,
     analytics: analyticsImplementations,
+    system: systemImplementations,
   },
 });
 

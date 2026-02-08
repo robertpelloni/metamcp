@@ -3,9 +3,9 @@
 ## Overview
 This dashboard provides a comprehensive view of the MetaMCP project structure, including all applications, packages, submodules, and dependencies.
 
-**Current Version:** 3.2.0  
-**Last Updated:** 2026-01-09  
-**Build System:** Turborepo + pnpm  
+**Current Version:** 3.5.0
+**Last Updated:** 2026-01-26
+**Build System:** Turborepo + pnpm
 
 ## Quick Links
 - [Project Structure](#project-structure)
@@ -14,6 +14,15 @@ This dashboard provides a comprehensive view of the MetaMCP project structure, i
 - [Key Dependencies](#key-dependencies)
 - [Build Information](#build-information)
 - [Version History](#version-history)
+- [Feature Highlights](#feature-highlights)
+
+---
+
+## Feature Highlights
+
+*   **[Agent Memory](guides/memory.md)**: Persistent long-term memory with semantic search.
+*   **[MCP Registry](guides/registry.md)**: Centralized discovery and one-click installation of MCP servers.
+*   **[Analytics Dashboard](guides/analytics.md)**: Real-time monitoring, usage trends, and traffic inspection.
 
 ---
 
@@ -68,8 +77,8 @@ metamcp/
 
 | Name | Version | Location | Description | Tech Stack |
 |:-----|:--------|:---------|:------------|:-----------|
-| **backend** | 3.2.0 | `apps/backend` | MCP Hub/Proxy, API, Sandbox | Express 5.1, TRPC, Drizzle, isolated-vm |
-| **frontend** | 3.2.0 | `apps/frontend` | Web UI Dashboard | Next.js 15, React 19, Tailwind 4, Shadcn |
+| **backend** | 3.5.0 | `apps/backend` | MCP Hub/Proxy, API, Sandbox | Express 5.1, TRPC, Drizzle, isolated-vm |
+| **frontend** | 3.5.0 | `apps/frontend` | Web UI Dashboard | Next.js 15, React 19, Tailwind 4, Shadcn |
 
 ### Shared Packages
 
@@ -90,6 +99,8 @@ External repositories included as Git submodules:
 |:-----|:---------|:-------|:--------|
 | **mcp-shark** | `apps/backend/mcp-shark` | [github.com/mcp-shark/mcp-shark](https://github.com/mcp-shark/mcp-shark) | MCP traffic inspection and logging |
 | **mcp-shark** | `submodules/mcp-shark` | [github.com/mcp-shark/mcp-shark](https://github.com/mcp-shark/mcp-shark) | Reference copy for development |
+| **mcp-directories** | `submodules/mcp-directories` | [github.com/metatool-ai/mcp-directories](https://github.com/metatool-ai/mcp-directories) | Aggregated MCP server registry sources |
+| **mcpdir** | `submodules/mcpdir` | [github.com/eL1fe/mcpdir](https://github.com/eL1fe/mcpdir) | Large-scale MCP server index |
 
 ### Submodule Commands
 ```bash
@@ -184,6 +195,7 @@ See [CHANGELOG.md](../CHANGELOG.md) for complete history.
 
 | Version | Date | Highlights |
 |:--------|:-----|:-----------|
+| **3.5.0** | 2026-01-26 | Agent Memory, Registry, Analytics, System Dashboard |
 | **3.2.0** | 2026-01-09 | Documentation overhaul, enhanced LLM instructions, session handoff system |
 | **3.1.0** | 2025-12-27 | Agent implementation, Dashboard documentation |
 | **3.0.3** | 2025-12-27 | Enhanced semantic indexing |

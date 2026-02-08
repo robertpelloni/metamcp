@@ -1,6 +1,6 @@
 {
   "name": "@repo/trpc",
-  "version": "0.0.0",
+  "version": "3.5.0",
   "type": "module",
   "private": true,
   "main": "./dist/index.js",

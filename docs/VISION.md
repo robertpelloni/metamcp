@@ -1,14 +1,68 @@
-# Workspace Vision Summary
+# MetaMCP Project Vision
 
-**Document Version:** 1.0.0  
-**Last Updated:** 2026-01-09  
+**Document Version:** 2.0.0
+**Last Updated:** 2026-01-26
 **Context:** MetaMCP's position within the broader Borg ecosystem
 
 ---
 
 ## Executive Summary
 
-MetaMCP is a **critical submodule** within the Borg (Super AI Plugin) ecosystem—a Meta-Orchestrator for the Model Context Protocol (MCP). This document consolidates vision findings from across the workspace to provide context for MetaMCP's role and development direction.
+MetaMCP is the **Ultimate MCP Hub** and **Meta-Orchestrator** within the Borg (Super AI Plugin) ecosystem. It solves the critical problem of tool overload by acting as a smart gateway that aggregates hundreds of tools but exposes only a minimal, context-aware set to the AI model.
+
+**Core Mission:** To reduce token consumption by 99% while maintaining 100% tool availability through **Progressive Disclosure** and **Semantic Search**.
+
+---
+
+## The Three Pillars of the Workspace
+
+### 1. Borg (AI Operating System)
+
+**The "Motherboard & OS" for AI Tools**
+
+Borg is the universal operating system for AI tools, acting as a "Motherboard" that connects, coordinates, and enhances any AI agent, tool, or service.
+
+| Computer Metaphor | Borg Equivalent                     |
+| ----------------- | ----------------------------------- |
+| Motherboard       | Core Service (Hub)                  |
+| CPU               | ModelGateway (LLM abstraction)      |
+| RAM               | Memory Orchestrator                 |
+| USB Ports         | MCP Server Connections              |
+| Device Drivers    | Adapters (Claude, Gemini, OpenCode) |
+| Applications      | Agents & Skills                     |
+| Control Panel     | Web Dashboard                       |
+| Terminal          | CLI (`super-ai` commands)           |
+
+**Core Philosophies:**
+
+1. **Universal Integration** - Aggregate, don't compete
+2. **Active Intelligence** - Autonomous agents with persistent memory
+3. **Physical-Digital Bridge** - The Bobcoin "Proof of Health" economy
+
+### 2. MetaMCP (MCP Hub/Proxy)
+
+**The Docker-Based MCP Backend**
+
+MetaMCP serves as:
+
+- **MCP Aggregator** - Combine multiple MCP servers into one
+- **MCP Orchestrator** - Coordinate tool calls across servers
+- **MCP Middleware** - Apply policies, logging, transformations
+- **MCP Gateway** - Single entry point with auth and rate limiting
+
+**Key Features:**
+
+- **Progressive Tool Disclosure**: Hides 98% of tools by default.
+- **Semantic Tool Search**: "Tool RAG" using embeddings to find tools by intent.
+- **Code Mode**: Secure sandbox for agents to write and execute code.
+- **Autonomous Agents**: Self-directing agents that can plan and execute complex tasks.
+- **Agent Memory**: Long-term semantic memory for context persistence.
+- **MCP Registry**: Centralized discovery and installation of community tools.
+
+**Token Optimization:**
+| Before | After | Reduction |
+|--------|-------|-----------|
+| 100k tokens (500+ tools) | 1k tokens (meta-tools only) | 99% |
 
 ---
 
@@ -61,24 +115,6 @@ MetaMCP serves as:
 | Before | After | Reduction |
 |--------|-------|-----------|
 | 100k tokens (500+ tools) | 1k tokens (meta-tools only) | 99% |
-
-### 3. Bobcoin Economy
-
-**"Proof of Health" Cryptocurrency**
-
-A cryptocurrency rewarding:
-
-- Physical Activity (dancing, exercise)
-- Social Interaction
-- Healthy Relationships
-
-**Anti-Hoarding Design:** High velocity, use-it-or-lose-it mechanics.
-
-**Technical Stack:**
-
-- Privacy: Monero/Solana hybrid
-- Mining: "Proof of Dance" via arcade machines
-- Infrastructure: Machines double as Tor nodes, distributed storage, game servers
 
 ---
 
@@ -154,6 +190,16 @@ Borg (Parent Monorepo)
    - Natural language → code generation → execution
    - Policy-scoped access control
    - Transforms any MCP client into a coding agent
+
+5. **Agent Memory**
+   - Long-term context persistence
+   - Semantic retrieval via `pgvector`
+   - Enables continuous learning across sessions
+
+6. **MCP Registry**
+   - Centralized discovery and installation
+   - One-click server templates
+   - Expands capabilities with community tools
 
 ---
 

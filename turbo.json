@@ -35,8 +35,7 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true,
-      "dependsOn": ["^dev"]
+      "persistent": true
     },
     "dev:backend": {
       "cache": false,

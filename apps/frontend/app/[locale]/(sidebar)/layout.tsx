@@ -16,6 +16,7 @@ import {
   Settings,
   ShieldCheck,
   Activity,
+  Info,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -117,6 +118,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: "Observability", // TODO: Add translation key
     url: getLocalizedPath("/observability", locale),
     icon: Activity,
+  },
+  {
+    title: "System", // TODO: Add translation key
+    url: getLocalizedPath("/system", locale),
+    icon: Info,
   },
 ];
 
