@@ -2,6 +2,7 @@
 
 import {
   Bot,
+  BrainCircuit,
   ExternalLink,
   FileCode,
   FileTerminal,
@@ -15,6 +16,7 @@ import {
   Settings,
   ShieldCheck,
   Activity,
+  Info,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -78,6 +80,16 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     icon: Bot,
   },
   {
+    title: "Agent Memory", // TODO: Add translation key
+    url: getLocalizedPath("/memories", locale),
+    icon: BrainCircuit,
+  },
+  {
+    title: "Registry", // TODO: Add translation key
+    url: getLocalizedPath("/registry", locale),
+    icon: Package,
+  },
+  {
     title: t("navigation:metamcpNamespaces"),
     url: getLocalizedPath("/namespaces", locale),
     icon: Package,
@@ -106,6 +118,16 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     title: "Observability", // TODO: Add translation key
     url: getLocalizedPath("/observability", locale),
     icon: Activity,
+  },
+  {
+    title: "System", // TODO: Add translation key
+    url: getLocalizedPath("/system", locale),
+    icon: Info,
+  },
+  {
+    title: "Audit Logs", // TODO: Add translation key
+    url: getLocalizedPath("/audit", locale),
+    icon: ShieldCheck,
   },
 ];
 

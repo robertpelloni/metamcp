@@ -1,0 +1,274 @@
+
+> metamcp@ dev /app
+> dotenv -e .env.local turbo run dev
+
+turbo 2.5.5
+
+• Packages in scope: @repo/eslint-config, @repo/trpc, @repo/typescript-config, @repo/zod-types, backend, frontend
+• Running dev in 6 packages
+• Remote caching disabled
+@repo/trpc:dev: cache bypass, force executing 6a91d252ccebbf9d
+frontend:dev: cache bypass, force executing da17ae187eceb99d
+backend:dev: cache bypass, force executing d92993eb7125a7ab
+@repo/zod-types:dev: cache bypass, force executing f985941cec437f5e
+frontend:dev:
+frontend:dev: > frontend@3.5.0 dev /app/apps/frontend
+frontend:dev: > next dev --turbopack --port 12008
+frontend:dev:
+@repo/trpc:dev:
+@repo/trpc:dev: > @repo/trpc@3.5.0 dev /app/packages/trpc
+@repo/trpc:dev: > tsup --watch
+@repo/trpc:dev:
+backend:dev:
+backend:dev: > backend@3.5.0 dev /app/apps/backend
+backend:dev: > tsx watch --clear-screen=false src/index.ts
+backend:dev:
+@repo/zod-types:dev:
+@repo/zod-types:dev: > @repo/zod-types@3.5.0 dev /app/packages/zod-types
+@repo/zod-types:dev: > tsup --watch
+@repo/zod-types:dev:
+@repo/trpc:dev: CLI Building entry: src/index.ts
+@repo/trpc:dev: CLI Using tsconfig: tsconfig.json
+@repo/trpc:dev: CLI tsup v8.5.0
+@repo/trpc:dev: CLI Using tsup config: /app/packages/trpc/tsup.config.ts
+@repo/trpc:dev: CLI Running in watch mode
+@repo/trpc:dev: CLI Target: node18
+@repo/trpc:dev: ESM Build start
+@repo/zod-types:dev: CLI Building entry: src/index.ts
+@repo/zod-types:dev: CLI Using tsconfig: tsconfig.json
+@repo/zod-types:dev: CLI tsup v8.5.0
+@repo/zod-types:dev: CLI Using tsup config: /app/packages/zod-types/tsup.config.ts
+@repo/zod-types:dev: CLI Running in watch mode
+@repo/zod-types:dev: CLI Target: node18
+@repo/zod-types:dev: ESM Build start
+@repo/trpc:dev: ESM dist/index.js     25.88 KB
+@repo/trpc:dev: ESM dist/index.js.map 59.77 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 90ms
+@repo/trpc:dev: CLI Watching for changes in "."
+@repo/trpc:dev: CLI Ignoring changes in "**/{.git,node_modules}/**" | "dist"
+@repo/zod-types:dev: ESM dist/index.js     59.80 KB
+@repo/zod-types:dev: ESM dist/index.js.map 123.77 KB
+@repo/zod-types:dev: ESM ⚡️ Build success in 121ms
+@repo/zod-types:dev: CLI Watching for changes in "."
+@repo/zod-types:dev: CLI Ignoring changes in "**/{.git,node_modules}/**" | "dist"
+frontend:dev:    ▲ Next.js 15.4.8 (Turbopack)
+frontend:dev:    - Local:        http://localhost:12008
+frontend:dev:    - Network:      http://192.168.0.2:12008
+frontend:dev:    - Experiments (use with caution):
+frontend:dev:      · proxyTimeout: 120000
+frontend:dev:
+frontend:dev:  ✓ Starting...
+frontend:dev:  ○ Compiling middleware ...
+frontend:dev:  ✓ Compiled middleware in 1048ms
+frontend:dev:  ✓ Ready in 3.9s
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/zod-types:dev: DTS Build start
+@repo/zod-types:dev: DTS ⚡️ Build success in 7419ms
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: DTS ⚡️ Build success in 6284ms
+@repo/zod-types:dev: CLI Change detected: change src/index.ts
+@repo/zod-types:dev: DTS Build start
+@repo/zod-types:dev: ESM Build start
+@repo/zod-types:dev: ESM dist/index.js     60.39 KB
+@repo/zod-types:dev: ESM dist/index.js.map 124.76 KB
+@repo/zod-types:dev: ESM ⚡️ Build success in 262ms
+backend:dev: 6:10:04 AM [tsx] change in ./../../packages/zod-types/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/zod-types:dev: DTS ⚡️ Build success in 9253ms
+@repo/trpc:dev: CLI Change detected: change src/routers/frontend/index.ts
+@repo/trpc:dev: ESM Build start
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: ESM dist/index.js     26.20 KB
+@repo/trpc:dev: ESM dist/index.js.map 60.69 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 346ms
+backend:dev: 6:11:01 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+@repo/trpc:dev: CLI Change detected: change src/router.ts
+@repo/trpc:dev: ESM Build start
+@repo/trpc:dev: ESM dist/index.js     26.24 KB
+@repo/trpc:dev: ESM dist/index.js.map 60.75 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 122ms
+backend:dev: 6:11:05 AM [tsx] change in ./../../packages/trpc/dist/index.js Restarting...
+@repo/trpc:dev: DTS ⚡️ Build success in 5720ms
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: DTS ⚡️ Build success in 1972ms
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 6:11:27 AM [tsx] change in ./src/routers/trpc.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+frontend:dev:  ✓ Compiled middleware in 9ms
+backend:dev: 6:14:31 AM [tsx] change in ./../../packages/zod-types/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 6:14:38 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 6:17:21 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 7:16:16 AM [tsx] change in ./src/db/schema.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/zod-types:dev: CLI Change detected: change src/index.ts
+@repo/zod-types:dev: ESM Build start
+@repo/zod-types:dev: ESM dist/index.js     61.12 KB
+@repo/zod-types:dev: ESM dist/index.js.map 126.10 KB
+@repo/zod-types:dev: ESM ⚡️ Build success in 302ms
+@repo/zod-types:dev: DTS Build start
+backend:dev: 7:21:41 AM [tsx] change in ./../../packages/zod-types/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/zod-types:dev: DTS ⚡️ Build success in 7842ms
+@repo/trpc:dev: CLI Change detected: change src/routers/frontend/index.ts
+@repo/trpc:dev: ESM Build start
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: ESM dist/index.js     26.65 KB
+@repo/trpc:dev: ESM dist/index.js.map 61.85 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 426ms
+backend:dev: 7:22:36 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/trpc:dev: DTS ⚡️ Build success in 7396ms
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: DTS ⚡️ Build success in 802ms
+frontend:dev:  ✓ Compiled middleware in 19ms
+backend:dev: 7:27:01 AM [tsx] change in ./../../packages/zod-types/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 7:27:07 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 3:20:07 AM [tsx] change in ./src/lib/metamcp/metamcp-proxy.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 3:20:59 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0

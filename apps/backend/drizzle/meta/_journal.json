@@ -134,6 +134,13 @@
       "when": 1766892134911,
       "tag": "0018_wonderful_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1770534985807,
+      "tag": "0019_clever_firelord",
+      "breakpoints": true
     }
   ]
 }

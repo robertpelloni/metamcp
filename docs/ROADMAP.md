@@ -1,7 +1,7 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.2.18  
-**Last Updated**: 2026-01-11
+**Current Version**: 3.6.0
+**Last Updated**: 2026-01-26
 
 ---
 
@@ -17,6 +17,33 @@
 ---
 
 ## Completed Features (v3.x)
+
+### Agent Memory (v3.5.0) ✅
+
+- [x] **Long-term Persistence** - `memories` table with vector embeddings
+- [x] **Semantic Search** - `search_memory` tool using `pgvector`
+- [x] **Context Injection** - Automatic retrieval of relevant context
+- [x] **Memory Management UI** - `/memories` page for creating/deleting memories
+
+### MCP Registry (v3.5.0) ✅
+
+- [x] **Centralized Registry** - Discovery of 950+ MCP servers
+- [x] **One-Click Install** - `server-templates.json` for streamlined setup
+- [x] **Verified Templates** - Pre-configured settings for popular tools
+- [x] **Registry UI** - `/registry` page with search and filtering
+
+### Analytics & Observability (v3.5.0) ✅
+
+- [x] **Analytics Dashboard** - Visualizations for tool usage, error rates, and top tools
+- [x] **Traffic Inspector** - Integrated MCP Shark inspector
+- [x] **Usage Metrics** - `AnalyticsService` for aggregating logs
+- [x] **Historical Data** - Daily activity tracking
+
+### Security & System (v3.6.0) ✅
+
+- [x] **Audit Logging** - Security event tracking (Policy, Auth, Config changes)
+- [x] **System Dashboard** - In-app project status, version, and submodule view
+- [x] **Database Schema** - `audit_logs` table with JSON details
 
 ### Core Architecture ✅
 
@@ -77,17 +104,7 @@
 
 ---
 
-## In Progress (v3.2.x) 🚧
-
-### Documentation Enhancements
-
-- [x] **Enhanced Dashboard** - Comprehensive submodule and dependency documentation
-- [x] **Enhanced LLM Instructions** - Detailed workflow preferences
-- [x] **ROADMAP.md** - This file
-- [x] **Dependency Library Index** - Rated documentation of all dependencies
-- [x] **MCP Directories Library** - 951 indexed servers from 6 submodules
-- [x] **Feature Parity Plan** - Comprehensive competitive analysis
-- [x] **Discovered Features Audit** - Comprehensive audit of 47+ undocumented features
+## In Progress (v3.6.x) 🚧
 
 ### Developer Experience
 
@@ -97,37 +114,17 @@
 
 ---
 
-## Planned (v3.3.x - v4.x) 📋
-
-### Documentation (Research-driven)
-
-- [x] **REST API Documentation** - Document Swagger UI, OpenAPI endpoints, REST tool execution
-- [x] **Configuration Guide** - Comprehensive DB and env config reference (docs/CONFIGURATION.md)
-- [x] **Middleware Development Guide** - Document functional middleware framework (docs/MIDDLEWARE.md)
-
-### Token Optimization (Research-driven)
-
-- [x] **Hybrid Search (BM25 + Semantic)** - Combine keyword and vector search for better precision (v3.2.11)
-- [x] **Pattern-Based Filtering** - Glob/regex tool filtering like Claude Tool Search (v3.2.13)
-- [x] **Deferred Loading Protocol** - MCP extension for lazy tool loading (95%+ reduction) (v3.2.14)
-
-### Auto-Discovery
-
-- [x] **mcp.json Auto-discovery** - Automatic detection of MCP servers (v3.2.17)
-- [x] **Server Health Checks** - Monitor downstream server status (v3.2.15)
-- [x] **Auto-reconnection** - Recover from server disconnections (v3.2.16)
-- [x] **npm/Homebrew Scanning** - Auto-detect installed MCP servers (v3.2.18)
+## Planned (v4.x) 📋
 
 ### Enhanced Agent
 
 - [ ] **Multi-step Planning** - Complex task decomposition
-- [ ] **Memory/Context** - Agent memory across conversations
 - [ ] **Tool Learning** - Agent learns from tool usage patterns
 - [ ] **Tool Composition** - Chain tools together in pipelines
 
 ### Security Enhancements
 
-- [ ] **Audit Logging** - Comprehensive audit trail
+- [x] **Audit Logging** - Comprehensive audit trail (v3.6.0)
 - [ ] **Rate Limiting** - Per-user/per-tool rate limits
 - [ ] **Cost Tracking** - Token usage and API cost estimation
 - [ ] **Encryption at Rest** - Encrypted tool configurations
@@ -170,16 +167,7 @@
 - [ ] **Scheduled Tasks** - Cron-like tool execution
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
 - [ ] **OAuth Server Documentation** - Document existing OAuth 2.0 server capability
-- [ ] **Server Templates** - Pre-configured MCP server templates for common use cases
-- [ ] **One-click Install** - Install popular MCP servers from registry with one click
 - [ ] **Template Marketplace** - Community-contributed server configurations
-
-### Analytics
-
-- [ ] **Usage Analytics** - Tool usage statistics
-- [ ] **Cost Tracking** - Track API costs per tool/user
-- [ ] **Performance Metrics** - Tool latency tracking
-- [ ] **Token Budget Management** - Per-session/per-user token budgets
 
 ### Infrastructure
 
@@ -195,6 +183,8 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.6.0**  | 2026-01-26 | Audit Logging, System Dashboard                   |
+| **3.5.0**  | 2026-01-26 | Agent Memory, MCP Registry, Analytics, Templates  |
 | **3.2.18** | 2026-01-11 | npm Global Package Scanning for MCP servers       |
 | **3.2.17** | 2026-01-11 | mcp.json Auto-discovery (Claude/Cursor/VS Code)   |
 | **3.2.16** | 2026-01-11 | Auto-reconnection with exponential backoff        |

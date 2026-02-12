@@ -1,96 +1,107 @@
-# 🏁 MetaMCP Hub: Handoff & Architecture Documentation
+# 🏁 MetaMCP Hub: Handoff & Architecture Documentation (v3.6.0)
 
-**Date:** December 2025
+**Date:** January 26, 2026
 **Author:** Jules
-**Status:** Core Features Implemented (Hub, Progressive Disclosure, Semantic Search, Code Mode, Agent)
+**Status:** Feature Complete (Hub, Agent, Memory, Registry, Analytics, Audit)
 
 ## 🎯 Project Overview
 
-This repository has been transformed into an **Ultimate MCP Hub**. It acts as a centralized Gateway/Proxy for multiple downstream MCP servers. Instead of loading thousands of tools into an LLM's context, it uses **Progressive Disclosure**:
+MetaMCP is the **Ultimate MCP Hub** and **Meta-Orchestrator** within the Borg ecosystem. It acts as a centralized gateway for downstream MCP servers, solving the "tool overload" problem via **Progressive Disclosure**.
 
-1.  The LLM sees only "Meta Tools" (`search_tools`, `load_tool`, `run_code`, `run_agent`).
-2.  The LLM searches for tools semantically (using `pgvector` embeddings).
-3.  The LLM loads only the specific tools it needs for the task.
-4.  The LLM can execute complex workflows via `run_code` (Sandboxed JS) or `run_agent` (Autonomous Task).
+### Core Value Proposition
+1.  **99% Token Reduction**: Hides downstream tools by default.
+2.  **Semantic Search**: Finds tools by intent using `pgvector`.
+3.  **Code Mode**: Allows agents to chain tools in a secure sandbox.
+4.  **Autonomous Agents**: Self-directing agents with long-term memory.
 
-## 🏗️ Architecture
+---
+
+## 🏗️ System Architecture
 
 ### 1. The Hub (Proxy)
 -   **File:** `apps/backend/src/lib/metamcp/metamcp-proxy.ts`
--   **Logic:**
-    -   Intercepts `tools/list` to hide downstream tools.
-    -   Exposes Meta Tools.
-    -   Maintains a session-based `loadedTools` set (FIFO eviction, max 200).
-    -   Proxies `tools/call` to the appropriate downstream MCP server *only if loaded*.
+-   **Function**: Intercepts `tools/list` to hide tools. Exposes "Meta Tools" (`search_tools`, `load_tool`, `run_agent`).
+-   **Session Management**: Maintains a `loadedTools` set per session (FIFO eviction, max 200).
+-   **Middleware Stack**: `Logging` -> `Policy` -> `Filter` -> `ToolOverrides` -> `Impl`.
 
-### 2. Semantic Search (Tool RAG)
--   **Service:** `apps/backend/src/lib/ai/tool-search.service.ts`
--   **Embedding:** `apps/backend/src/lib/ai/embedding.service.ts`
--   **DB:** Postgres with `pgvector` extension. Table `tools` has an `embedding` column (vector(1536)).
--   **Flow:**
-    -   Tools are upserted into DB.
-    -   Embeddings are generated via OpenAI `text-embedding-3-small`.
-    -   `search_tools` performs cosine similarity search.
-
-### 3. Code Mode (Sandbox)
--   **Service:** `apps/backend/src/lib/sandbox/code-executor.service.ts`
--   **Tech:** `isolated-vm` (Secure Node.js Isolate).
--   **Security:**
-    -   Memory Limit: Configurable via `CODE_EXECUTION_MEMORY_LIMIT` (default 128MB).
-    -   No network/FS access by default (unless via MCP tools).
--   **Recursion:** Code inside the sandbox calls `mcp.call()`. This is routed *back* through the MetaMCP Middleware stack (`recursiveCallToolHandler`) to ensure logging, auth, and policy enforcement apply to sub-calls.
-
-### 4. Autonomous Agent
+### 2. Autonomous Agent & Memory
 -   **Service:** `apps/backend/src/lib/ai/agent.service.ts`
--   **Tool:** `run_agent`
--   **Logic:**
-    -   Takes a natural language task.
-    -   Searches the Vector DB for relevant tools.
-    -   Prompts OpenAI (`gpt-4o` or similar) to write a script.
-    -   Executes the script in the Sandbox.
+-   **Memory:** `apps/backend/src/lib/memory/memory.service.ts`
+-   **Flow**:
+    1.  User calls `run_agent(task)`.
+    2.  Agent searches `tools` (Vector DB) and `memories` (Vector DB).
+    3.  Agent prompts OpenAI to generate TypeScript.
+    4.  Code executes in `isolated-vm` sandbox.
+    5.  Sandbox calls route back through `recursiveCallToolHandler` for security.
 
-### 5. Inspection (Mcpshark)
--   **Middleware:** `apps/backend/src/lib/metamcp/metamcp-middleware/logging.functional.ts`
--   **UI:** `apps/frontend/app/[locale]/(sidebar)/live-logs/page.tsx`
--   **Data:** Persists all tool calls to `tool_call_logs` table.
+### 3. MCP Registry & Templates
+-   **Service:** `apps/backend/src/lib/registry/registry.service.ts`
+-   **Data Source:** `submodules/mcp-directories/registry.json`.
+-   **Templates:** `apps/backend/src/lib/templates/server-templates.json` provides "One-Click" configs.
+-   **UI**: `/registry` page allows searching and installing servers.
+
+### 4. Observability & Security
+-   **Analytics**: `apps/backend/src/lib/analytics/analytics.service.ts` aggregates usage stats.
+-   **Audit Logging**: `apps/backend/src/lib/audit/audit.service.ts` tracks `CREATE_POLICY`, `INSTALL_SERVER`, `LOGIN` events.
+-   **Traffic Inspection**: `apps/backend/mcp-shark` (Submodule) embedded in `/observability`.
+
+---
 
 ## 🔑 Key Files & Configuration
 
 | File | Purpose |
 | :--- | :--- |
-| `metamcp-proxy.ts` | The core "Brain". Handles tool listing, loading, and proxying. |
-| `code-executor.service.ts` | Handles `isolated-vm` execution. |
-| `tool-search.service.ts` | Semantic search logic. |
+| `metamcp-proxy.ts` | **The Brain**. Handles tool listing, loading, and proxying. |
 | `agent.service.ts` | LLM-based autonomous agent logic. |
-| `setup-local.sh` | Script for local (non-Docker) setup. |
-| `docker-compose.yml` | Uses `pgvector/pgvector:pg16` and includes `mcp-shark`. |
+| `code-executor.service.ts` | `isolated-vm` sandbox logic. |
+| `audit.service.ts` | Security event logging. |
+| `schema.ts` | Drizzle ORM definitions (23 tables). |
+| `LLM_INSTRUCTIONS.md` | Universal guidelines for AI models. |
 
-**Environment Variables:**
--   `DATABASE_URL`: Postgres connection (must support pgvector).
--   `OPENAI_API_KEY`: Required for Semantic Search and Agent.
--   `CODE_EXECUTION_MEMORY_LIMIT`: Sandbox memory (MB).
+**Environment Variables**:
+-   `DATABASE_URL`: Postgres (must support pgvector).
+-   `OPENAI_API_KEY`: Required for Embeddings/Agent.
+-   `CODE_EXECUTION_MEMORY_LIMIT`: Sandbox limit (default 128MB).
 
-## 🧠 Memories & Learnings
+---
 
--   **Recursive Routing:** The most critical architectural decision was routing sandbox calls back through the middleware. This ensures that "Code Mode" isn't a backdoor; it's just a high-speed client living inside the server.
--   **Circular Dependencies:** The proxy has complex recursion. We used a "Mutable Reference" pattern (`recursiveCallToolHandlerRef`) to allow the internal handler to call the fully composed middleware stack without hoisting issues.
--   **Migration Safety:** Use `IF NOT EXISTS` for indexes in migrations to prevent failures in transaction blocks.
--   **Frontend Verification:** Local dev requires a running DB. Without it, frontend verification scripts needing data will fail (though the build succeeds).
+## 🧠 "Mental Model" for Developers
 
-## 🚀 Recommended Next Steps
+1.  **Recursive Routing**: The most critical pattern. Code executed inside the sandbox calls `mcp.call()`. This call is **routed back** through the middleware stack (`recursiveCallToolHandler`). This ensures that a script cannot bypass logging, auth, or policies.
+2.  **Mutable Reference**: `metamcp-proxy.ts` uses `recursiveCallToolHandlerRef` to handle the circular dependency between the internal handler and the composed middleware stack.
+3.  **Progressive Disclosure**: We lie to the client. We say "here are 10 tools" when there are 1000. We only reveal the rest when `load_tool` is called.
+4.  **Submodules**: The project relies on `mcp-shark` and `mcp-directories`. Always check `git submodule status`.
 
-1.  **Frontend Agent UI**
-    *   Create a dedicated Chat UI for the Agent (currently it's just a test dialog).
-    *   Allow streaming progress updates from the agent script.
+---
 
-2.  **mcp.json Auto-Discovery**
-    *   Implement a file watcher to automatically load/unload MCP servers from a configured directory.
+## 🚀 Roadmap & Next Steps
 
-## 📦 Handoff Instructions
+**Immediate Priorities (Post-v3.6.0):**
 
-To continue work:
-1.  Ensure `pnpm install` and `pnpm db:migrate` are run.
-2.  Set `OPENAI_API_KEY` in `.env`.
-3.  Start with `pnpm dev`.
-4.  **Enhanced Indexing** is now implemented. New tools will automatically get "Synthetic User Queries" embedded.
-5.  Next focus: **Frontend Agent UI**.
+1.  **Cost Tracking**: Estimate token usage and API costs for agent runs.
+3.  **Tool Composition**: Allow agents to create "Macros" (sequences of tools) saved as new tools.
+
+**Known Technical Debt:**
+-   **OIDC/OAuth UI**: The backend tables exist (`oauth_clients`), but there is no admin UI to configure clients.
+-   **Unit Tests**: Coverage is good for services, but integration tests for the full Proxy flow are limited due to mocking complexity.
+
+---
+
+## 📦 How to Build & Run
+
+```bash
+# 1. Install
+pnpm install
+
+# 2. Database
+docker-compose up -d db
+pnpm db:generate
+pnpm db:migrate
+
+# 3. Run
+pnpm dev
+```
+
+**Verification**:
+-   Run `pnpm build` to verify type safety.
+-   Run `vitest` in `apps/backend` for logic checks.

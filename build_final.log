@@ -1,0 +1,89 @@
+
+> metamcp@ build /app
+> turbo run build
+
+turbo 2.5.5
+
+• Packages in scope: @repo/eslint-config, @repo/trpc, @repo/typescript-config, @repo/zod-types, backend, frontend
+• Running build in 6 packages
+• Remote caching disabled
+@repo/zod-types:build: cache miss, executing 8147570ba847acae
+@repo/zod-types:build:
+@repo/zod-types:build: > @repo/zod-types@3.5.0 build /app/packages/zod-types
+@repo/zod-types:build: > tsup
+@repo/zod-types:build:
+@repo/zod-types:build: CLI Building entry: src/index.ts
+@repo/zod-types:build: CLI Using tsconfig: tsconfig.json
+@repo/zod-types:build: CLI tsup v8.5.0
+@repo/zod-types:build: CLI Using tsup config: /app/packages/zod-types/tsup.config.ts
+@repo/zod-types:build: CLI Target: node18
+@repo/zod-types:build: ESM Build start
+@repo/zod-types:build: ESM dist/index.js     60.39 KB
+@repo/zod-types:build: ESM dist/index.js.map 124.76 KB
+@repo/zod-types:build: ESM ⚡️ Build success in 130ms
+@repo/zod-types:build: DTS Build start
+@repo/zod-types:build: DTS ⚡️ Build success in 4888ms
+@repo/zod-types:build: DTS dist/index.d.ts 265.70 KB
+@repo/trpc:build: cache miss, executing fe62522ae6be8900
+@repo/trpc:build:
+@repo/trpc:build: > @repo/trpc@3.5.0 build /app/packages/trpc
+@repo/trpc:build: > tsup
+@repo/trpc:build:
+@repo/trpc:build: CLI Building entry: src/index.ts
+@repo/trpc:build: CLI Using tsconfig: tsconfig.json
+@repo/trpc:build: CLI tsup v8.5.0
+@repo/trpc:build: CLI Using tsup config: /app/packages/trpc/tsup.config.ts
+@repo/trpc:build: CLI Target: node18
+@repo/trpc:build: ESM Build start
+@repo/trpc:build: ESM dist/index.js     26.24 KB
+@repo/trpc:build: ESM dist/index.js.map 60.75 KB
+@repo/trpc:build: ESM ⚡️ Build success in 45ms
+@repo/trpc:build: DTS Build start
+@repo/trpc:build: DTS ⚡️ Build success in 3313ms
+@repo/trpc:build: DTS dist/index.d.ts 168.33 KB
+frontend:build: cache miss, executing 35ed1903dbbbd82e
+backend:build: cache miss, executing 3bf8d4493a1b2343
+backend:build:
+backend:build: > backend@3.5.0 build /app/apps/backend
+backend:build: > tsup
+backend:build:
+frontend:build:
+frontend:build: > frontend@3.5.0 build /app/apps/frontend
+frontend:build: > next build
+frontend:build:
+backend:build: CLI Building entry: src/index.ts
+backend:build: CLI Using tsconfig: tsconfig.json
+backend:build: CLI tsup v8.5.0
+backend:build: CLI Using tsup config: /app/apps/backend/tsup.config.ts
+backend:build: CLI Target: node18
+backend:build: CLI Cleaning output folder
+backend:build: ESM Build start
+backend:build: ESM You have emitDecoratorMetadata enabled but @swc/core was not installed, skipping swc plugin
+backend:build: ESM dist/index.js     535.09 KB
+backend:build: ESM dist/index.js.map 970.59 KB
+backend:build: ESM ⚡️ Build success in 220ms
+frontend:build:    ▲ Next.js 15.4.8
+frontend:build:    - Experiments (use with caution):
+frontend:build:      · proxyTimeout: 120000
+frontend:build:
+frontend:build:    Creating an optimized production build ...
+frontend:build: Failed to compile.
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/system/page.tsx
+frontend:build: Module not found: Can't resolve 'react-markdown'
+frontend:build:
+frontend:build: https://nextjs.org/docs/messages/module-not-found
+frontend:build:
+frontend:build:
+frontend:build: > Build failed because of webpack errors
+frontend:build:  ELIFECYCLE  Command failed with exit code 1.
+frontend:build: ERROR: command finished with error: command (/app/apps/frontend) /home/jules/.local/share/pnpm/.tools/pnpm/9.0.0/bin/pnpm run build exited (1)
+frontend#build: command (/app/apps/frontend) /home/jules/.local/share/pnpm/.tools/pnpm/9.0.0/bin/pnpm run build exited (1)
+
+ Tasks:    3 successful, 4 total
+Cached:    0 cached, 4 total
+  Time:    32.081s
+Failed:    frontend#build
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

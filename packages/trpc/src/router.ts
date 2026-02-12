@@ -23,6 +23,11 @@ export const createAppRouter = (implementations: {
       toolSets: frontendRouters.toolSets,
       policies: frontendRouters.policies,
       agent: frontendRouters.agent,
+      memories: frontendRouters.memories,
+      registry: frontendRouters.registry,
+      analytics: frontendRouters.analytics,
+      system: frontendRouters.system,
+      audit: frontendRouters.audit,
     }),
   });
 };

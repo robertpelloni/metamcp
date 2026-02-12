@@ -6,7 +6,7 @@ export default defineConfig({
   target: "node18",
   outDir: "dist",
   sourcemap: true,
-  clean: true,
+  clean: false,
   splitting: false,
   bundle: true, // Bundle to resolve imports properly
   keepNames: true,

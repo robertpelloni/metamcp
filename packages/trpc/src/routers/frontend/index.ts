@@ -13,6 +13,11 @@ import { createToolSetsRouter } from "./tool-sets";
 import { createToolsRouter } from "./tools";
 import { createPoliciesRouter } from "./policies";
 import { createAgentRouter } from "./agent";
+import { createAnalyticsRouter } from "./analytics";
+import { createMemoriesRouter } from "./memories";
+import { createRegistryRouter } from "./registry";
+import { createSystemRouter } from "./system";
+import { createAuditRouter } from "./audit";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -29,6 +34,11 @@ export { createServerHealthRouter };
 export { createToolSetsRouter };
 export { createPoliciesRouter };
 export { createAgentRouter };
+export { createAnalyticsRouter };
+export { createMemoriesRouter };
+export { createRegistryRouter };
+export { createSystemRouter };
+export { createAuditRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -46,6 +56,11 @@ export const createFrontendRouter = (implementations: {
   toolSets: Parameters<typeof createToolSetsRouter>[0];
   policies: Parameters<typeof createPoliciesRouter>[0];
   agent: Parameters<typeof createAgentRouter>[0];
+  analytics: Parameters<typeof createAnalyticsRouter>[0];
+  memories: Parameters<typeof createMemoriesRouter>[0];
+  registry: Parameters<typeof createRegistryRouter>[0];
+  system: Parameters<typeof createSystemRouter>[0];
+  audit: Parameters<typeof createAuditRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -63,5 +78,10 @@ export const createFrontendRouter = (implementations: {
     toolSets: createToolSetsRouter(implementations.toolSets),
     policies: createPoliciesRouter(implementations.policies),
     agent: createAgentRouter(implementations.agent),
+    analytics: createAnalyticsRouter(implementations.analytics),
+    memories: createMemoriesRouter(implementations.memories),
+    registry: createRegistryRouter(implementations.registry),
+    system: createSystemRouter(implementations.system),
+    audit: createAuditRouter(implementations.audit),
   };
 };

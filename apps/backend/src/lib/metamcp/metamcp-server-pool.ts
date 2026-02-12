@@ -7,6 +7,7 @@ import { createServer } from "./metamcp-proxy";
 export interface MetaMcpServerInstance {
   server: Server;
   cleanup: () => Promise<void>;
+  updateContext: (newContext: any) => void;
 }
 
 export interface MetaMcpServerPoolStatus {
@@ -63,6 +64,7 @@ export class MetaMcpServerPool {
     sessionId: string,
     namespaceUuid: string,
     includeInactiveServers: boolean = false,
+    userId?: string,
   ): Promise<MetaMcpServerInstance | undefined> {
     // Check if we already have an active server for this sessionId
     if (this.activeServers[sessionId]) {
@@ -77,6 +79,9 @@ export class MetaMcpServerPool {
       this.activeServers[sessionId] = idleServer;
       this.sessionToNamespace[sessionId] = namespaceUuid;
       this.sessionTimestamps[sessionId] = Date.now();
+
+      // Update context with new sessionId and userId
+      idleServer.updateContext({ sessionId, userId });
 
       console.log(
         `Converted idle MetaMCP server to active for namespace ${namespaceUuid}, session ${sessionId}`,
@@ -93,6 +98,7 @@ export class MetaMcpServerPool {
       sessionId,
       namespaceUuid,
       includeInactiveServers,
+      userId,
     );
     if (!newServer) {
       return undefined;
@@ -119,6 +125,7 @@ export class MetaMcpServerPool {
     sessionId: string,
     namespaceUuid: string,
     includeInactiveServers: boolean = false,
+    userId?: string,
   ): Promise<MetaMcpServerInstance | undefined> {
     try {
       // Create the MetaMCP server - MCP server pool is pre-warmed during startup
@@ -126,6 +133,7 @@ export class MetaMcpServerPool {
         namespaceUuid,
         sessionId,
         includeInactiveServers,
+        userId,
       );
 
       return serverInstance;
@@ -163,6 +171,7 @@ export class MetaMcpServerPool {
       const wrappedServer: MetaMcpServerInstance = {
         server: newServer.server,
         cleanup: newServer.cleanup,
+        updateContext: newServer.updateContext,
       };
 
       this.idleServers[namespaceUuid] = wrappedServer;
@@ -197,6 +206,7 @@ export class MetaMcpServerPool {
           const wrappedServer: MetaMcpServerInstance = {
             server: newServer.server,
             cleanup: newServer.cleanup,
+            updateContext: newServer.updateContext,
           };
           this.idleServers[namespaceUuid] = wrappedServer;
           console.log(

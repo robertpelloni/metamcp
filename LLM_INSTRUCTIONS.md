@@ -2,8 +2,8 @@
 
 This document serves as the central source of truth for all AI models (Claude, GPT, Gemini, Copilot, etc.) working on the MetaMCP repository.
 
-**Version**: 3.2.12  
-**Last Updated**: 2026-01-09
+**Version**: 3.5.0
+**Last Updated**: 2026-01-26
 
 ---
 
@@ -20,7 +20,7 @@ This document serves as the central source of truth for all AI models (Claude, G
 - **Rule**: Every PR that touches code MUST include a version bump in `VERSION` file, `package.json` (Apps), and a `CHANGELOG.md` entry.
 - **Format**: Semantic Versioning (Major.Minor.Patch).
 - **Source of Truth**: The `VERSION` file in the root directory is the single source of truth.
-- **Commit Message**: Include the version number (e.g., "chore: bump version to 3.2.0").
+- **Commit Message**: Include the version number (e.g., "chore: bump version to 3.5.0").
 
 ### 3. Progressive Disclosure
 
@@ -42,13 +42,16 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
 | **Semantic Search**    | `apps/backend/src/lib/ai/tool-search.service.ts`                        | Tool RAG using pgvector embeddings                        |
 | **Policy Engine**      | `apps/backend/src/lib/access-control/policy.service.ts`                 | Allow/Deny patterns for tool access                       |
 | **Autonomous Agent**   | `apps/backend/src/lib/ai/agent.service.ts`                              | NL task → code generation → execution                     |
+| **Agent Memory**       | `apps/backend/src/lib/memory/memory.service.ts`                         | Long-term memory using pgvector                           |
+| **MCP Registry**       | `apps/backend/src/lib/registry/registry.service.ts`                     | Centralized server discovery & templates                  |
+| **Analytics**          | `apps/backend/src/lib/analytics/analytics.service.ts`                   | Usage tracking and dashboard metrics                      |
 | **Traffic Inspection** | `apps/backend/src/lib/metamcp/metamcp-middleware/logging.functional.ts` | Mcpshark integration                                      |
 
 ### Architecture Details
 
 1. **The Hub (Proxy)**
    - Hides downstream tools by default
-   - Exposes meta-tools: `search_tools`, `load_tool`, `run_code`, `run_agent`
+   - Exposes meta-tools: `search_tools`, `load_tool`, `run_code`, `run_agent`, `save_memory`, `search_memory`
    - Session-specific `loadedTools` set with FIFO eviction (max 200)
    - Recursive routing back through middleware stack
 
@@ -62,7 +65,12 @@ MetaMCP is an **Ultimate MCP Hub** that acts as a centralized gateway for downst
    - pgvector for cosine similarity
    - Tools indexed on upsert with rich/concise descriptions
 
-4. **Tool Override System**
+4. **Agent Memory**
+   - Persistent storage of user/agent context
+   - Semantic retrieval via `search_memory` tool
+   - Automatic injection into Agent context
+
+5. **Tool Override System**
    - Namespace-scoped tool customization via `namespace_tool_mappings` table
    - Override: name, title, description, annotations
    - Status: ACTIVE/INACTIVE per namespace
@@ -295,6 +303,7 @@ cd apps/backend && pnpm db:migrate
 | `docs/ROADMAP.md`     | Feature roadmap   | Feature additions            |
 | `HANDOFF.md`          | Architecture docs | Architecture changes         |
 | `LLM_INSTRUCTIONS.md` | This file         | Workflow/process changes     |
+| `docs/VISION.md`      | Ultimate Goal     | Strategic direction changes  |
 
 ### Session Handoff
 
@@ -307,74 +316,18 @@ When ending a session or switching models, create/update a handoff document:
 
 ---
 
-## 🚨 Coding Standards & Gotchas
+## 🔄 Git Submodules & Dashboard
 
-### Critical Patterns
+MetaMCP relies heavily on submodules. It is critical to keep them updated and documented.
 
-1. **Mutable Reference Pattern**
-   - When modifying `metamcp-proxy.ts`, use `recursiveCallToolHandlerRef`
-   - Required for circular dependencies in middleware stack
+### Maintenance Protocol
 
-2. **Tool Naming**
-   - Tool names are namespaced: `serverName__toolName`
-   - Always use this format when referencing tools
+1. **Update**: Regularly run `git submodule update --remote --merge` to fetch latest changes.
+2. **Commit**: If a submodule updates, commit the pointer change in the main repo.
+3. **Dashboard**: Maintain `docs/DASHBOARD.md` with the current list of submodules, their paths, and descriptions.
+4. **UI Dashboard**: Ensure the in-app "System Dashboard" (`/system`) accurately reflects the installed submodules and versions.
 
-3. **Environment Variables**
-   - `OPENAI_API_KEY` validated at startup
-   - `isolated-vm` requires native build tools in Dockerfile
-
-### Type Safety
-
-- Never use `any` type
-- Never use `@ts-ignore` or `@ts-expect-error`
-- Always validate with Zod schemas
-
-### Code Style
-
-- ES2022 target with ES modules
-- Strict TypeScript mode
-- Path aliases: `@/*`
-- Format with Prettier
-- Lint with ESLint
-
----
-
-## 🤖 AI Model Capabilities
-
-### Code Mode (`run_code`)
-
-- **Environment**: Restricted Node.js
-- **Access**: No direct filesystem/network access
-- **Tool Calling**: `await mcp.call('tool_name', args)`
-- **Limits**: 30s timeout, 128MB memory (configurable)
-
-### Autonomous Agent (`run_agent`)
-
-- **Scope**: All tools via semantic search (default)
-- **Restriction**: Can be scoped by `policyId`
-- **Output**: Final result of generated script
-
----
-
-## 📊 Project Structure
-
-See `docs/DASHBOARD.md` for complete project structure and dependencies.
-
-```
-metamcp/
-├── apps/
-│   ├── backend/          # Express/TRPC API + MCP Proxy
-│   └── frontend/         # Next.js 15 UI
-├── packages/             # Shared packages
-├── docs/                 # Documentation
-├── VERSION               # Version source of truth
-├── CHANGELOG.md          # Version history
-└── LLM_INSTRUCTIONS.md   # This file
-```
-
----
-
-## 🔄 Git Submodules
+### Current Submodules
 
 | Submodule       | Location                     | Purpose                                      |
 | :-------------- | :--------------------------- | :------------------------------------------- |
@@ -382,26 +335,6 @@ metamcp/
 | mcp-shark       | `submodules/mcp-shark`       | Reference copy                               |
 | mcp-directories | `submodules/mcp-directories` | Aggregated MCP server registry (951 servers) |
 | mcpdir          | `submodules/mcpdir`          | mcpdir.dev index (7,600+ servers)            |
-
-### MCP Server Directories
-
-MetaMCP aggregates MCP server information from multiple sources:
-
-- **mcp-directories**: Curated from 6 awesome-lists + 7 web registries
-- **mcpdir**: [mcpdir.dev](https://mcpdir.dev) - 8,000+ servers from MCP Registry, npm, GitHub, Glama, PulseMCP
-
-See `submodules/mcp-directories/MCPDIR_INDEX.md` for the full mcpdir server index.
-
-```bash
-# Initialize submodules
-git submodule update --init --recursive
-
-# Update to latest
-git submodule update --remote --merge
-
-# Regenerate mcpdir index
-python submodules/mcp-directories/scripts/extract-mcpdir.py
-```
 
 ---
 
@@ -418,11 +351,11 @@ python submodules/mcp-directories/scripts/extract-mcpdir.py
 
 ## 📚 Reference Documents
 
-- [CLAUDE.md](CLAUDE.md) - Claude-specific instructions
-- [AGENTS.md](AGENTS.md) - Agent-specific directives
-- [GEMINI.md](GEMINI.md) - Gemini-specific instructions
-- [GPT.md](GPT.md) - GPT-specific instructions
-- [copilot-instructions.md](copilot-instructions.md) - Copilot-specific instructions
+- [CLAUDE.md](CLAUDE.md) - Claude-specific instructions (references this file)
+- [AGENTS.md](AGENTS.md) - Agent-specific directives (references this file)
+- [GEMINI.md](GEMINI.md) - Gemini-specific instructions (references this file)
+- [GPT.md](GPT.md) - GPT-specific instructions (references this file)
+- [copilot-instructions.md](copilot-instructions.md) - Copilot-specific instructions (references this file)
 - [HANDOFF.md](HANDOFF.md) - Architecture documentation
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [docs/DASHBOARD.md](docs/DASHBOARD.md) - Project dashboard
