@@ -1,7 +1,7 @@
 # MetaMCP Project Vision
 
-**Document Version:** 2.0.0
-**Last Updated:** 2026-01-26
+**Document Version:** 3.0.0  
+**Last Updated:** 2026-02-12  
 **Context:** MetaMCP's position within the broader Borg ecosystem
 
 ---
@@ -58,63 +58,19 @@ MetaMCP serves as:
 - **Autonomous Agents**: Self-directing agents that can plan and execute complex tasks.
 - **Agent Memory**: Long-term semantic memory for context persistence.
 - **MCP Registry**: Centralized discovery and installation of community tools.
+- **Dark Mode**: Full light/dark/system theme support.
+- **Analytics Dashboard**: Tool usage metrics, error rates, and traffic inspection.
 
 **Token Optimization:**
 | Before | After | Reduction |
-|--------|-------|-----------|
+|--------|-------|-----------| 
 | 100k tokens (500+ tools) | 1k tokens (meta-tools only) | 99% |
 
----
+### 3. Bobcoin (Decentralized Economy)
 
-## The Three Pillars of the Workspace
+**The Proof-of-Useful-Stake Cryptocurrency**
 
-### 1. Borg (AI Operating System)
-
-**The "Motherboard & OS" for AI Tools**
-
-Borg is the universal operating system for AI tools, acting as a "Motherboard" that connects, coordinates, and enhances any AI agent, tool, or service.
-
-| Computer Metaphor | Borg Equivalent                     |
-| ----------------- | ----------------------------------- |
-| Motherboard       | Core Service (Hub)                  |
-| CPU               | ModelGateway (LLM abstraction)      |
-| RAM               | Memory Orchestrator                 |
-| USB Ports         | MCP Server Connections              |
-| Device Drivers    | Adapters (Claude, Gemini, OpenCode) |
-| Applications      | Agents & Skills                     |
-| Control Panel     | Web Dashboard                       |
-| Terminal          | CLI (`super-ai` commands)           |
-
-**Core Philosophies:**
-
-1. **Universal Integration** - Aggregate, don't compete
-2. **Active Intelligence** - Autonomous agents with persistent memory
-3. **Physical-Digital Bridge** - The Bobcoin "Proof of Health" economy
-
-### 2. MetaMCP (MCP Hub/Proxy)
-
-**The Docker-Based MCP Backend**
-
-MetaMCP serves as:
-
-- **MCP Aggregator** - Combine multiple MCP servers into one
-- **MCP Orchestrator** - Coordinate tool calls across servers
-- **MCP Middleware** - Apply policies, logging, transformations
-- **MCP Gateway** - Single entry point with auth and rate limiting
-
-**Key Features:**
-
-- Progressive Tool Disclosure (85-98% token reduction)
-- Semantic Tool Search (Tool RAG with pgvector)
-- Code Mode (isolated-vm sandbox execution)
-- Autonomous Agents (NL → code generation → execution)
-- Policy Engine (allow/deny patterns)
-- Traffic Inspection (MCP Shark integration)
-
-**Token Optimization:**
-| Before | After | Reduction |
-|--------|-------|-----------|
-| 100k tokens (500+ tools) | 1k tokens (meta-tools only) | 99% |
+Bobcoin provides the economic foundation for the ecosystem, incentivizing participation through storage validation and health tracking.
 
 ---
 
@@ -226,7 +182,7 @@ From the broader Borg vision, MetaMCP should consider:
 | TypeScript      | Strict, ES2022, NodeNext       |
 | Package Manager | pnpm workspaces                |
 | Build System    | Turborepo                      |
-| Styling         | Tailwind CSS                   |
+| Styling         | Tailwind CSS 4                 |
 | Architecture    | Manager pattern + EventEmitter |
 
 ### Anti-Patterns to Avoid
@@ -236,7 +192,6 @@ From the broader Borg vision, MetaMCP should consider:
 | `as any`, `@ts-ignore` | Type safety violations  |
 | Empty catch blocks     | Silent error swallowing |
 | Simulated actions      | Tools must do real work |
-| GPT-5.0 models         | Deprecated              |
 
 ---
 
@@ -244,13 +199,16 @@ From the broader Borg vision, MetaMCP should consider:
 
 MetaMCP operates alongside these critical submodules:
 
-| Submodule    | Version | Relationship to MetaMCP         |
-| ------------ | ------- | ------------------------------- |
-| `mcp-shark`  | v1.5.9  | Traffic monitoring (integrated) |
-| `mcpenetes`  | v1.0.3  | Client auto-configuration       |
-| `mcp-hub`    | v4.2.1  | Alternative hub implementation  |
-| `mcp-router` | v0.6.1  | Routing concepts                |
-| `Agent-MCP`  | v4.20.0 | MCP server for agents           |
+| Submodule         | Version | Relationship to MetaMCP         |
+| ----------------- | ------- | ------------------------------- |
+| `mcp-shark`       | v1.5.9  | Traffic monitoring (integrated) |
+| `mcpenetes`       | v1.0.3  | Client auto-configuration       |
+| `mcp-hub`         | v4.2.1  | Alternative hub implementation  |
+| `mcp-router`      | v0.6.1  | Routing concepts                |
+| `Agent-MCP`       | v4.20.0 | MCP server for agents           |
+| `bobcoin`         | —       | Decentralized economy layer     |
+| `cointrade`       | —       | Trading platform reference      |
+| `mcp-directories` | —       | MCP server discovery catalogs   |
 
 ---
 
@@ -261,18 +219,18 @@ MetaMCP operates alongside these critical submodules:
 Based on workspace vision, these should be prioritized:
 
 1. **Token Optimization** (highest impact)
-   - Hybrid Search (BM25 + Semantic)
-   - Deferred Loading Protocol
-   - Pattern-Based Filtering
+   - Hybrid Search (BM25 + Semantic) ✅
+   - Deferred Loading Protocol ✅
+   - Pattern-Based Filtering ✅
 
 2. **Auto-Discovery**
-   - mcp.json auto-discovery
-   - Server health checks
-   - npm/Homebrew scanning
+   - mcp.json auto-discovery ✅
+   - Server health checks ✅
+   - npm/Homebrew scanning ✅
 
 3. **Enhanced Agent**
    - Multi-step planning
-   - Memory/context persistence
+   - Memory/context persistence ✅
    - Tool composition pipelines
 
 4. **Integration**

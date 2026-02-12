@@ -1,20 +1,14 @@
 import { ServerParameters } from "@repo/zod-types";
 
-<<<<<<< HEAD
 import { mcpServersRepository, namespacesRepository } from "../db/repositories";
 import { initializeEnvironmentConfiguration } from "./bootstrap.service";
 import { metaMcpServerPool } from "./metamcp";
-=======
-import { dockerSessionsRepo, mcpServersRepository } from "../db/repositories";
-import { dockerManager } from "./metamcp/docker-manager/index.js";
->>>>>>> origin/docker-in-docker
 import { convertDbServerToParams } from "./metamcp/utils";
 
 // Store the interval ID for potential cleanup
 let periodicSyncInterval: NodeJS.Timeout | null = null;
 
 /**
-<<<<<<< HEAD
  * Startup initialization that must happen before the HTTP server begins listening.
  *
  * IMPORTANT: This function does not prevent the app from starting unless BOOTSTRAP_FAIL_HARD=true.
@@ -50,9 +44,6 @@ export async function initializeOnStartup(): Promise<void> {
 
 /**
  * Startup function to initialize idle servers for all namespaces and all MCP servers
-=======
- * Startup function to initialize Docker containers for stdio MCP servers
->>>>>>> origin/docker-in-docker
  */
 export async function initializeDockerContainers() {
   try {
@@ -108,11 +99,7 @@ export async function initializeDockerContainers() {
       "✅ Successfully initialized Docker containers for all MCP servers",
     );
   } catch (error) {
-<<<<<<< HEAD
     console.log("❌ Error initializing idle servers:", error);
-=======
-    console.error("❌ Error initializing Docker containers:", error);
->>>>>>> origin/docker-in-docker
     // Don't exit the process, just log the error
     // The server should still start even if Docker initialization fails
   }

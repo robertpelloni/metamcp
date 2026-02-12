@@ -282,12 +282,8 @@ export default function RegisterPage() {
         <ThemeToggle />
         <LanguageSwitcher />
       </div>
-<<<<<<< HEAD
       <div className="w-full max-w-sm mx-auto flex flex-col justify-center space-y-6">
         <DomainWarningBanner />
-=======
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
->>>>>>> origin/2.3-no-cors
         <Suspense fallback={<LoadingFallback />}>
           <RegisterForm />
         </Suspense>

@@ -1,7 +1,7 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.5.0
-**Last Updated**: 2026-01-26
+**Current Version**: 3.6.0
+**Last Updated**: 2026-02-12
 
 ---
 
@@ -131,7 +131,7 @@
 
 ### UI/UX
 
-- [ ] **Dark Mode** - Theme support
+- [x] **Dark Mode** - Full light/dark/system theme support (v3.6.0) ✅
 - [ ] **Keyboard Shortcuts** - Power user features
 - [ ] **Mobile Responsive** - Mobile-friendly dashboard
 
@@ -177,6 +177,7 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.6.0**  | 2026-02-12 | Dark Mode, Documentation Overhaul, Critical Fixes |
 | **3.5.0**  | 2026-01-26 | Agent Memory, MCP Registry, Analytics, Templates  |
 | **3.2.18** | 2026-01-11 | npm Global Package Scanning for MCP servers       |
 | **3.2.17** | 2026-01-11 | mcp.json Auto-discovery (Claude/Cursor/VS Code)   |

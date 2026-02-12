@@ -1,6 +1,5 @@
 // No longer required - using relative URLs for flexible deployment
 export const getAppUrl = () => {
-<<<<<<< HEAD
   // Check if we're running on the server side
   if (typeof window === "undefined") {
     // Server-side: try to get from process.env first, then runtime env
@@ -22,7 +21,4 @@ export const getAppUrl = () => {
     return window.location.origin;
   }
   return NEXT_PUBLIC_APP_URL;
-=======
-  return typeof window !== "undefined" ? window.location.origin : "";
->>>>>>> origin/2.3-no-cors
 };

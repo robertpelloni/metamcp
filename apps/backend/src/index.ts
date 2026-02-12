@@ -1,12 +1,8 @@
 import express from "express";
 
 import { auth } from "./auth";
-<<<<<<< HEAD
 import { initializeIdleServers } from "./lib/startup";
 import headlessApiRouter from "./routers/headless-openapi";
-=======
-import { initializeDockerContainers } from "./lib/startup";
->>>>>>> origin/docker-in-docker
 import mcpProxyRouter from "./routers/mcp-proxy";
 import publicEndpointsRouter from "./routers/public-metamcp";
 import trpcRouter from "./routers/trpc";

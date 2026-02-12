@@ -9,13 +9,8 @@ import {
 } from "@/middleware/api-key-oauth.middleware";
 import { lookupEndpoint } from "@/middleware/lookup-endpoint-middleware";
 
-<<<<<<< HEAD
 import { metaMcpServerPool } from "../../lib/metamcp/metamcp-server-pool";
 import { SessionLifetimeManagerImpl } from "../../lib/session-lifetime-manager";
-=======
-import { createServer } from "../../lib/metamcp/metamcp-proxy";
-import { cleanupSession as cleanupMcpSession } from "../../lib/metamcp/sessions";
->>>>>>> origin/docker-in-docker
 
 const streamableHttpRouter = express.Router();
 
@@ -36,7 +31,6 @@ const cleanupSession = async (
     // Use provided transport or get from session manager
     const sessionTransport = transport || sessionManager.getSession(sessionId);
 
-<<<<<<< HEAD
     if (sessionTransport) {
       console.log(`Closing transport for session ${sessionId}`);
       await sessionTransport.close();
@@ -45,7 +39,6 @@ const cleanupSession = async (
       console.log(`No transport found for session ${sessionId}`);
     }
 
-<<<<<<< HEAD
     // Remove from session manager
     sessionManager.removeSession(sessionId);
 
@@ -60,16 +53,6 @@ const cleanupSession = async (
     console.log(`Removed orphaned session ${sessionId} due to cleanup error`);
     throw error;
   }
-=======
-  // Clean up MCP client sessions associated with this sessionId
-  try {
-    await cleanupMcpSession(sessionId);
-  } catch (err) {
-    console.warn(`Error cleaning up MCP session ${sessionId}:`, err);
-  }
-
-  console.log(`StreamableHTTP session ${sessionId} cleaned up`);
->>>>>>> origin/docker-in-docker
 };
 
 // Health check endpoint to monitor sessions
@@ -88,25 +71,6 @@ streamableHttpRouter.get("/health/sessions", (req, res) => {
   });
 });
 
-=======
-    // Clean up MCP client sessions associated with this sessionId
-    await cleanupMcpSession(sessionId);
-
-    console.log(`Session ${sessionId} cleanup completed successfully`);
-  } catch (error) {
-    console.error(`Error during cleanup of session ${sessionId}:`, error);
-    // Even if cleanup fails, remove the transport from our map to prevent memory leaks
-    if (transports[sessionId]) {
-      delete transports[sessionId];
-      console.log(
-        `Removed orphaned transport for session ${sessionId} due to cleanup error`,
-      );
-    }
-    throw error;
-  }
-};
-
->>>>>>> origin/docker-per-mcp
 streamableHttpRouter.get(
   "/:endpoint_name/mcp",
   lookupEndpoint,

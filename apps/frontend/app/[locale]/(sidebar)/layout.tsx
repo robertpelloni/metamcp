@@ -10,6 +10,8 @@ import {
   Server,
   Settings,
 } from "lucide-react";
+import packageJson from "../../../../package.json";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -115,8 +117,9 @@ function UserInfoFooter() {
       <div className="flex flex-col gap-2 p-2">
         <div className="flex items-center justify-between">
           <LanguageSwitcher />
-          <p>Version v2.4.4</p>
+          <ThemeToggle />
         </div>
+        <p className="text-xs text-muted-foreground text-center">v{packageJson.version}</p>
         <Separator />
         {user && (
           <div className="flex flex-col gap-2">

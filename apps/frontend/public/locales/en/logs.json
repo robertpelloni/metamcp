@@ -56,11 +56,6 @@
   "connecting": "Connecting...",
   "reconnecting": "Reconnecting...",
   "logsCount": "{{count}} logs",
-<<<<<<< HEAD
-  "filteredLogsCount": "{{count}} of {{total}} logs shown"
-}
-=======
   "filteredLogsCount": "{{count}} of {{total}} logs shown",
   "selectContainer": "Select container"
-} 
->>>>>>> origin/docker-in-docker
+}

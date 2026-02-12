@@ -8,12 +8,8 @@ export const ConfigKeyEnum = z.enum([
   "MCP_RESET_TIMEOUT_ON_PROGRESS",
   "MCP_TIMEOUT",
   "MCP_MAX_TOTAL_TIMEOUT",
-<<<<<<< HEAD
   "MCP_MAX_ATTEMPTS",
   "SESSION_LIFETIME",
-=======
-  "DOCKER_MCP_PROXY_IMAGE",
->>>>>>> origin/docker-in-docker
 ]);
 
 // Config schema

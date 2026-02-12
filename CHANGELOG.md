@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.6.0] - 2026-02-12
+
+### Added
+- **Dark Mode in Sidebar**: Added `ThemeToggle` component to the main sidebar layout, completing dark mode support across the entire application.
+- **Dynamic Version Display**: Sidebar footer now reads version from `package.json` instead of hardcoded string.
+
+### Changed
+- **Documentation Overhaul**: Comprehensive rewrite of all LLM instruction files:
+  - `LLM_INSTRUCTIONS.md` — expanded to ~200 lines with architecture, env vars, coding standards, user directives.
+  - `AGENTS.md` — detailed operational guidelines for security, tool patterns, memory, and session handoff.
+  - `CLAUDE.md`, `GEMINI.md`, `GPT.md`, `copilot-instructions.md` — model-specific strengths and codebase conventions.
+- **VISION.md**: Fixed duplicated "Three Pillars" section, updated to v3.0.0.
+- **DASHBOARD.md**: Updated all versions to 3.6.0, added complete submodule listing with URLs.
+- **ROADMAP.md**: Marked Dark Mode as completed.
+
+### Fixed
+- **Merge Conflicts**: Resolved leftover merge conflict markers in root `package.json` from docker-in-docker/docker-per-mcp branch merges.
+- **Submodule References**: Added missing `.gitmodules` entries for `cointrade` and `mcp-directories` submodules.
+
 ## [3.5.0] - 2025-12-25
 
 ### Added

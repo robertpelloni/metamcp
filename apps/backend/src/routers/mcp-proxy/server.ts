@@ -4,13 +4,7 @@ import {
   SSEClientTransport,
   SseError,
 } from "@modelcontextprotocol/sdk/client/sse.js";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { getDefaultEnvironment } from "@modelcontextprotocol/sdk/client/stdio.js";
-=======
->>>>>>> origin/docker-in-docker
-=======
->>>>>>> origin/docker-per-mcp
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -18,7 +12,6 @@ import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { McpServerErrorStatusEnum, McpServerTypeEnum } from "@repo/zod-types";
 import express from "express";
 
-<<<<<<< HEAD
 import logger from "@/utils/logger";
 
 import { mcpServersRepository } from "../../db/repositories";
@@ -27,16 +20,6 @@ import { transformDockerUrl } from "../../lib/metamcp/client";
 import { mcpServerPool } from "../../lib/metamcp/mcp-server-pool";
 import { resolveEnvVariables } from "../../lib/metamcp/utils";
 import { ProcessManagedStdioTransport } from "../../lib/stdio-transport/process-managed-transport";
-=======
-import { mcpServersRepository } from "../../db/repositories/index";
-import mcpProxy from "../../lib/mcp-proxy";
-import { handleDockerContainerUrl } from "../../lib/metamcp/client";
-import { dockerManager } from "../../lib/metamcp/docker-manager/index.js";
-import { convertDbServerToParams } from "../../lib/metamcp/utils";
-<<<<<<< HEAD
->>>>>>> origin/docker-in-docker
-=======
->>>>>>> origin/docker-per-mcp
 import { betterAuthMcpMiddleware } from "../../middleware/better-auth-mcp.middleware";
 
 const SSE_HEADERS_PASSTHROUGH = ["authorization"];
@@ -210,8 +193,6 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
   const transportType = query.transportType as string;
 
   if (transportType === McpServerTypeEnum.Enum.STDIO) {
-<<<<<<< HEAD
-<<<<<<< HEAD
     const command = query.command as string;
     const origArgs = shellParseArgs(query.args as string) as string[];
     const queryEnv = query.env ? JSON.parse(query.env as string) : {};
@@ -228,19 +209,14 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
       logger.info(`STDIO command in cooldown: ${cmd} ${args.join(" ")}`);
       const cooldownEnd = stdioCommandCooldowns.get(
         createStdioKey(cmd, args, env),
-=======
-=======
->>>>>>> origin/docker-per-mcp
     const mcpServerUuid = query.mcpServerUuid as string;
     if (!mcpServerUuid) {
       throw new Error(
         "Missing required parameter: mcpServerUuid for STDIO transport",
-<<<<<<< HEAD
 >>>>>>> origin/docker-in-docker
       );
     }
 
-<<<<<<< HEAD
     // Check if the server is in error state
     const serverUuid = await extractServerUuidFromStdioCommand(cmd, args);
     if (serverUuid) {
@@ -271,19 +247,6 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
         `STDIO command failed, setting cooldown: ${cmd} ${args.join(" ")}`,
       );
       throw error;
-=======
-    const dbServer = await mcpServersRepository.findByUuid(mcpServerUuid);
-    if (!dbServer) {
-      throw new Error(`MCP server not found for uuid: ${mcpServerUuid}`);
->>>>>>> origin/docker-in-docker
-=======
-      );
-    }
-
-    const dbServer = await mcpServersRepository.findByUuid(mcpServerUuid);
-    if (!dbServer) {
-      throw new Error(`MCP server not found for uuid: ${mcpServerUuid}`);
->>>>>>> origin/docker-per-mcp
     }
     const serverParams = await convertDbServerToParams(dbServer);
     if (!serverParams) {
@@ -347,20 +310,10 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
   } else if (transportType === McpServerTypeEnum.Enum.STREAMABLE_HTTP) {
     const url = transformDockerUrl(query.url as string);
 
-<<<<<<< HEAD
     // Check if the server is in error state (for STREAMABLE_HTTP, we need to find server by URL)
     const servers = await mcpServersRepository.findAll();
     const matchingServer = servers.find(
       (server) => server.type === "STREAMABLE_HTTP" && server.url === url,
-=======
-    const transport = new StreamableHTTPClientTransport(
-      new URL(handleDockerContainerUrl(query.url as string)),
-      {
-        requestInit: {
-          headers,
-        },
-      },
->>>>>>> origin/docker-in-docker
     );
     if (matchingServer) {
       const isInError = await checkServerErrorStatus(matchingServer.uuid);
@@ -618,8 +571,6 @@ serverRouter.get("/stdio", async (req, res) => {
 
     await webAppTransport.start();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     const stdinTransport = serverTransport as ProcessManagedStdioTransport;
 
     // Set up crash detection for the server pool
@@ -755,10 +706,6 @@ serverRouter.get("/stdio", async (req, res) => {
       });
     }
 
-=======
->>>>>>> origin/docker-in-docker
-=======
->>>>>>> origin/docker-per-mcp
     mcpProxy({
       transportToClient: webAppTransport,
       transportToServer: serverTransport,

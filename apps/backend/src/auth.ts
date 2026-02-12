@@ -80,12 +80,7 @@ export const auth = betterAuth({
       verification: schema.verificationsTable,
     },
   }),
-<<<<<<< HEAD
   trustedOrigins,
-=======
-  // Allow all origins for flexible deployment
-  trustedOrigins: ["*"],
->>>>>>> origin/2.3-no-cors
   plugins: [
     // Add generic OAuth plugin for OIDC support
     ...(oidcProviders.length > 0
