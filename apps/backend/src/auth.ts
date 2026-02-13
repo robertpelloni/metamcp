@@ -11,8 +11,12 @@ import logger from "./utils/logger";
 if (!process.env.BETTER_AUTH_SECRET) {
   throw new Error("BETTER_AUTH_SECRET environment variable is required");
 }
+if (!process.env.APP_URL) {
+  throw new Error("APP_URL environment variable is required");
+}
 
 const BETTER_AUTH_SECRET = process.env.BETTER_AUTH_SECRET;
+const BETTER_AUTH_URL = process.env.APP_URL;
 
 // Helper function to create basic auth middleware
 const createBasicAuthCheckMiddleware = () => {
@@ -70,7 +74,7 @@ const trustedOrigins = [...DEFAULT_TRUSTED_ORIGINS, ...extraTrustedOrigins];
 
 export const auth = betterAuth({
   secret: BETTER_AUTH_SECRET,
-  // Remove baseURL to allow dynamic origin detection
+  baseURL: BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -118,7 +122,7 @@ export const auth = betterAuth({
   },
   advanced: {
     crossSubDomainCookies: {
-      enabled: false,
+      enabled: true,
     },
   },
   logger: {

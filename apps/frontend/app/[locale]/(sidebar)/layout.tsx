@@ -10,7 +10,7 @@ import {
   Server,
   Settings,
 } from "lucide-react";
-import packageJson from "../../../../package.json";
+import packageJson from "../../../package.json";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";

@@ -5,9 +5,6 @@ import { initializeEnvironmentConfiguration } from "./bootstrap.service";
 import { metaMcpServerPool } from "./metamcp";
 import { convertDbServerToParams } from "./metamcp/utils";
 
-// Store the interval ID for potential cleanup
-let periodicSyncInterval: NodeJS.Timeout | null = null;
-
 /**
  * Startup initialization that must happen before the HTTP server begins listening.
  *
@@ -45,28 +42,26 @@ export async function initializeOnStartup(): Promise<void> {
 /**
  * Startup function to initialize idle servers for all namespaces and all MCP servers
  */
-export async function initializeDockerContainers() {
+export async function initializeIdleServers() {
   try {
-    console.log("Initializing Docker containers for stdio MCP servers...");
+    console.log(
+      "Initializing idle servers for all namespaces and all MCP servers...",
+    );
 
-    // Clean up any leftover temporary sessions from previous failed attempts
-    console.log("Cleaning up temporary sessions...");
-    const cleanedCount = await dockerSessionsRepo.cleanupTemporarySessions();
-    if (cleanedCount > 0) {
-      console.log(`Cleaned up ${cleanedCount} temporary sessions`);
-    }
+    // Fetch all namespaces from the database
+    const namespaces = await namespacesRepository.findAll();
+    const namespaceUuids = namespaces.map((namespace) => namespace.uuid);
 
-    // First, sync any existing container statuses to fix discrepancies
-    console.log("Syncing existing container statuses...");
-    const { syncedCount, totalCount } =
-      await dockerManager.syncAllContainerStatuses();
-    if (syncedCount > 0) {
+    if (namespaceUuids.length === 0) {
+      console.log("No namespaces found in database");
+    } else {
       console.log(
-        `Fixed ${syncedCount} out of ${totalCount} container status discrepancies`,
+        `Found ${namespaceUuids.length} namespaces: ${namespaceUuids.join(", ")}`,
       );
     }
 
-    // Fetch all MCP servers from the database
+    // Fetch ALL MCP servers from the database (not just namespace-associated ones)
+    console.log("Fetching all MCP servers from database...");
     const allDbServers = await mcpServersRepository.findAll();
     console.log(`Found ${allDbServers.length} total MCP servers in database`);
 
@@ -83,34 +78,29 @@ export async function initializeDockerContainers() {
       `Successfully converted ${Object.keys(allServerParams).length} MCP servers to ServerParameters format`,
     );
 
-    // Initialize Docker containers for stdio servers
+    // Initialize idle sessions for the underlying MCP server pool with ALL servers
     if (Object.keys(allServerParams).length > 0) {
-      await dockerManager.initializeContainers(allServerParams);
+      const { mcpServerPool } = await import("./metamcp");
+      await mcpServerPool.ensureIdleSessions(allServerParams);
       console.log(
-        "✅ Successfully initialized Docker containers for stdio MCP servers",
+        "✅ Successfully initialized idle MCP server pool sessions for ALL servers",
       );
     }
 
-    // Start periodic container status synchronization
-    periodicSyncInterval = dockerManager.startPeriodicSync(30000); // Sync every 30 seconds
-    console.log("✅ Started periodic container status synchronization");
+    // Ensure idle servers for all namespaces (MetaMCP server pool)
+    if (namespaceUuids.length > 0) {
+      await metaMcpServerPool.ensureIdleServers(namespaceUuids, true);
+      console.log(
+        "✅ Successfully initialized idle servers for all namespaces",
+      );
+    }
 
     console.log(
-      "✅ Successfully initialized Docker containers for all MCP servers",
+      "✅ Successfully initialized idle servers for all namespaces and all MCP servers",
     );
   } catch (error) {
     console.log("❌ Error initializing idle servers:", error);
     // Don't exit the process, just log the error
-    // The server should still start even if Docker initialization fails
-  }
-}
-
-/**
- * Cleanup function to stop periodic sync
- */
-export function cleanupDockerSync() {
-  if (periodicSyncInterval) {
-    dockerManager.stopPeriodicSync(periodicSyncInterval);
-    periodicSyncInterval = null;
+    // The server should still start even if idle server initialization fails
   }
 }

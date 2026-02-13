@@ -11,6 +11,8 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { McpServerErrorStatusEnum, McpServerTypeEnum } from "@repo/zod-types";
 import express from "express";
+import { parse as shellParseArgs } from "shell-quote";
+import { findActualExecutable } from "spawn-rx";
 
 import logger from "@/utils/logger";
 
@@ -29,7 +31,49 @@ const STREAMABLE_HTTP_HEADERS_PASSTHROUGH = [
   "last-event-id",
 ];
 
-// STDIO subprocess spawning removed; managed via Docker containers.
+const defaultEnvironment = {
+  ...getDefaultEnvironment(),
+};
+
+// Cooldown mechanism for failed STDIO commands
+const STDIO_COOLDOWN_DURATION = 10000; // 10 seconds
+const stdioCommandCooldowns = new Map<string, number>();
+
+// Function to create a key for STDIO commands
+const createStdioKey = (
+  command: string,
+  args: string[],
+  env: Record<string, string>,
+) => {
+  return `${command}:${args.join(",")}:${JSON.stringify(env)}`;
+};
+
+// Function to check if a STDIO command is in cooldown
+const isStdioInCooldown = (
+  command: string,
+  args: string[],
+  env: Record<string, string>,
+): boolean => {
+  const key = createStdioKey(command, args, env);
+  const cooldownEnd = stdioCommandCooldowns.get(key);
+  if (cooldownEnd && Date.now() < cooldownEnd) {
+    return true;
+  }
+  if (cooldownEnd && Date.now() >= cooldownEnd) {
+    stdioCommandCooldowns.delete(key);
+  }
+  return false;
+};
+
+// Function to set a STDIO command in cooldown
+const setStdioCooldown = (
+  command: string,
+  args: string[],
+  env: Record<string, string>,
+) => {
+  const key = createStdioKey(command, args, env);
+  stdioCommandCooldowns.set(key, Date.now() + STDIO_COOLDOWN_DURATION);
+};
 
 // Function to extract server UUID from STDIO command
 const extractServerUuidFromStdioCommand = async (
@@ -209,12 +253,12 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
       logger.info(`STDIO command in cooldown: ${cmd} ${args.join(" ")}`);
       const cooldownEnd = stdioCommandCooldowns.get(
         createStdioKey(cmd, args, env),
-    const mcpServerUuid = query.mcpServerUuid as string;
-    if (!mcpServerUuid) {
-      throw new Error(
-        "Missing required parameter: mcpServerUuid for STDIO transport",
->>>>>>> origin/docker-in-docker
       );
+      if (cooldownEnd) {
+        throw new Error(
+          `Command "${cmd} ${args.join(" ")}" is in cooldown. Please wait ${Math.ceil((cooldownEnd - Date.now()) / 1000)} seconds before retrying.`,
+        );
+      }
     }
 
     // Check if the server is in error state
@@ -248,30 +292,8 @@ const createTransport = async (req: express.Request): Promise<Transport> => {
       );
       throw error;
     }
-    const serverParams = await convertDbServerToParams(dbServer);
-    if (!serverParams) {
-      throw new Error(
-        `Unable to build server parameters for uuid: ${mcpServerUuid}`,
-      );
-    }
-
-    let dockerUrl = await dockerManager.getServerUrl(mcpServerUuid);
-    if (!dockerUrl) {
-      const dockerServer = await dockerManager.createContainer(
-        mcpServerUuid,
-        serverParams,
-      );
-      dockerUrl = dockerServer.url;
-    }
-
-    const url = handleDockerContainerUrl(dockerUrl);
-    console.log(`STDIO (Docker) transport: url=${url}`);
-
-    const transport = new SSEClientTransport(new URL(url));
-    await transport.start();
-    return transport;
   } else if (transportType === McpServerTypeEnum.Enum.SSE) {
-    const url = handleDockerContainerUrl(query.url as string);
+    const url = transformDockerUrl(query.url as string);
 
     // Check if the server is in error state (for SSE, we need to find server by URL)
     const servers = await mcpServersRepository.findAll();

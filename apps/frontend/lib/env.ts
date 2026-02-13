@@ -1,4 +1,5 @@
-// No longer required - using relative URLs for flexible deployment
+import { env } from "next-runtime-env";
+
 export const getAppUrl = () => {
   // Check if we're running on the server side
   if (typeof window === "undefined") {

@@ -18,43 +18,6 @@ if command -v pg_isready >/dev/null 2>&1; then
 else
     echo "ℹ️ pg_isready not found; relying on docker-compose healthcheck"
 fi
-echo "Starting MetaMCP development services..."
-
-# Function to cleanup Docker containers and networks
-cleanup_managed_containers() {
-    echo "🧹 CLEANUP: Starting MetaMCP managed Docker resources cleanup..."
-    
-    # Check if Docker is available by probing docker info
-    if docker info >/dev/null 2>&1; then
-        echo "🧹 CLEANUP: Docker is available, proceeding with cleanup..."
-        
-        # Simple clean docker command - stop and remove containers
-        echo "🧹 CLEANUP: Stopping and removing managed containers..."
-        docker ps -a --filter "label=metamcp.managed=true" --format '{{.ID}}' \
-            | xargs -r docker rm -f 2>/dev/null || echo "🧹 CLEANUP: Failed to remove some containers"
-        
-        echo "✅ CLEANUP: Cleaned up managed containers"
-        
-        # Remove networks
-        NETWORKS=$(docker network ls --filter "label=metamcp.managed=true" --format "{{.ID}}" 2>/dev/null || true)
-        if [ -n "$NETWORKS" ]; then
-            echo "🧹 CLEANUP: Found managed networks to remove: $NETWORKS"
-            for network in $NETWORKS; do
-                echo "🧹 CLEANUP: Removing network $network"
-                docker network rm "$network" 2>/dev/null || echo "🧹 CLEANUP: Failed to remove network $network"
-            done
-            echo "✅ CLEANUP: Cleaned up managed networks"
-        else
-            echo "🧹 CLEANUP: No managed networks found"
-        fi
-    else
-        echo "⚠️  CLEANUP: Docker is not available (docker info failed), skipping container cleanup"
-        echo "⚠️  CLEANUP: This may be due to rootless Docker, DOCKER_HOST not set, or Docker daemon not running"
-    fi
-    
-    echo "🧹 CLEANUP: Cleanup process completed"
-}
->>>>>>> origin/docker-in-docker
 
 # Function to cleanup on exit
 cleanup_on_exit() {
@@ -108,17 +71,6 @@ echo "🛠 Running database migrations (dev)..."
 # Start the development servers with proper signal handling
 echo "🚀 Starting pnpm dev with turborepo..."
 echo "💡 This will start both frontend and backend in development mode"
-# Initialize - clean up any existing managed containers
-echo "🚀 INIT: Cleaning up any existing managed containers..."
-cleanup_managed_containers
-
-echo "Starting development servers with turborepo..."
-echo "Backend will run on port 12009"
-echo "Frontend will run on port 12008"
-
-# Start the development servers with proper signal handling
-echo "🚀 Starting pnpm dev..."
->>>>>>> origin/docker-in-docker
 pnpm dev &
 PNPM_PID=$!
 echo "🚀 pnpm dev started with PID: $PNPM_PID"

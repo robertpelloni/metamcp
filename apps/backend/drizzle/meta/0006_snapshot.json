@@ -1,5 +1,5 @@
 {
-  "id": "19c5eb90-b32b-4949-afd7-0479f0559ad0",
+  "id": "83563a96-dde4-476b-b7fb-84c06969c049",
   "prevId": "8e2476b2-7500-4f3b-8f52-fd67c57764c5",
   "version": "7",
   "dialect": "postgresql",
@@ -153,14 +153,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": true
-        },
-        "type": {
-          "name": "type",
-          "type": "api_key_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'MCP'"
         }
       },
       "indexes": {
@@ -199,21 +191,6 @@
           "columns": [
             {
               "expression": "is_active",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "api_keys_type_idx": {
-          "name": "api_keys_type_idx",
-          "columns": [
-            {
-              "expression": "type",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -622,6 +599,14 @@
           "notNull": true,
           "default": "'ACTIVE'"
         },
+        "error_status": {
+          "name": "error_status",
+          "type": "mcp_server_error_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'NONE'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -666,6 +651,21 @@
           "columns": [
             {
               "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "namespace_server_mappings_error_status_idx": {
+          "name": "namespace_server_mappings_error_status_idx",
+          "columns": [
+            {
+              "expression": "error_status",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1760,12 +1760,12 @@
     }
   },
   "enums": {
-    "public.api_key_type": {
-      "name": "api_key_type",
+    "public.mcp_server_error_status": {
+      "name": "mcp_server_error_status",
       "schema": "public",
       "values": [
-        "MCP",
-        "ADMIN"
+        "NONE",
+        "ERROR"
       ]
     },
     "public.mcp_server_status": {

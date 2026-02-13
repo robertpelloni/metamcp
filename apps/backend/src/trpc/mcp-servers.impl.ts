@@ -24,7 +24,6 @@ import { clearOverrideCache } from "../lib/metamcp/metamcp-middleware/tool-overr
 import { metaMcpServerPool } from "../lib/metamcp/metamcp-server-pool";
 import { serverErrorTracker } from "../lib/metamcp/server-error-tracker";
 import { convertDbServerToParams } from "../lib/metamcp/utils";
-import { syncMcpSharkConfig } from "../lib/mcp-shark";
 
 export const mcpServersImplementations = {
   create: async (
@@ -48,7 +47,7 @@ export const mcpServersImplementations = {
         };
       }
 
-      // Create Docker container for stdio servers (async)
+      // Ensure idle session for the newly created server (async)
       const serverParams = await convertDbServerToParams(createdServer);
       if (serverParams) {
         mcpServerPool
@@ -65,11 +64,6 @@ export const mcpServersImplementations = {
             );
           });
       }
-
-      // Sync MCP Shark config
-      syncMcpSharkConfig().catch((err) => {
-        console.error("Error syncing MCP Shark config:", err);
-      });
 
       return {
         success: true as const,
@@ -156,14 +150,14 @@ export const mcpServersImplementations = {
           await mcpServersRepository.bulkCreate(serversToInsert);
         imported = serversToInsert.length;
 
-        // Create Docker containers for stdio servers (async)
+        // Ensure idle sessions for all imported servers (async)
         if (createdServers && createdServers.length > 0) {
           createdServers.forEach(async (server) => {
             try {
               const params = await convertDbServerToParams(server);
-              if (params && (!params.type || params.type === "STDIO")) {
-                dockerManager
-                  .createContainer(server.uuid, params)
+              if (params) {
+                mcpServerPool
+                  .ensureIdleSessionForNewServer(server.uuid, params)
                   .then(() => {
                     logger.info(
                       `Ensured idle session for bulk imported server: ${server.name} (${server.uuid})`,
@@ -185,11 +179,6 @@ export const mcpServersImplementations = {
           });
         }
       }
-
-      // Sync MCP Shark config
-      syncMcpSharkConfig().catch((err) => {
-        console.error("Error syncing MCP Shark config:", err);
-      });
 
       return {
         success: true as const,
@@ -274,8 +263,14 @@ export const mcpServersImplementations = {
         };
       }
 
-      // Clean up Docker container for this server if it's stdio
-      await dockerManager.removeContainer(input.uuid);
+      // Find affected namespaces before deleting the server
+      const affectedNamespaceUuids =
+        await namespaceMappingsRepository.findNamespacesByServerUuid(
+          input.uuid,
+        );
+
+      // Clean up any idle sessions for this server
+      await mcpServerPool.cleanupIdleSession(input.uuid);
 
       const deletedServer = await mcpServersRepository.deleteByUuid(input.uuid);
 
@@ -325,16 +320,6 @@ export const mcpServersImplementations = {
           `Cleared tool overrides cache for ${affectedNamespaceUuids.length} namespaces after deleting server: ${deletedServer.name} (${deletedServer.uuid})`,
         );
       }
-
-      // Sync MCP Shark config
-      syncMcpSharkConfig().catch((err) => {
-        console.error("Error syncing MCP Shark config:", err);
-      });
-
-      // Sync MCP Shark config
-      syncMcpSharkConfig().catch((err) => {
-        console.error("Error syncing MCP Shark config:", err);
-      });
 
       return {
         success: true as const,
@@ -466,11 +451,6 @@ export const mcpServersImplementations = {
           `Cleared tool overrides cache for ${affectedNamespaceUuids.length} namespaces after updating server: ${updatedServer.name} (${updatedServer.uuid})`,
         );
       }
-
-      // Sync MCP Shark config
-      syncMcpSharkConfig().catch((err) => {
-        console.error("Error syncing MCP Shark config:", err);
-      });
 
       return {
         success: true as const,

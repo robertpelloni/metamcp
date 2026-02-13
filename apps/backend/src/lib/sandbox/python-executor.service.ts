@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import { configService } from "../../config.service";
+import { configService } from "../config.service";
 
 export class PythonExecutorService {
   private pythonAvailable: boolean | null = null;
@@ -34,31 +34,31 @@ export class PythonExecutorService {
 
       // Basic sanitization
       if (code.includes("subprocess.Popen") || code.includes("os.system") || code.includes("os.fork")) {
-          console.warn("Potential dangerous code detected in Python executor.");
+        console.warn("Potential dangerous code detected in Python executor.");
       }
 
       const { stdout, stderr } = await execa("python3", ["-c", code], {
-          timeout: timeout || 30000,
-          reject: false,
-          input: code,
-          env: {
-              ...process.env,
-              PATH: process.env.PATH,
-              LANG: "en_US.UTF-8",
-              ...env
-          },
-          extendEnv: false
+        timeout: timeout || 30000,
+        reject: false,
+        input: code,
+        env: {
+          ...process.env,
+          PATH: process.env.PATH,
+          LANG: "en_US.UTF-8",
+          ...env
+        },
+        extendEnv: false
       });
 
       if (stderr) {
-          return `Output:\n${stdout}\n\nErrors:\n${stderr}`;
+        return `Output:\n${stdout}\n\nErrors:\n${stderr}`;
       }
       return stdout;
     } catch (error: any) {
-        if (error.timedOut) {
-            return `Execution Failed: Timeout after ${error.timeout}ms`;
-        }
-        return `Execution Failed: ${error.message}`;
+      if (error.timedOut) {
+        return `Execution Failed: Timeout after ${error.timeout}ms`;
+      }
+      return `Execution Failed: ${error.message}`;
     }
   }
 }
