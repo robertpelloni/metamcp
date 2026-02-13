@@ -31,6 +31,12 @@ export default function SettingsPage() {
   const [isSessionLifetimeEnabled, setIsSessionLifetimeEnabled] =
     useState(false);
 
+  // Docker image state (stub - backend Docker tRPC endpoints not yet implemented)
+  const [dockerImageInput, setDockerImageInput] = useState("ghcr.io/metatool-ai/mcp-proxy:latest");
+  const [isDockerImageDirty, setIsDockerImageDirty] = useState(false);
+  const dockerImage = "ghcr.io/metatool-ai/mcp-proxy:latest";
+  const setDockerImageMutation = { isPending: false, mutateAsync: async (_input: { imageName: string }) => { } };
+
   // Form setup
   const form = useForm<SettingsFormData>({
     resolver: zodResolver(SettingsFormSchema),

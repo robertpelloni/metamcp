@@ -224,7 +224,6 @@ export default function LoginPage() {
         <LanguageSwitcher />
       </div>
       <div className="w-full max-w-sm mx-auto flex flex-col justify-center space-y-6">
-        <DomainWarningBanner />
         <Suspense fallback={<div>Loading...</div>}>
           <LoginForm />
         </Suspense>
