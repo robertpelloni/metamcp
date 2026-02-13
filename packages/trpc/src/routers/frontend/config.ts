@@ -154,4 +154,14 @@ export const createConfigRouter = (implementations: {
       .mutation(async ({ input }) => {
         return await implementations.setDockerMcpProxyImage(input);
       }),
+
+    getDockerImage: publicProcedure.query(async () => {
+      return await implementations.getDockerMcpProxyImage();
+    }),
+
+    setDockerImage: protectedProcedure
+      .input(z.object({ imageName: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        return await implementations.setDockerMcpProxyImage(input);
+      }),
   });

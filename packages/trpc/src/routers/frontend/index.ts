@@ -10,6 +10,7 @@ import { createToolSetsRouter } from "./tool-sets";
 import { createToolsRouter } from "./tools";
 import { createPoliciesRouter } from "./policies";
 import { createAgentRouter } from "./agent";
+import { createServerHealthRouter } from "./server-health";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -23,6 +24,7 @@ export { createSavedScriptsRouter };
 export { createToolSetsRouter };
 export { createPoliciesRouter };
 export { createAgentRouter };
+export { createServerHealthRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -37,6 +39,7 @@ export const createFrontendRouter = (implementations: {
   toolSets: Parameters<typeof createToolSetsRouter>[0];
   policies: Parameters<typeof createPoliciesRouter>[0];
   agent: Parameters<typeof createAgentRouter>[0];
+  serverHealth: Parameters<typeof createServerHealthRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -51,5 +54,6 @@ export const createFrontendRouter = (implementations: {
     toolSets: createToolSetsRouter(implementations.toolSets),
     policies: createPoliciesRouter(implementations.policies),
     agent: createAgentRouter(implementations.agent),
+    serverHealth: createServerHealthRouter(implementations.serverHealth),
   };
 };

@@ -561,6 +561,8 @@ export const toolCallLogsTable = pgTable(
     result: jsonb("result").$type<Record<string, unknown>>(),
     error: text("error"),
     duration_ms: integer("duration_ms"),
+    session_id: text("session_id"),
+    parent_call_uuid: text("parent_call_uuid"),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

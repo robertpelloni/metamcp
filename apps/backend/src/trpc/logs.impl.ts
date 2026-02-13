@@ -65,7 +65,10 @@ export const logsImplementations = {
       };
     } catch (error) {
       console.error("Error getting logs:", error);
-      throw new Error("Failed to get logs");
+      if (error instanceof Error) {
+        console.error("Stack trace:", error.stack);
+      }
+      throw new Error(`Failed to get logs: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 

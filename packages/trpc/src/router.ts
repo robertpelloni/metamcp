@@ -20,6 +20,7 @@ export const createAppRouter = (implementations: {
       toolSets: frontendRouters.toolSets,
       policies: frontendRouters.policies,
       agent: frontendRouters.agent,
+      serverHealth: frontendRouters.serverHealth,
     }),
   });
 };
