@@ -70,6 +70,7 @@ When ending a session or handing off to another model:
 3. **Error Handling**: Always handle errors explicitly — no empty catch blocks.
 4. **Testing**: Write unit tests for all new services in `*.test.ts` files.
 5. **Naming**: Follow existing patterns — services use `*.service.ts`, handlers use `*.handler.ts`, middleware uses `*.functional.ts`.
+6. **Comment Everything**: Always comment the reason behind the code, what it does, and why it's there.
 
 ---
 
