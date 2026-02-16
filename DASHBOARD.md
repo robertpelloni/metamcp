@@ -30,6 +30,19 @@ MetaMCP is organized as a monorepo using **Turborepo** and **pnpm workspaces**.
 | **tRPC Contract** | `packages/trpc` | 🟢 Active | v1.0.0 | 2025-12-25 |
 | **Zod Types** | `packages/zod-types` | 🟢 Active | v1.0.0 | 2025-12-25 |
 
+## ⚠️ Implementation Gap Snapshot (2026-02-16)
+
+The codebase contains several capabilities that are present in source but not consistently mounted, surfaced, or productionized end-to-end.
+
+- **Mounted in active frontend tRPC router**: `mcpServers`, `namespaces`, `endpoints`, `oauth`, `tools`, `apiKeys`, `config`, `logs`, `savedScripts`, `toolSets`, `policies`, `agent`, `serverHealth`
+- **Implementation modules currently not mounted in active frontend tRPC router**: `analytics`, `audit`, `auto-discovery`, `auto-reconnect`, `catalog`, `memories`, `registry`, `system`
+- **Known placeholder/simulated UX paths**:
+	- Settings Docker image update control is frontend-stubbed
+	- Scripts page includes simulated “run_agent” guidance flow
+	- Inspector Roots and Sampling include placeholder/simulated behavior
+
+See `docs/ROADMAP.md` and `TODO.md` for prioritized resolution plan and acceptance criteria.
+
 ## 📦 Submodules
 
 | Submodule | Location | URL | Purpose |

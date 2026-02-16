@@ -51,3 +51,76 @@ The objective was to build a comprehensive MCP Hub that solves context window li
 *   **Branch:** `main` (synced)
 *   **Submodules:** All workspaces (`backend`, `frontend`, `packages/*`) are consistent.
 *   **Lockfile:** `pnpm-lock.yaml` is consistent with `package.json`.
+
+---
+
+## 📅 Session Addendum (2026-02-16) — Deep Gap Analysis & Documentation Realignment
+
+### Objective
+
+Perform a detailed project-wide audit focused on:
+
+- unfinished/partial code paths,
+- backend features not fully wired to active routers,
+- frontend features not comprehensively represented in UI,
+- documentation drift from runtime reality,
+- prioritized handoff artifacts for follow-up implementor models.
+
+### What was analyzed
+
+The audit covered:
+
+- core instructions and architecture docs (`LLM_INSTRUCTIONS.md`, `AGENTS.md`, roadmap/vision/docs),
+- backend route mounting (`apps/backend/src/routers/trpc.ts`) vs implementation inventory (`apps/backend/src/trpc/*.impl.ts`),
+- frontend feature pages in `apps/frontend/app/[locale]/(sidebar)/**`,
+- explicit TODO/placeholder/simulated markers in backend/frontend source,
+- prior handoff and analysis artifacts.
+
+### Key findings (high confidence)
+
+1. **Router wiring drift**
+	- Several backend implementation namespaces exist but are not mounted in active frontend tRPC runtime wiring.
+	- Unwired modules observed: `analytics`, `audit`, `auto-discovery`, `auto-reconnect`, `catalog`, `memories`, `registry`, `system`.
+
+2. **Simulated/placeholder UX in production routes**
+	- Settings Docker image update is stubbed frontend state.
+	- Scripts page includes a simulated “run_agent coming soon” flow.
+	- Inspector roots and sampling use placeholder/simulated behavior rather than real protocol execution.
+
+3. **Legacy/dead route artifact**
+	- `apps/backend/src/routers/logs.ts` contains TODO mock logs and is not mounted by backend entry routing.
+
+4. **UI representation mismatch**
+	- Sidebar navigation exposes a subset of feature pages while additional pages exist outside primary IA.
+	- Product completeness perception can diverge from actual supported behavior.
+
+5. **Documentation drift**
+	- Prior docs overstate completeness for some capabilities that are currently partial or not mounted.
+
+### Documentation changes made this session
+
+1. **`docs/ROADMAP.md`**
+	- Rewritten as a reality-aligned roadmap.
+	- Added explicit status taxonomy: implemented/wired vs partial vs code-present-not-mounted vs simulated.
+	- Added prioritized execution order and workstreams with concrete targets.
+
+2. **`TODO.md` (new)**
+	- Created detailed, implementation-ordered master backlog.
+	- Added acceptance criteria per work item.
+	- Added project-level definition of done requiring backend mount + UI representation + tests + docs.
+
+3. **`DASHBOARD.md`**
+	- Added “Implementation Gap Snapshot (2026-02-16)” section.
+	- Documented mounted namespaces, unmouted implementation modules, and known placeholder UX paths.
+
+### Recommended next execution order
+
+1. Router/API surface convergence (P0)
+2. Replace simulated user flows with real or explicitly unsupported states (P0)
+3. Audit/analytics correctness and filtering/count semantics (P1)
+4. Navigation/IA alignment with supported feature surface (P1)
+5. Remove type suppressions + add contract drift tests (P2)
+
+### Note for implementor models
+
+Use `TODO.md` as the canonical execution sequence. Do not mark features complete unless they are mounted, represented, tested, and documented.

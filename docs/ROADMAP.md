@@ -1,220 +1,151 @@
-# MetaMCP Feature Roadmap
+# MetaMCP Feature Roadmap (Reality-Aligned)
 
-**Current Version**: 3.6.0
-**Last Updated**: 2026-02-12
-
----
-
-## Legend
-
-| Status | Meaning            |
-| :----- | :----------------- |
-| ✅     | Completed          |
-| 🚧     | In Progress        |
-| 📋     | Planned            |
-| 💡     | Idea/Consideration |
+**Current Version**: 3.6.0  
+**Last Updated**: 2026-02-16  
+**Purpose**: Reflect actual implementation maturity (not just historical intent) to guide implementor models.
 
 ---
 
-## Completed Features (v3.x)
+## Status Legend
 
-### Agent Memory (v3.5.0) ✅
-
-- [x] **Long-term Persistence** - `memories` table with vector embeddings
-- [x] **Semantic Search** - `search_memory` tool using `pgvector`
-- [x] **Context Injection** - Automatic retrieval of relevant context
-- [x] **Memory Management UI** - `/memories` page for creating/deleting memories
-
-### MCP Registry (v3.5.0) ✅
-
-- [x] **Centralized Registry** - Discovery of 950+ MCP servers
-- [x] **One-Click Install** - `server-templates.json` for streamlined setup
-- [x] **Verified Templates** - Pre-configured settings for popular tools
-- [x] **Registry UI** - `/registry` page with search and filtering
-
-### Analytics & Observability (v3.5.0) ✅
-
-- [x] **Analytics Dashboard** - Visualizations for tool usage, error rates, and top tools
-- [x] **Traffic Inspector** - Integrated MCP Shark inspector
-- [x] **Usage Metrics** - `AnalyticsService` for aggregating logs
-- [x] **Historical Data** - Daily activity tracking
-
-### Core Architecture ✅
-
-- [x] **MCP Hub/Proxy** - Centralized gateway for downstream MCP servers
-- [x] **Progressive Tool Disclosure** - Hide tools by default, expose via search/load
-- [x] **Session Management** - Per-session loaded tools with FIFO eviction (max 200)
-- [x] **Namespace Tool Names** - `serverName__toolName` format
-
-### Semantic Search ✅
-
-- [x] **Tool RAG** - pgvector + OpenAI embeddings for semantic tool search
-- [x] **Auto-indexing** - Tools indexed on upsert
-- [x] **Enhanced Indexing** - Improved search relevance (v3.0.3)
-
-### Code Mode ✅
-
-- [x] **Isolated-vm Sandbox** - Secure JavaScript execution environment
-- [x] **Tool Chaining** - `mcp.call()` for calling tools from sandbox
-- [x] **Memory Limits** - Configurable via `CODE_EXECUTION_MEMORY_LIMIT`
-- [x] **Timeout Protection** - 30s default execution timeout
-
-### Tool Customization ✅
-
-- [x] **Tool Override System** - Namespace-scoped tool customization (name, title, description, annotations)
-- [x] **Tool Override UI** - Full inline editing UI in namespace tools table with Save/Cancel/Reset
-
-### Autonomous Agent ✅
-
-- [x] **Natural Language Tasks** - NL → code generation → execution
-- [x] **Policy Scoping** - Restrict agent access via `policyId`
-- [x] **Agent UI** - Frontend interface for agent interaction (v3.1.0)
-
-### Policy Engine ✅
-
-- [x] **Allow/Deny Patterns** - Fine-grained tool access control
-- [x] **Policy Middleware** - All tool calls route through policy checks
-- [x] **Per-request Policies** - Dynamic policy selection
-
-### Traffic Inspection ✅
-
-- [x] **MCP Shark Integration** - Traffic logging and inspection
-- [x] **Logging Middleware** - Capture all tool calls
-- [x] **Traffic UI** - Frontend dashboard for traffic inspection
-
-### Infrastructure ✅
-
-- [x] **Turborepo Monorepo** - Optimized builds with caching
-- [x] **Docker Deployment** - Production + dev containers
-- [x] **OIDC Authentication** - OAuth/OIDC support
-- [x] **CI/CD Pipeline** - GitHub Actions with Docker publishing
-
-### Documentation ✅
-
-- [x] **Universal LLM Instructions** - Single source of truth for AI models
-- [x] **Model-specific Appendices** - CLAUDE.md, GPT.md, GEMINI.md
-- [x] **Dashboard** - Project overview with versions and structure
-- [x] **Session Handoff** - Documentation for AI continuity
+| Status | Meaning |
+| :-- | :-- |
+| ✅ | Implemented and actively wired in core UX/API path |
+| 🟡 | Implemented but partial/fragile/not fully productionized |
+| 🧩 | Implemented in code but not mounted/wired into active router/UI |
+| 🧪 | UI/demo placeholder or simulated behavior |
+| 📋 | Planned (not meaningfully implemented yet) |
 
 ---
 
-## In Progress (v3.6.x) 🚧
+## Reality Snapshot (Critical)
 
-### Developer Experience
+### High-confidence gaps found during source audit
 
-- [x] **Hot Reload Improvements** - Faster development cycles (docs/DEVELOPMENT.md)
-- [x] **Better Error Messages** - Typed error classes with ErrorCode enum (`errors.ts`)
-- [x] **Config Validation** - JSON Schema validation for configuration files (`config-schemas.zod.ts`)
+1. **tRPC contract wiring mismatch** (high priority)
+	- Several backend implementation modules exist but are not mounted by `apps/backend/src/routers/trpc.ts`.
+	- Unwired implementations currently include: `analytics`, `audit`, `auto-discovery`, `auto-reconnect`, `catalog`, `memories`, `registry`, `system`.
+	- This creates drift between available code, expected API surface, and visible UI behavior.
 
----
+2. **Placeholder/stubbed UI behavior in production pages** (high priority)
+	- `settings/page.tsx`: Docker image update is explicitly stubbed in frontend state.
+	- `scripts/page.tsx`: “Autonomous Agent Playground” includes instructional placeholder/simulated behavior instead of actual frontend execution path.
+	- `mcp-inspector/inspector-roots.tsx`: roots behavior is placeholder-only (no real protocol integration).
+	- `mcp-inspector/inspector-sampling.tsx`: simulated result path; not real MCP sampling execution.
 
-## Planned (v4.x) 📋
+3. **Legacy/dead backend route file** (medium priority)
+	- `apps/backend/src/routers/logs.ts` contains TODO/mock data and is not mounted by backend entry routing.
 
-### Enhanced Agent
+4. **UI discoverability and representation gap** (medium-high priority)
+	- Sidebar navigation exposes only a subset of existing pages, while additional pages/features exist under routes but are not represented in primary navigation.
 
-- [ ] **Multi-step Planning** - Complex task decomposition
-- [ ] **Tool Learning** - Agent learns from tool usage patterns
-- [ ] **Tool Composition** - Chain tools together in pipelines
-
-### Security Enhancements
-
-- [x] **Audit Logging** - Comprehensive audit trail (v3.6.0)
-- [ ] **Rate Limiting** - Per-user/per-tool rate limits
-- [ ] **Cost Tracking** - Token usage and API cost estimation
-- [ ] **Encryption at Rest** - Encrypted tool configurations
-
-### Performance
-
-- [ ] **Connection Pooling** - Efficient MCP server connections
-- [ ] **Caching Layer** - Redis cache for tool results
-- [ ] **Parallel Tool Execution** - Concurrent tool calls
-
-### UI/UX
-
-- [x] **Dark Mode** - Full light/dark/system theme support (v3.6.0) ✅
-- [ ] **Keyboard Shortcuts** - Power user features
-- [ ] **Mobile Responsive** - Mobile-friendly dashboard
+5. **Documentation drift** (high priority)
+	- Prior roadmap/docs marked some features as fully complete where implementation is partial, simulated, or not mounted.
 
 ---
 
-## Ideas/Considerations 💡
+## Feature State by Domain
 
-### Borg Integration
+### Core Hub / Proxy
 
-- [ ] **Main Executable Integration** - MetaMCP as Borg's primary tool orchestration layer
-- [ ] **Shared Authentication** - Unified auth between Borg and MetaMCP
-- [ ] **Cross-module Tool Discovery** - Discover tools across Borg submodules
-- [ ] **Unified Configuration** - Single config source for Borg ecosystem
+- ✅ Progressive disclosure meta-tool model (`search_tools`, `load_tool`, `run_code`, `run_agent`)
+- ✅ Middleware pipeline architecture exists and is active
+- 🟡 Some middleware typing/cleanup debt remains (e.g., TODO in functional middleware typing)
 
-### Integration
+### Logs, Audit, and Analytics
 
-- [ ] **LangChain Integration** - Use as LangChain tool provider
-- [ ] **OpenAI Functions** - Native function calling support
-- [ ] **Anthropic Tools** - Claude tool format support
-- [ ] **UTCP Protocol** - Universal Tool Calling Protocol support
-- [ ] **A2A Protocol** - Agent-to-Agent communication protocol support
+- ✅ Live logs core path (`tool_call_logs` via `logs.impl.ts`) is wired
+- 🟡 Audit implementation exists but total-count handling is placeholder in `audit.impl.ts`
+- 🧩 Analytics/Audit modules exist in backend implementation layer but are not mounted in active tRPC router
+- 🧩 Additional router file `routers/logs.ts` appears legacy and unmounted with mock data
 
-### Advanced Features
+### Agent and Code Mode
 
-- [ ] **Tool Personas** - Profile-based tool sets (like HyperTool)
-- [ ] **Workflow Builder** - Visual tool chain builder
-- [ ] **Scheduled Tasks** - Cron-like tool execution
-- [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
-- [ ] **OAuth Server Documentation** - Document existing OAuth 2.0 server capability
-- [ ] **Template Marketplace** - Community-contributed server configurations
+- ✅ Core backend agent execution path exists and is wired (`agent.impl.ts`)
+- 🟡 Frontend agent UX split:
+  - dedicated `/agent` page is functional against mounted router
+  - `/scripts` page “agent playground” remains instructional/simulated placeholder
 
-### Infrastructure
+### Registry / Catalog / Discovery
 
-- [ ] **Kubernetes Deployment** - K8s session routing (like MS MCP-Gateway)
-- [ ] **OAuth/SSO Integration** - Enterprise SSO support
-- [ ] **Docker Hub Integration** - Pull MCP servers from Docker Hub
-- [ ] **Homebrew Formula Scanning** - Detect MCP servers installed via Homebrew
-- [ ] **pypi/pip Scanning** - Detect Python-based MCP servers from pip
+- 🟡 Registry and catalog implementations exist
+- 🧩 Registry/catalog/discovery implementation modules are present but not mounted in active backend tRPC router
+- 🟡 Frontend contains registry and auto-discovery UI, but end-to-end behavior depends on router wiring consistency
 
----
+### Auto-Reconnect / System / Memories
 
-## Version History Summary
+- 🧩 Implementations exist in backend (`auto-reconnect`, `system`, `memories`) but are not currently mounted in active tRPC router
+- 🟡 Some UI pages reference these capabilities; needs formal contract unification and runtime verification
 
-| Version    | Date       | Highlights                                        |
-| :--------- | :--------- | :------------------------------------------------ |
-| **3.6.0**  | 2026-02-12 | Dark Mode, Documentation Overhaul, Critical Fixes |
-| **3.5.0**  | 2026-01-26 | Agent Memory, MCP Registry, Analytics, Templates  |
-| **3.2.18** | 2026-01-11 | npm Global Package Scanning for MCP servers       |
-| **3.2.17** | 2026-01-11 | mcp.json Auto-discovery (Claude/Cursor/VS Code)   |
-| **3.2.16** | 2026-01-11 | Auto-reconnection with exponential backoff        |
-| **3.2.15** | 2026-01-09 | Server Health Checks (periodic health monitoring) |
-| **3.2.14** | 2026-01-09 | Deferred Loading Protocol (lazy tool schemas)     |
-| **3.2.13** | 2026-01-09 | Pattern-Based Filtering (glob/regex tool filter)  |
-| **3.2.12** | 2026-01-09 | mcpdir submodule + Hybrid Search RRF              |
-| **3.2.11** | 2026-01-09 | Hybrid Search (BM25 + Semantic)                   |
-| **3.2.10** | 2026-01-09 | Hot Reload Improvements (docs/DEVELOPMENT.md)     |
-| **3.2.9**  | 2026-01-09 | Config Validation (config-schemas.zod.ts)         |
-| **3.2.8**  | 2026-01-09 | Better Error Messages (typed errors in errors.ts) |
-| **3.2.7**  | 2026-01-09 | Middleware Development Guide (docs/MIDDLEWARE.md) |
-| **3.2.6**  | 2026-01-09 | Configuration Guide (docs/CONFIGURATION.md)       |
-| **3.2.5**  | 2026-01-09 | REST API Documentation (docs/REST_API.md)         |
-| **3.2.4**  | 2026-01-09 | Documentation correction: Tool Override UI exists |
-| **3.2.3**  | 2026-01-09 | Discovered Features Audit (47+ undocumented)      |
-| **3.2.2**  | 2026-01-09 | MCP Directories Library, Feature Parity Plan      |
-| **3.2.1**  | 2026-01-09 | Dependency Library Index                          |
-| **3.2.0**  | 2026-01-09 | Documentation overhaul, enhanced instructions     |
-| **3.1.0**  | 2025-12-27 | Agent implementation, dashboard docs              |
-| **3.0.3**  | 2025-12-27 | Enhanced semantic indexing                        |
-| **3.0.2**  | 2025-12-27 | Policy Engine implementation                      |
-| **3.0.1**  | 2025-12-27 | Centralized versioning system                     |
-| **3.0.0**  | 2025-12-15 | Major release: Agent, Code Mode, Semantic Search  |
-| **2.x**    | 2025       | Progressive disclosure, basic hub features        |
-| **1.x**    | 2025       | Initial MCP proxy implementation                  |
+### Inspector
+
+- ✅ Tools/resources/prompts interaction is broadly implemented
+- 🧪 Roots and sampling tabs currently expose placeholder/simulated behavior
+- 🟡 Tool schema compatibility currently depends on `@ts-expect-error` workarounds in inspector tools component
+
+### Settings and Config UX
+
+- ✅ Core auth/config switches and timeout controls are connected
+- 🧪 Docker image update control is currently frontend stub, not a real backend-managed setting
+- 🟡 Connection/retry options in `useConnection` still include TODOs for configurability
 
 ---
 
-## Contributing to Roadmap
+## Execution Order (Recommended)
 
-To suggest features or changes:
+1. **Contract Unification (P0)**
+	- Make one authoritative frontend router contract and mount all intended implementations.
+	- Remove/replace dead or legacy route paths that are not mounted.
 
-1. Check if the feature is already listed
-2. Open a GitHub issue with the `enhancement` label
-3. Describe the use case and expected behavior
-4. Reference any related issues or PRs
+2. **Runtime Safety + API Completeness (P0)**
+	- Replace placeholders in audit totals and related list/count semantics.
+	- Ensure every UI-visible feature has a non-simulated backend path.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+3. **UI Truthfulness and Coverage (P1)**
+	- Replace simulated inspector roots/sampling with explicit unsupported states or real implementations.
+	- Remove instructional placeholders where actions appear executable.
+	- Bring hidden but important pages/features into primary navigation or explicitly mark as experimental.
+
+4. **Documentation Realignment (P1)**
+	- Keep roadmap/dashboard/manual strictly aligned with mounted production behavior.
+	- Separate “implemented in code” vs “enabled and supported in product UX.”
+
+5. **Hardening and Polish (P2)**
+	- Eliminate `@ts-expect-error` compatibility patches where feasible.
+	- Add integration tests for every frontend route namespace used by UI.
+
+---
+
+## Planned Workstreams (Updated)
+
+### Workstream A — Router and API Surface Convergence
+- [ ] Wire or intentionally remove: `analytics`, `audit`, `auto-discovery`, `auto-reconnect`, `catalog`, `memories`, `registry`, `system`
+- [ ] Align `packages/trpc/src/routers/frontend/index.ts` with backend mounting and frontend usage
+- [ ] Delete or refactor `apps/backend/src/routers/logs.ts` (legacy mock route)
+
+### Workstream B — Replace Simulated UX Paths
+- [ ] Replace Settings Docker stub with real backend config endpoint (or remove control)
+- [ ] Replace `/scripts` “run_agent coming soon” simulation with real invocation flow or explicit readonly docs card
+- [ ] Implement real roots/sampling inspector logic or mark feature unavailable based on capabilities only
+
+### Workstream C — Observability & Security Correctness
+- [ ] Complete audit pagination/count semantics with accurate totals
+- [ ] Verify role/ownership scoping behavior for logs/audit access
+- [ ] Add feature-level tests for logs, audit, and system routes
+
+### Workstream D — UI Representation and Discoverability
+- [ ] Decide canonical IA: include/exclude pages (`agent`, `tool-sets`, `registry`, `system`, `audit`, `observability`, `scripts`, etc.)
+- [ ] Ensure visible nav mirrors supported features
+- [ ] Add “experimental” badges where behavior is intentionally incomplete
+
+### Workstream E — Documentation Quality Gate
+- [ ] Keep `ROADMAP.md`, `DASHBOARD.md`, `HANDOFF.md`, and `TODO.md` synchronized each implementation cycle
+- [ ] Add explicit “support matrix” docs: `implemented`, `mounted`, `UI-exposed`, `tested`
+
+---
+
+## Notes for Implementor Models
+
+- Do not assume “file exists” means “feature shipped.”
+- Treat mounted router + UI + tests as the definition of feature completeness.
+- Prioritize removing product-level ambiguity before adding net-new capabilities.
