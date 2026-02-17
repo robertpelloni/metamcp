@@ -32,10 +32,15 @@ export default function SettingsPage() {
     useState(false);
 
   // Docker image state (stub - backend Docker tRPC endpoints not yet implemented)
-  const [dockerImageInput, setDockerImageInput] = useState("ghcr.io/metatool-ai/mcp-proxy:latest");
+  const [dockerImageInput, setDockerImageInput] = useState(
+    "ghcr.io/metatool-ai/mcp-proxy:latest",
+  );
   const [isDockerImageDirty, setIsDockerImageDirty] = useState(false);
   const dockerImage = "ghcr.io/metatool-ai/mcp-proxy:latest";
-  const setDockerImageMutation = { isPending: false, mutateAsync: async (_input: { imageName: string }) => { } };
+  const setDockerImageMutation = {
+    isPending: false,
+    mutateAsync: async (_input: { imageName: string }) => {},
+  };
 
   // Form setup
   const form = useForm<SettingsFormData>({

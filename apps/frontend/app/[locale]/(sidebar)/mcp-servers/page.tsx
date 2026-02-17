@@ -35,15 +35,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
 import { trpc } from "@/lib/trpc";
 import { createTranslatedZodResolver } from "@/lib/zod-resolver";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { AutoDiscovery } from "./auto-discovery";
 import { ExportImportButtons } from "./export-import-buttons";
 import { McpServersList } from "./mcp-servers-list";
-import { AutoDiscovery } from "./auto-discovery";
 
 export default function McpServersPage() {
   const { t } = useTranslations();

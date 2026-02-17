@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronDown, ChevronRight, FileTerminal, RefreshCw, Trash2 } from "lucide-react";
+import { FileTerminal, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { LogEntry } from "@/components/log-entry";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -16,11 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/useTranslations";
 import { useLogsStore } from "@/lib/stores/logs-store";
-import { MetaMcpLogEntry } from "@repo/zod-types";
-
-import { LogEntry } from "@/components/log-entry";
 
 export default function LiveLogsPage() {
   const { t } = useTranslations();
@@ -95,14 +97,20 @@ export default function LiveLogsPage() {
           </Badge>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={handleToggleAutoRefresh}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleAutoRefresh}
+              >
                 {isAutoRefreshing
                   ? t("logs:stopAutoRefresh")
                   : t("logs:startAutoRefresh")}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {isAutoRefreshing ? "Pause real-time updates" : "Enable real-time updates (polls every 5s)"}
+              {isAutoRefreshing
+                ? "Pause real-time updates"
+                : "Enable real-time updates (polls every 5s)"}
             </TooltipContent>
           </Tooltip>
 
@@ -120,9 +128,7 @@ export default function LiveLogsPage() {
                 {t("logs:refresh")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              Manually fetch the latest logs
-            </TooltipContent>
+            <TooltipContent>Manually fetch the latest logs</TooltipContent>
           </Tooltip>
 
           <Tooltip>

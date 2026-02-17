@@ -1,7 +1,8 @@
 "use client";
 
+import { ToolSet } from "@repo/zod-types";
 import { Layers, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,6 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "@/hooks/useTranslations";
 import { vanillaTrpcClient } from "@/lib/trpc";
-import { ToolSet } from "@repo/zod-types";
 
 export default function ToolSetsPage() {
   const { t } = useTranslations();
@@ -25,31 +25,33 @@ export default function ToolSetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const fetchToolSets = async () => {
+  const fetchToolSets = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await vanillaTrpcClient.frontend.toolSets.get.query();
       if (response.success) {
         setToolSets(response.data);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("common:errorLoadingData"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchToolSets();
-  }, []);
+  }, [fetchToolSets]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await vanillaTrpcClient.frontend.toolSets.delete.mutate({ uuid: deleteId });
+      await vanillaTrpcClient.frontend.toolSets.delete.mutate({
+        uuid: deleteId,
+      });
       toast.success(t("common:deleteSuccess"));
       fetchToolSets();
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("common:deleteError"));
     } finally {
       setDeleteId(null);
@@ -62,7 +64,9 @@ export default function ToolSetsPage() {
         <div className="flex items-center gap-3">
           <Layers className="h-6 w-6 text-muted-foreground" />
           <div>
-            <h1 className="text-2xl font-semibold">{t("navigation:toolSets")}</h1>
+            <h1 className="text-2xl font-semibold">
+              {t("navigation:toolSets")}
+            </h1>
             <p className="text-sm text-muted-foreground">
               Manage your saved Tool Sets (Profiles)
             </p>
@@ -74,9 +78,7 @@ export default function ToolSetsPage() {
         {toolSets.map((set) => (
           <Card key={set.uuid}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {set.name}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{set.name}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -107,17 +109,22 @@ export default function ToolSetsPage() {
         ))}
         {toolSets.length === 0 && !isLoading && (
           <div className="col-span-full text-center text-muted-foreground py-8">
-            No saved tool sets found. Use the `save_tool_set` tool to create one.
+            No saved tool sets found. Use the `save_tool_set` tool to create
+            one.
           </div>
         )}
       </div>
 
-      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <Dialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("common:confirmDelete")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this tool set? This action cannot be undone.
+              Are you sure you want to delete this tool set? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -4,9 +4,13 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { MetaMcpLogEntry } from "@repo/zod-types";
 
-export const LogEntry = ({ log }: { log: MetaMcpLogEntry }) => {
+type LogEntryData = Omit<MetaMcpLogEntry, "timestamp"> & {
+  timestamp: Date | string;
+};
+
+export const LogEntry = ({ log }: { log: LogEntryData }) => {
   const [expanded, setExpanded] = useState(false);
-  const formatTimestamp = (timestamp: Date) => {
+  const formatTimestamp = (timestamp: Date | string) => {
     return new Date(timestamp).toLocaleString();
   };
 
@@ -20,7 +24,7 @@ export const LogEntry = ({ log }: { log: MetaMcpLogEntry }) => {
             {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </span>
         <span className="text-gray-500 text-xs whitespace-nowrap">
-          {formatTimestamp(new Date(log.timestamp))}
+          {formatTimestamp(log.timestamp)}
         </span>
         <span className="text-blue-400 font-medium">
           [{log.serverName}]

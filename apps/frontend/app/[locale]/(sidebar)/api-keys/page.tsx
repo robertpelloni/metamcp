@@ -63,8 +63,8 @@ export default function ApiKeysPage() {
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
   const { t } = useTranslations();
 
-  const { data: apiKeys, refetch } = trpc.apiKeys.list.useQuery();
-  const createMutation = trpc.apiKeys.create.useMutation({
+  const { data: apiKeys, refetch } = trpc.frontend.apiKeys.list.useQuery();
+  const createMutation = trpc.frontend.apiKeys.create.useMutation({
     onSuccess: (data) => {
       setNewApiKey(data.key);
       refetch();
@@ -75,7 +75,7 @@ export default function ApiKeysPage() {
     },
   });
 
-  const deleteMutation = trpc.apiKeys.delete.useMutation({
+  const deleteMutation = trpc.frontend.apiKeys.delete.useMutation({
     onSuccess: () => {
       refetch();
       toast.success(t("api-keys:apiKeyDeleted"));

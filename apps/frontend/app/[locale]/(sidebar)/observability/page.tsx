@@ -1,10 +1,6 @@
 "use client";
 
-import { useTranslations } from "@/hooks/useTranslations";
-
 export default function ObservabilityPage() {
-  const { t } = useTranslations();
-
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] gap-4">
       <div className="flex items-center justify-between">

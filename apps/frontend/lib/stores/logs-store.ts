@@ -26,13 +26,22 @@ const AUTO_REFRESH_STORAGE_KEY = "metamcp-auto-refresh-enabled";
 // Helper functions for localStorage
 const getStoredAutoRefreshState = (): boolean => {
   if (typeof window === "undefined") return true;
-  const stored = localStorage.getItem(AUTO_REFRESH_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : true; // Default to true (enabled)
+  try {
+    const stored = localStorage.getItem(AUTO_REFRESH_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : true; // Default to true (enabled)
+  } catch (error) {
+    console.warn("Unable to read auto-refresh preference from localStorage", error);
+    return true;
+  }
 };
 
 const setStoredAutoRefreshState = (enabled: boolean): void => {
   if (typeof window === "undefined") return;
-  localStorage.setItem(AUTO_REFRESH_STORAGE_KEY, JSON.stringify(enabled));
+  try {
+    localStorage.setItem(AUTO_REFRESH_STORAGE_KEY, JSON.stringify(enabled));
+  } catch (error) {
+    console.warn("Unable to persist auto-refresh preference to localStorage", error);
+  }
 };
 
 export const useLogsStore = create<LogsState>()(

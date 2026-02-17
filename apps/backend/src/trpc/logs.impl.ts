@@ -19,7 +19,17 @@ export const logsImplementations = {
       const limit = input.limit || 100;
 
       let query = db
-        .select()
+        .select({
+          uuid: toolCallLogsTable.uuid,
+          tool_name: toolCallLogsTable.tool_name,
+          arguments: toolCallLogsTable.arguments,
+          result: toolCallLogsTable.result,
+          error: toolCallLogsTable.error,
+          duration_ms: toolCallLogsTable.duration_ms,
+          session_id: toolCallLogsTable.session_id,
+          parent_call_uuid: toolCallLogsTable.parent_call_uuid,
+          created_at: toolCallLogsTable.created_at,
+        })
         .from(toolCallLogsTable)
         .orderBy(desc(toolCallLogsTable.created_at))
         .limit(limit)

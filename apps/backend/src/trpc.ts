@@ -27,11 +27,11 @@ export const createContext = async ({
   try {
     // Check if we have cookies in the request
     if (req.headers.cookie) {
-      // Create a proper Request object for better-auth
-      const sessionUrl = new URL(
-        "/api/auth/get-session",
-        `http://${req.headers.host}`,
-      );
+      // Use configured auth base URL for consistent session validation.
+      // Rewritten/proxied requests can carry a frontend Host header (e.g. :12008),
+      // which can cause false unauthorized states when validating session context.
+      const authBaseUrl = process.env.APP_URL || "http://localhost:12009";
+      const sessionUrl = new URL("/api/auth/get-session", authBaseUrl);
 
       const headers = new Headers();
       headers.set("cookie", req.headers.cookie);

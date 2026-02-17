@@ -17,6 +17,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const mcpServerTypeEnum = pgEnum(
@@ -398,6 +399,58 @@ export const configTable = pgTable("config", {
     .defaultNow(),
 });
 
+// Audit logs table (security/audit trail)
+export const auditLogsTable = pgTable(
+  "audit_logs",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    action: text("action").notNull(),
+    resource_type: text("resource_type").notNull(),
+    resource_id: text("resource_id"),
+    details: jsonb("details").$type<Record<string, unknown> | null>(),
+    ip_address: text("ip_address"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("audit_logs_user_id_idx").on(table.user_id),
+    index("audit_logs_action_idx").on(table.action),
+    index("audit_logs_resource_type_idx").on(table.resource_type),
+    index("audit_logs_created_at_idx").on(table.created_at),
+  ],
+);
+
+// Memories table (agent memory and semantic recall)
+export const memoriesTable = pgTable(
+  "memories",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    agent_id: text("agent_id"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("memories_user_id_idx").on(table.user_id),
+  ],
+);
+
 // OAuth Registered Clients table
 export const oauthClientsTable = pgTable("oauth_clients", {
   client_id: text("client_id").primaryKey(),
@@ -551,25 +604,24 @@ export const toolCallLogsTable = pgTable(
   {
     uuid: uuid("uuid").primaryKey().defaultRandom(),
     tool_name: text("tool_name").notNull(),
-    mcp_server_uuid: uuid("mcp_server_uuid")
-      .references(() => mcpServersTable.uuid, { onDelete: "set null" }),
-    namespace_uuid: uuid("namespace_uuid")
-      .references(() => namespacesTable.uuid, { onDelete: "set null" }),
-    endpoint_uuid: uuid("endpoint_uuid")
-      .references(() => endpointsTable.uuid, { onDelete: "set null" }),
-    args: jsonb("args").$type<Record<string, unknown>>(),
+    session_id: text("session_id").notNull(),
+    arguments: jsonb("arguments").$type<Record<string, unknown>>(),
     result: jsonb("result").$type<Record<string, unknown>>(),
     error: text("error"),
     duration_ms: integer("duration_ms"),
-    session_id: text("session_id"),
     parent_call_uuid: text("parent_call_uuid"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
     created_at: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => [
     index("tool_call_logs_tool_name_idx").on(table.tool_name),
-    index("tool_call_logs_mcp_server_uuid_idx").on(table.mcp_server_uuid),
+    index("tool_call_logs_session_id_idx").on(table.session_id),
+    index("tool_call_logs_parent_call_uuid_idx").on(table.parent_call_uuid),
+    index("tool_call_logs_user_id_idx").on(table.user_id),
     index("tool_call_logs_created_at_idx").on(table.created_at),
   ],
 );

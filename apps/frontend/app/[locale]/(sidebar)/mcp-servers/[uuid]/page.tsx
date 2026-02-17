@@ -143,13 +143,32 @@ export default function McpServerDetailPage({
   const connection = useConnection({
     mcpServerUuid: uuid,
     transportType: server?.type || McpServerTypeEnum.Enum.STDIO,
+    command: server?.command || "",
+    args: server?.args?.join(" ") || "",
     url: server?.url || "",
+    env: server?.env || {},
     bearerToken: server?.bearerToken || undefined,
     onNotification: (notification) => {
       console.log("MCP Notification:", notification);
     },
     onStdErrNotification: (notification) => {
-      console.error("MCP StdErr:", notification);
+      const stderrContent =
+        "params" in notification &&
+        notification.params &&
+        typeof notification.params === "object" &&
+        "content" in notification.params
+          ? (notification.params as { content?: unknown }).content
+          : undefined;
+
+      if (typeof stderrContent === "string" && stderrContent.trim()) {
+        console.error("MCP StdErr:", stderrContent);
+        return;
+      }
+
+      console.debug(
+        "Ignored MCP stderr notification without printable content",
+        notification,
+      );
     },
     enabled: Boolean(
       server &&

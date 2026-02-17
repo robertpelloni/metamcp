@@ -92,7 +92,10 @@ export default function NamespaceDetailPage({
   const connection = useConnection({
     mcpServerUuid: uuid, // Using namespace UUID as the "server" UUID for connection
     transportType: McpServerTypeEnum.Enum.SSE,
+    command: "",
+    args: "",
     url: `/mcp-proxy/metamcp/${uuid}/sse`, // Connect to metamcp proxy endpoint
+    env: {},
     bearerToken: undefined,
     isMetaMCP: true, // Indicate this is a MetaMCP connection
     includeInactiveServers: true, // Include all servers regardless of status in namespace management
@@ -100,7 +103,23 @@ export default function NamespaceDetailPage({
       console.log("MetaMCP Notification:", notification);
     },
     onStdErrNotification: (notification) => {
-      console.error("MetaMCP StdErr:", notification);
+      const stderrContent =
+        "params" in notification &&
+        notification.params &&
+        typeof notification.params === "object" &&
+        "content" in notification.params
+          ? (notification.params as { content?: unknown }).content
+          : undefined;
+
+      if (typeof stderrContent === "string" && stderrContent.trim()) {
+        console.error("MetaMCP StdErr:", stderrContent);
+        return;
+      }
+
+      console.debug(
+        "Ignored MetaMCP stderr notification without printable content",
+        notification,
+      );
     },
     enabled: Boolean(namespace && !isLoading),
   });

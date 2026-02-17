@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\Users\\hyper\\workspace\\metamcp\\apps\\backend\\logs\\.5d76a65e8870c9c19e3cd0e92ce16c840ba09db9-audit.json",
+    "files": [
+        {
+            "date": 1771288901545,
+            "name": "C:\\Users\\hyper\\workspace\\metamcp\\apps\\backend\\logs\\mcp-puppeteer-2026-02-16.log",
+            "hash": "922c8bcdfe1850357b3ba9030009a87e03b0a3de8fa9b078c23ee9cc8c2b024a"
+        }
+    ],
+    "hashType": "sha256"
+}

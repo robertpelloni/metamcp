@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "3.6.3",
   "type": "module",
   "description": "Bare minimum Express 5.1 backend with TypeScript",
   "main": "dist/index.js",
@@ -13,14 +13,14 @@
     "clean": "rm -rf dist",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "db:generate": "DATABASE_TYPE=postgresql dotenv -e ../../.env -- drizzle-kit generate",
-    "db:generate:dev": "DATABASE_TYPE=postgresql dotenv -e ../../.env.local -- drizzle-kit generate",
-    "db:generate:sqlite": "DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit generate",
-    "db:generate:sqlite:dev": "DATABASE_TYPE=sqlite dotenv -e ../../.env.local -- drizzle-kit generate",
-    "db:migrate": "DATABASE_TYPE=postgresql dotenv -e ../../.env -- drizzle-kit migrate",
-    "db:migrate:dev": "DATABASE_TYPE=postgresql dotenv -e ../../.env.local -- drizzle-kit migrate",
-    "db:migrate:sqlite": "DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit migrate",
-    "db:migrate:sqlite:dev": "DATABASE_TYPE=sqlite dotenv -e ../../.env.local -- drizzle-kit migrate"
+    "db:generate": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env -- drizzle-kit generate",
+    "db:generate:dev": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env.local -- drizzle-kit generate",
+    "db:generate:sqlite": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit generate",
+    "db:generate:sqlite:dev": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env.local -- drizzle-kit generate",
+    "db:migrate": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env -- drizzle-kit migrate",
+    "db:migrate:dev": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env.local -- drizzle-kit migrate",
+    "db:migrate:sqlite": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit migrate",
+    "db:migrate:sqlite:dev": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env.local -- drizzle-kit migrate"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
@@ -51,6 +51,7 @@
     "@types/pg": "^8.15.4",
     "@types/shell-quote": "^1.7.5",
     "cross-spawn": "^7.0.6",
+    "cross-env": "^7.0.3",
     "dockerode": "^4.0.9",
     "dotenv-cli": "^8.0.0",
     "drizzle-kit": "^0.31.1",

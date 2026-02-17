@@ -1,7 +1,7 @@
 # 📊 MetaMCP Dashboard
 
 **Version:** 3.6.0  
-**Last Updated:** 2026-02-12
+**Last Updated:** 2026-02-16
 
 ## 🏗️ Project Structure
 
@@ -34,8 +34,8 @@ MetaMCP is organized as a monorepo using **Turborepo** and **pnpm workspaces**.
 
 The codebase contains several capabilities that are present in source but not consistently mounted, surfaced, or productionized end-to-end.
 
-- **Mounted in active frontend tRPC router**: `mcpServers`, `namespaces`, `endpoints`, `oauth`, `tools`, `apiKeys`, `config`, `logs`, `savedScripts`, `toolSets`, `policies`, `agent`, `serverHealth`
-- **Implementation modules currently not mounted in active frontend tRPC router**: `analytics`, `audit`, `auto-discovery`, `auto-reconnect`, `catalog`, `memories`, `registry`, `system`
+- **Mounted in active frontend tRPC router**: `mcpServers`, `namespaces`, `endpoints`, `oauth`, `tools`, `apiKeys`, `config`, `logs`, `savedScripts`, `toolSets`, `policies`, `agent`, `serverHealth`, `analytics`, `audit`, `autoDiscovery`, `autoReconnect`, `catalog`, `memories`, `registry`, `system`
+- **Previously unwired implementation modules**: now mounted in active router wiring (2026-02-16).
 - **Known placeholder/simulated UX paths**:
 	- Settings Docker image update control is frontend-stubbed
 	- Scripts page includes simulated “run_agent” guidance flow

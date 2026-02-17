@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.6.3] - 2026-02-17
+
+### Changed
+- **mcp.json Live Synchronization Reliability**:
+  - Hardened `mcp.json` hot-reload reconcile flow in `apps/backend/src/lib/metamcp/mcp-json-hot-reload.service.ts`.
+  - Added tracking for changed server UUIDs during create/update/remove reconciliation.
+  - Improved internal map updates during reconciliation to keep in-memory name lookup current.
+
+### Fixed
+- **Namespace Runtime Refresh After mcp.json Changes**:
+  - Added namespace impact detection via server-to-namespace mappings after `mcp.json` sync.
+  - Added automatic invalidation of idle namespace servers and OpenAPI sessions for affected namespaces.
+  - Added tool override cache clearing for affected namespaces so tool availability updates are reflected immediately.
+
+## [3.6.2] - 2026-02-16
+
+### Fixed
+- **Frontend Build Type Regressions**:
+  - Fixed log timestamp compatibility between serialized tRPC responses and UI rendering in `components/log-entry.tsx`.
+  - Updated `api-keys` page to use the mounted `trpc.frontend.apiKeys.*` namespace.
+  - Restored missing `DomainWarningBanner` import on registration page.
+  - Updated all `useConnection` call sites to pass required `command` / `args` / `env` options after hook contract changes.
+  - Fixed OAuth provider initialization by passing `serverUrl` into `createAuthProvider`.
+
+### Changed
+- **Validation Outcome**:
+  - Next.js type/lint validation now completes successfully.
+  - Added a Windows platform guard in `apps/frontend/next.config.js` to skip `output: "standalone"` on `win32`, preventing local `EPERM` symlink failures during trace copy while preserving standalone output for non-Windows builds.
+
+## [3.6.1] - 2026-02-16
+
+### Added
+- **Frontend Router Namespace Coverage**: Mounted previously unwired frontend namespaces in active runtime contract and backend mounting:
+  - `analytics`, `audit`, `autoDiscovery`, `autoReconnect`, `catalog`, `memories`, `registry`, `system`.
+- **Database Schema Alignment**: Restored missing active schema definitions for:
+  - `audit_logs` (`auditLogsTable`)
+  - `memories` (`memoriesTable`)
+
+### Changed
+- **tRPC Contract Convergence**:
+  - Updated `packages/trpc/src/routers/frontend/index.ts`
+  - Updated `packages/trpc/src/router.ts`
+  - Updated `apps/backend/src/routers/trpc.ts`
+- **Zod Type Exports**: Expanded `packages/zod-types/src/index.ts` exports so all mounted frontend router schemas resolve correctly.
+- **Memory Implementation Correctness**: Fixed argument mapping/signature usage in `apps/backend/src/trpc/memories.impl.ts`.
+- **Documentation Realignment**:
+  - Updated `docs/ROADMAP.md`, `DASHBOARD.md`, `TODO.md`, `HANDOFF.md` with current implementation state and progress.
+
+### Fixed
+- **Dead Logs Route Removal**: Deleted unmounted legacy mock route `apps/backend/src/routers/logs.ts` to avoid API-path ambiguity.
+- **Build Integrity After Wiring**: Resolved compile issues caused by missing schema exports/references after namespace mounting.
+
 ## [3.6.0] - 2026-02-12
 
 ### Added

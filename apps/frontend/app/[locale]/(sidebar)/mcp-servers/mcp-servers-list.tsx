@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  McpServer,
-  McpServerErrorStatusEnum,
-  McpServerTypeEnum,
-} from "@repo/zod-types";
+import { McpServer, McpServerTypeEnum } from "@repo/zod-types";
 import {
   ColumnDef,
   flexRender,
@@ -15,6 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  Activity,
   ArrowUpDown,
   Copy,
   Edit,
@@ -25,18 +22,16 @@ import {
   SearchCode,
   Server,
   Trash2,
-  Activity,
-  RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { EditMcpServer } from "@/components/edit-mcp-server";
+import { HealthStatusBadge } from "@/components/health-status-badge";
 import { McpServersListSkeleton } from "@/components/skeletons/mcp-servers-list-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { HealthStatusBadge } from "@/components/health-status-badge";
 import {
   Dialog,
   DialogContent,
@@ -95,14 +90,16 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
   } = trpc.frontend.mcpServers.list.useQuery();
 
   // Health check query
-  const { data: healthData, refetch: refetchHealth, isRefetching: isRefetchingHealth } = trpc.frontend.serverHealth.getHealth.useQuery(
-    {},
-    {
-      refetchInterval: 30000 // Auto-refresh health every 30s
-    }
-  );
+  const { data: healthData, refetch: refetchHealth } =
+    trpc.frontend.serverHealth.getHealth.useQuery(
+      {},
+      {
+        refetchInterval: 30000, // Auto-refresh health every 30s
+      },
+    );
 
-  const checkHealthMutation = trpc.frontend.serverHealth.checkHealth.useMutation();
+  const checkHealthMutation =
+    trpc.frontend.serverHealth.checkHealth.useMutation();
 
   // tRPC mutation for deleting server
   const deleteServerMutation = trpc.frontend.mcpServers.delete.useMutation({
@@ -154,9 +151,9 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
 
   const handleCheckHealth = async (uuid: string) => {
     toast.promise(checkHealthMutation.mutateAsync({ serverUuids: [uuid] }), {
-      loading: 'Checking server health...',
-      success: 'Health check completed',
-      error: 'Failed to check health'
+      loading: "Checking server health...",
+      success: "Health check completed",
+      error: "Failed to check health",
     });
     // Optimistically refetch health
     setTimeout(() => refetchHealth(), 1000);
@@ -231,7 +228,9 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
       },
       cell: ({ row }) => {
         const server = row.original;
-        const health = healthData?.data?.find(h => h.serverUuid === server.uuid);
+        const health = healthData?.data?.find(
+          (h) => h.serverUuid === server.uuid,
+        );
         return (
           <div className="px-3 py-2 flex items-center gap-2">
             <HealthStatusBadge health={health} />

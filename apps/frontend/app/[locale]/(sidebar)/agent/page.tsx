@@ -1,14 +1,13 @@
 "use client";
 
-import { Bot, Play, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Bot, Loader2, Play } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
+import { LogEntry } from "@/components/log-entry";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -16,12 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslations } from "@/hooks/useTranslations";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { LogEntry } from "@/components/log-entry";
 
 export default function AgentPage() {
-  const { t } = useTranslations();
   const [task, setTask] = useState("");
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>("none");
   const [result, setResult] = useState<string | null>(null);
@@ -36,8 +33,8 @@ export default function AgentPage() {
     { sessionId: sessionId || "", limit: 100 },
     {
       enabled: !!sessionId,
-      refetchInterval: isRunning ? 1000 : 5000 // Poll faster when running
-    }
+      refetchInterval: isRunning ? 1000 : 5000, // Poll faster when running
+    },
   );
 
   const handleRun = async () => {
@@ -67,8 +64,10 @@ export default function AgentPage() {
         setResult(`Error: ${response.error}`);
         toast.error("Agent failed");
       }
-    } catch (error: any) {
-      setResult(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setResult(`Error: ${errorMessage}`);
       toast.error("Agent failed");
     } finally {
       setIsRunning(false);
@@ -126,11 +125,7 @@ export default function AgentPage() {
               </p>
             </div>
 
-            <Button
-              className="w-full"
-              onClick={handleRun}
-              disabled={isRunning}
-            >
+            <Button className="w-full" onClick={handleRun} disabled={isRunning}>
               {isRunning ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -147,48 +142,54 @@ export default function AgentPage() {
         </Card>
 
         <div className="md:col-span-1 space-y-6">
-            {/* Live Logs Section */}
-            <Card className="flex flex-col max-h-[400px]">
-                <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                        <span>Live Activity</span>
-                        {isRunning && <span className="text-xs text-green-500 animate-pulse">● Live</span>}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-y-auto p-0">
-                    <div className="bg-black min-h-[200px] p-4 font-mono text-sm">
-                        {!logsData?.data || logsData.data.length === 0 ? (
-                            <div className="text-gray-500 text-center py-8">
-                                {isRunning ? "Waiting for agent activity..." : "No activity logs yet."}
-                            </div>
-                        ) : (
-                            <div className="space-y-1">
-                                {logsData.data.map((log) => (
-                                    <LogEntry key={log.id} log={log} />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Final Output Section */}
-            <Card className="flex flex-col">
+          {/* Live Logs Section */}
+          <Card className="flex flex-col max-h-[400px]">
             <CardHeader>
-                <CardTitle>Final Output</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Live Activity</span>
+                {isRunning && (
+                  <span className="text-xs text-green-500 animate-pulse">
+                    ● Live
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto p-0">
+              <div className="bg-black min-h-[200px] p-4 font-mono text-sm">
+                {!logsData?.data || logsData.data.length === 0 ? (
+                  <div className="text-gray-500 text-center py-8">
+                    {isRunning
+                      ? "Waiting for agent activity..."
+                      : "No activity logs yet."}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {logsData.data.map((log) => (
+                      <LogEntry key={log.id} log={log} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Final Output Section */}
+          <Card className="flex flex-col">
+            <CardHeader>
+              <CardTitle>Final Output</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 min-h-[200px]">
-                {result ? (
+              {result ? (
                 <pre className="w-full h-full p-4 bg-muted rounded-md overflow-auto text-xs font-mono whitespace-pre-wrap">
-                    {result}
+                  {result}
                 </pre>
-                ) : (
+              ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-md p-8">
-                    Agent output will appear here
+                  Agent output will appear here
                 </div>
-                )}
+              )}
             </CardContent>
-            </Card>
+          </Card>
         </div>
       </div>
     </div>

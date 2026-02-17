@@ -18,23 +18,23 @@
 
 ### 1) Unify frontend tRPC contract with backend mounted routers
 
-- [ ] Reconcile `packages/trpc/src/routers/frontend/index.ts` and `apps/backend/src/routers/trpc.ts`.
+- [x] Reconcile `packages/trpc/src/routers/frontend/index.ts` and `apps/backend/src/routers/trpc.ts`.
 - [ ] Decide feature-by-feature whether each namespace is:
   - [ ] mounted and supported
   - [ ] intentionally experimental (behind explicit flag)
   - [ ] deprecated and removed
-- [ ] Resolve mismatches for namespaces currently present in code but not mounted:
-  - [ ] `analytics`
-  - [ ] `audit`
-  - [ ] `autoDiscovery`
-  - [ ] `autoReconnect`
-  - [ ] `catalog`
-  - [ ] `memories`
-  - [ ] `registry`
-  - [ ] `system`
+- [x] Resolve mismatches for namespaces currently present in code but not mounted:
+  - [x] `analytics`
+  - [x] `audit`
+  - [x] `autoDiscovery`
+  - [x] `autoReconnect`
+  - [x] `catalog`
+  - [x] `memories`
+  - [x] `registry`
+  - [x] `system`
 
 **Acceptance Criteria**
-- [ ] `pnpm build` passes with no route contract/type drift.
+- [x] `pnpm build` passes with no route contract/type drift.
 - [ ] Every `trpc.frontend.*` usage resolves to mounted backend behavior.
 - [ ] No page depends on non-mounted namespace.
 
@@ -42,11 +42,11 @@
 
 ### 2) Remove dead/legacy route confusion
 
-- [ ] Remove or refactor unmounted `apps/backend/src/routers/logs.ts` mock route.
+- [x] Remove or refactor unmounted `apps/backend/src/routers/logs.ts` mock route.
 - [ ] Ensure one authoritative logs API path is documented and used.
 
 **Acceptance Criteria**
-- [ ] No stale mock logs route remains in source.
+- [x] No stale mock logs route remains in source.
 - [ ] Logs API behavior is consistent between UI, router, and docs.
 
 ---

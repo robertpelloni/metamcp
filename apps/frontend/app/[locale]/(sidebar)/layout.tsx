@@ -10,8 +10,6 @@ import {
   Server,
   Settings,
 } from "lucide-react";
-import packageJson from "../../../package.json";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -35,9 +33,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
+
+import packageJson from "../../../package.json";
 
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
@@ -78,6 +79,19 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
   },
 ];
 
+type SidebarUser = {
+  name?: string | null;
+  email?: string | null;
+};
+
+function isSidebarUser(value: unknown): value is SidebarUser {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ("email" in value || "name" in value)
+  );
+}
+
 function LiveLogsMenuItem() {
   const { t, locale } = useTranslations();
 
@@ -96,13 +110,14 @@ function LiveLogsMenuItem() {
 
 function UserInfoFooter() {
   const { t } = useTranslations();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SidebarUser | null>(null);
 
   // Get user info
   useEffect(() => {
     authClient.getSession().then((session) => {
-      if (session?.data?.user) {
-        setUser(session.data.user);
+      const sessionUser = session?.data?.user;
+      if (isSidebarUser(sessionUser)) {
+        setUser(sessionUser);
       }
     });
   }, []);
@@ -119,7 +134,9 @@ function UserInfoFooter() {
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
-        <p className="text-xs text-muted-foreground text-center">v{packageJson.version}</p>
+        <p className="text-xs text-muted-foreground text-center">
+          v{packageJson.version}
+        </p>
         <Separator />
         {user && (
           <div className="flex flex-col gap-2">

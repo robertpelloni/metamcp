@@ -44,6 +44,7 @@ import { getAppUrl } from "@/lib/env";
 import { ConnectionStatus } from "../lib/constants";
 import {
   Notification,
+  StdErrNotification,
   StdErrNotificationSchema,
 } from "../lib/notificationTypes";
 import { createAuthProvider } from "../lib/oauth-provider";
@@ -85,7 +86,7 @@ export function useConnection({
   includeInactiveServers = false,
   enabled = true,
 }: UseConnectionOptions) {
-  const authProvider = createAuthProvider(mcpServerUuid);
+  const authProvider = createAuthProvider(mcpServerUuid, url || "");
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
   const [serverCapabilities, setServerCapabilities] =
@@ -98,6 +99,26 @@ export function useConnection({
     { request: string; response?: string }[]
   >([]);
   const [completionsSupported, setCompletionsSupported] = useState(true);
+
+  const hasStdErrContent = useMemoizedFn(
+    (notification: unknown): notification is StdErrNotification => {
+      if (
+        !notification ||
+        typeof notification !== "object" ||
+        !("params" in notification)
+      ) {
+        return false;
+      }
+
+      const params = (notification as { params?: unknown }).params;
+      if (!params || typeof params !== "object" || !("content" in params)) {
+        return false;
+      }
+
+      const content = (params as { content?: unknown }).content;
+      return typeof content === "string" && content.trim().length > 0;
+    },
+  );
 
   const pushHistory = useMemoizedFn((request: object, response?: object) => {
     setRequestHistory((prev) => [
@@ -272,8 +293,12 @@ export function useConnection({
 
   const handleAuthError = useMemoizedFn(async (error: unknown) => {
     if (error instanceof SseError && error.code === 401) {
-      sessionStorage.setItem(SESSION_KEYS.SERVER_URL, url || "");
-      sessionStorage.setItem(SESSION_KEYS.MCP_SERVER_UUID, mcpServerUuid);
+      try {
+        sessionStorage.setItem(SESSION_KEYS.SERVER_URL, url || "");
+        sessionStorage.setItem(SESSION_KEYS.MCP_SERVER_UUID, mcpServerUuid);
+      } catch (storageError) {
+        console.warn("Unable to persist session auth context to sessionStorage", storageError);
+      }
 
       const result = await auth(authProvider, {
         serverUrl: url || "",
@@ -494,7 +519,17 @@ export function useConnection({
         if (onStdErrNotification) {
           client.setNotificationHandler(
             StdErrNotificationSchema,
-            onStdErrNotification,
+            (notification) => {
+              if (hasStdErrContent(notification)) {
+                onStdErrNotification(notification);
+                return;
+              }
+
+              console.warn(
+                "Ignoring empty or malformed MCP stderr notification",
+                notification,
+              );
+            },
           );
         }
 

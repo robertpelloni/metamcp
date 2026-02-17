@@ -11,6 +11,14 @@ import { createToolsRouter } from "./tools";
 import { createPoliciesRouter } from "./policies";
 import { createAgentRouter } from "./agent";
 import { createServerHealthRouter } from "./server-health";
+import { createAnalyticsRouter } from "./analytics";
+import { createAuditRouter } from "./audit";
+import { createAutoDiscoveryRouter } from "./auto-discovery";
+import { createAutoReconnectRouter } from "./auto-reconnect";
+import { createCatalogRouter } from "./catalog";
+import { createMemoriesRouter } from "./memories";
+import { createRegistryRouter } from "./registry";
+import { createSystemRouter } from "./system";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -25,6 +33,14 @@ export { createToolSetsRouter };
 export { createPoliciesRouter };
 export { createAgentRouter };
 export { createServerHealthRouter };
+export { createAnalyticsRouter };
+export { createAuditRouter };
+export { createAutoDiscoveryRouter };
+export { createAutoReconnectRouter };
+export { createCatalogRouter };
+export { createMemoriesRouter };
+export { createRegistryRouter };
+export { createSystemRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -40,6 +56,14 @@ export const createFrontendRouter = (implementations: {
   policies: Parameters<typeof createPoliciesRouter>[0];
   agent: Parameters<typeof createAgentRouter>[0];
   serverHealth: Parameters<typeof createServerHealthRouter>[0];
+  analytics: Parameters<typeof createAnalyticsRouter>[0];
+  audit: Parameters<typeof createAuditRouter>[0];
+  autoDiscovery: Parameters<typeof createAutoDiscoveryRouter>[0];
+  autoReconnect: Parameters<typeof createAutoReconnectRouter>[0];
+  catalog: Parameters<typeof createCatalogRouter>[0];
+  memories: Parameters<typeof createMemoriesRouter>[0];
+  registry: Parameters<typeof createRegistryRouter>[0];
+  system: Parameters<typeof createSystemRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -55,5 +79,13 @@ export const createFrontendRouter = (implementations: {
     policies: createPoliciesRouter(implementations.policies),
     agent: createAgentRouter(implementations.agent),
     serverHealth: createServerHealthRouter(implementations.serverHealth),
+    analytics: createAnalyticsRouter(implementations.analytics),
+    audit: createAuditRouter(implementations.audit),
+    autoDiscovery: createAutoDiscoveryRouter(implementations.autoDiscovery),
+    autoReconnect: createAutoReconnectRouter(implementations.autoReconnect),
+    catalog: createCatalogRouter(implementations.catalog),
+    memories: createMemoriesRouter(implementations.memories),
+    registry: createRegistryRouter(implementations.registry),
+    system: createSystemRouter(implementations.system),
   };
 };

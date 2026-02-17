@@ -124,3 +124,40 @@ The audit covered:
 ### Note for implementor models
 
 Use `TODO.md` as the canonical execution sequence. Do not mark features complete unless they are mounted, represented, tested, and documented.
+
+---
+
+## 📅 Session Continuation (2026-02-16, P0 Execution)
+
+### Completed in this continuation
+
+1. **Mounted previously unwired frontend namespaces**
+	 - Updated shared contract wiring in:
+		 - `packages/trpc/src/routers/frontend/index.ts`
+		 - `packages/trpc/src/router.ts`
+	 - Updated backend runtime mounting in:
+		 - `apps/backend/src/routers/trpc.ts`
+	 - Mounted namespaces: `analytics`, `audit`, `autoDiscovery`, `autoReconnect`, `catalog`, `memories`, `registry`, `system`.
+
+2. **Resolved compile blockers surfaced by wiring**
+	 - Extended zod-types exports in `packages/zod-types/src/index.ts` to include newly referenced schemas.
+	 - Added missing schema definitions in `apps/backend/src/db/schema.ts` for:
+		 - `auditLogsTable`
+		 - `memoriesTable`
+	 - Corrected argument mapping/signature usage in `apps/backend/src/trpc/memories.impl.ts`.
+
+3. **Removed legacy dead route**
+	 - Deleted `apps/backend/src/routers/logs.ts` mock/unused route.
+
+### Validation run
+
+- `pnpm --filter @repo/zod-types build` ✅
+- `pnpm --filter @repo/trpc build` ✅
+- `pnpm --filter backend build` ✅
+- `pnpm --filter frontend build` ✅ (warning only about inferred workspace root; no build failure)
+
+### Remaining immediate priorities
+
+- Replace simulated UI behavior (`settings` Docker image stub, `scripts` agent simulation, inspector roots/sampling simulation paths).
+- Complete audit correctness (`total` count + filter semantics + tests).
+- Align navigation discoverability with actual supported feature surface.

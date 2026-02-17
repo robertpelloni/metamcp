@@ -25,11 +25,11 @@ export const betterAuthMcpMiddleware = async (
       });
     }
 
-    // Verify the session using better-auth with original cookies
-    const sessionUrl = new URL(
-      "/api/auth/get-session",
-      `http://${req.headers.host}`,
-    );
+    // Verify session against configured auth base URL for consistency.
+    // Proxy/rewrite host headers can differ from backend auth base and cause
+    // false session misses when using req.headers.host directly.
+    const authBaseUrl = process.env.APP_URL || "http://localhost:12009";
+    const sessionUrl = new URL("/api/auth/get-session", authBaseUrl);
 
     const headers = new Headers();
     headers.set("cookie", req.headers.cookie);
