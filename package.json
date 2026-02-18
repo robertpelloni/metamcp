@@ -1,9 +1,13 @@
 {
   "name": "metamcp",
+  "version": "3.7.0",
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "dotenv -e .env.local turbo run dev",
+    "clean": "./scripts/cleanup-managed-containers.sh",
+    "dev": "dotenv -e .env.local -e .env turbo run dev",
+    "dev:backend": "dotenv -e .env.local -e .env turbo run dev:backend --filter=backend",
+    "dev:frontend": "dotenv -e .env.local -e .env turbo run dev:frontend --filter=frontend",
     "dev:docker": "docker compose -f docker-compose.dev.yml up --build",
     "dev:docker:down": "docker compose -f docker-compose.dev.yml down",
     "dev:docker:clean": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",
