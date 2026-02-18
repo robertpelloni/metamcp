@@ -23,7 +23,7 @@ export const config = [
       "unused-imports": unusedImports,
     },
     rules: {
-      "prettier/prettier": "error",
+      "prettier/prettier": ["error", { endOfLine: "auto" }],
       "turbo/no-undeclared-env-vars": "warn",
       "simple-import-sort/imports": "error",
       "@typescript-eslint/explicit-module-boundary-types": "off",
