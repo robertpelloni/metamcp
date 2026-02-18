@@ -4,6 +4,7 @@ import { FileTerminal, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { LogEntry } from "@/components/log-entry";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { useLogsStore } from "@/lib/stores/logs-store";
 
 export default function LiveLogsPage() {
@@ -60,21 +67,8 @@ export default function LiveLogsPage() {
     }
   };
 
-  // const getLevelColor = (level: string) => {
-  //   switch (level) {
-  //     case "error":
-  //       return "outline"; // Changed from "destructive" to "outline"
-  //     case "warn":
-  //       return "secondary";
-  //     case "info":
-  //       return "default";
-  //     default:
-  //       return "outline";
-  //   }
-  // };
-
   const formatTimestamp = (timestamp: Date) => {
-    return new Date(timestamp).toLocaleString();
+    return formatDeterministicDateTime(timestamp);
   };
 
   return (
@@ -102,31 +96,58 @@ export default function LiveLogsPage() {
           <Badge variant="outline">
             {t("logs:totalLogs", { count: totalCount })}
           </Badge>
-          <Button variant="outline" size="sm" onClick={handleToggleAutoRefresh}>
-            {isAutoRefreshing
-              ? t("logs:stopAutoRefresh")
-              : t("logs:startAutoRefresh")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-            {t("logs:refresh")}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setShowClearDialog(true)}
-            disabled={isLoading || logs.length === 0}
-          >
-            <Trash2 className="h-4 w-4" />
-            {t("logs:clearLogs")}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleAutoRefresh}
+              >
+                {isAutoRefreshing
+                  ? t("logs:stopAutoRefresh")
+                  : t("logs:startAutoRefresh")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isAutoRefreshing
+                ? "Pause real-time updates"
+                : "Enable real-time updates (polls every 5s)"}
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isLoading}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+                {t("logs:refresh")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Manually fetch the latest logs</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowClearDialog(true)}
+                disabled={isLoading || logs.length === 0}
+              >
+                <Trash2 className="h-4 w-4" />
+                {t("logs:clearLogs")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Permanently delete all logs from the database
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -150,24 +171,7 @@ export default function LiveLogsPage() {
             ) : (
               <div className="space-y-1">
                 {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex items-center gap-2 text-gray-300 hover:bg-gray-800 px-2 py-1 rounded"
-                  >
-                    <span className="text-gray-500 text-xs whitespace-nowrap">
-                      {formatTimestamp(new Date(log.timestamp))}
-                    </span>
-                    <span className="text-blue-400 font-medium">
-                      [{log.serverName}]
-                    </span>
-                    <span className="flex-1">
-                      {log.message}
-                      {/* Removed red error text display */}
-                      {/* {log.error && (
-                        <span className="text-red-400 ml-2">{log.error}</span>
-                      )} */}
-                    </span>
-                  </div>
+                  <LogEntry key={log.id} log={log} />
                 ))}
               </div>
             )}

@@ -152,6 +152,7 @@ export default function EndpointsPage() {
         useQueryParamAuth: data.useQueryParamAuth,
         createMcpServer: data.createMcpServer,
         user_id: data.user_id,
+        origin: window.location.origin,
       };
       console.log("apiPayload", apiPayload);
       // Use tRPC mutation
@@ -609,6 +610,9 @@ export default function EndpointsPage() {
                       </label>
                       <p className="text-xs text-muted-foreground">
                         {t("endpoints:apiKeyAuthDescription")}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        {t("endpoints:apiKeyTypeHelp")}
                       </p>
                     </div>
                     <Switch

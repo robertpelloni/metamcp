@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { Notification } from "@/lib/notificationTypes";
 
 interface NotificationEntry {
@@ -38,6 +39,28 @@ interface NotificationCounts {
   info: number;
   progress: number;
   stderr: number;
+}
+
+type NotificationWithParams = Notification & {
+  params?: unknown;
+};
+
+function getNotificationParams(notification: Notification): unknown {
+  return (notification as NotificationWithParams).params;
+}
+
+function getStderrContent(notification: Notification): string {
+  const params = getNotificationParams(notification);
+  if (
+    typeof params === "object" &&
+    params !== null &&
+    "content" in params &&
+    typeof params.content === "string"
+  ) {
+    return params.content;
+  }
+
+  return "stderr output";
 }
 
 export function NotificationsPanel({
@@ -87,9 +110,8 @@ export function NotificationsPanel({
     return { filteredNotifications: filtered, counts };
   }, [notifications, activeFilter]);
 
-  const formatTimestamp = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString();
-  };
+  const formatTimestamp = (timestamp: Date) =>
+    formatDeterministicDateTime(timestamp);
 
   const getNotificationTypeInfo = (notification: NotificationEntry) => {
     if (notification.type === "stderr") {
@@ -130,15 +152,14 @@ export function NotificationsPanel({
     if (notification.type === "stderr") {
       return (
         <div className="text-xs text-red-700 dark:text-red-300 font-mono bg-red-50 dark:bg-red-950/20 p-1.5 rounded border border-red-200 dark:border-red-800">
-          {(notification.notification as any).params?.content ||
-            "stderr output"}
+          {getStderrContent(notification.notification)}
         </div>
       );
     }
 
     // For other notifications, display the method and params
     const method = notification.notification.method;
-    const params = (notification.notification as any).params;
+    const params = getNotificationParams(notification.notification);
 
     return (
       <div className="space-y-1">
@@ -148,7 +169,7 @@ export function NotificationsPanel({
             {method}
           </code>
         </div>
-        {params && (
+        {Boolean(params) && (
           <div className="text-xs text-gray-600 dark:text-gray-400">
             <div className="font-medium mb-0.5">Parameters:</div>
             <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-1.5 rounded border overflow-x-auto">

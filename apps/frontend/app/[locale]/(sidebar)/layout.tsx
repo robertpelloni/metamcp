@@ -38,6 +38,8 @@ import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
 
+import packageJson from "../../../package.json";
+
 // Menu items function - now takes locale parameter
 const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
   {
@@ -77,6 +79,19 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
   },
 ];
 
+type SidebarUser = {
+  name?: string | null;
+  email?: string | null;
+};
+
+function isSidebarUser(value: unknown): value is SidebarUser {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ("email" in value || "name" in value)
+  );
+}
+
 function LiveLogsMenuItem() {
   const { t, locale } = useTranslations();
 
@@ -94,37 +109,41 @@ function LiveLogsMenuItem() {
 }
 
 function UserInfoFooter() {
-  const { t } = useTranslations();
-  const [user, setUser] = useState<any>(null);
+  const { t, locale } = useTranslations();
+  const [user, setUser] = useState<SidebarUser | null>(null);
 
   // Get user info
   useEffect(() => {
     authClient.getSession().then((session) => {
-      if (session?.data?.user) {
-        setUser(session.data.user);
+      const sessionUser = session?.data?.user;
+      if (isSidebarUser(sessionUser)) {
+        setUser(sessionUser);
       }
     });
   }, []);
 
   const handleSignOut = async () => {
-    await authClient.signOut();
-    window.location.href = "/login";
+    try {
+      await authClient.signOut();
+    } finally {
+      window.location.href = getLocalizedPath("/login", locale);
+    }
   };
 
   return (
     <SidebarFooter>
-      <div className="flex flex-col gap-4 p-3">
+      <div className="flex flex-col gap-2 p-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <ThemeToggle />
-          </div>
-          <p className="text-xs text-muted-foreground">v2.4.22</p>
+          <LanguageSwitcher />
+          <ThemeToggle />
         </div>
+        <p className="text-xs text-muted-foreground text-center">
+          v{packageJson.version}
+        </p>
         <Separator />
         {user && (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
               <span className="text-sm font-medium">
                 {user.name || user.email}
               </span>
@@ -132,12 +151,7 @@ function UserInfoFooter() {
                 {user.email}
               </span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
               {t("auth:signOut")}
             </Button>
           </div>
@@ -159,17 +173,15 @@ export default function SidebarLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="flex flex-col justify-center items-center px-2 py-4">
-          <div className="flex items-center justify-center w-full mb-2">
-            <div className="flex items-center gap-4">
-              <Image
-                src="/favicon.ico"
-                alt="MetaMCP Logo"
-                width={256}
-                height={256}
-                className="h-12 w-12"
-              />
-              <h2 className="text-2xl font-semibold">MetaMCP</h2>
-            </div>
+          <div className="flex items-center gap-4 mb-2">
+            <Image
+              src="/favicon.ico"
+              alt="MetaMCP Logo"
+              width={256}
+              height={256}
+              className="h-12 w-12"
+            />
+            <h2 className="text-2xl font-semibold">MetaMCP</h2>
           </div>
         </SidebarHeader>
 

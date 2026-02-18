@@ -67,7 +67,7 @@ interface InspectorSamplingProps {
 }
 
 export function InspectorSampling({
-  makeRequest: _makeRequest,
+  makeRequest,
   enabled = true,
 }: InspectorSamplingProps) {
   const [messages, setMessages] = useState<SamplingMessage[]>([
@@ -126,28 +126,24 @@ export function InspectorSampling({
         }),
       };
 
-      // Note: Sampling is not a standard MCP protocol feature
-      // This is a placeholder that simulates the functionality
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate processing time
-
-      const simulatedResult = {
-        role: "assistant" as const,
-        content: {
-          type: "text" as const,
-          text: "Note: This is a simulated response. The sampling feature requires non-standard MCP protocol extensions that are not available in the current implementation.",
-        },
-        model: "simulated-model",
-        stopReason: "endTurn" as const,
-      };
-
-      setResponse(simulatedResult);
-      toast.info(
-        "Sampling simulation completed (feature not available in standard MCP)",
+      const samplingResult = await makeRequest(
+        {
+          method: "sampling/createMessage",
+          params: _samplingRequest,
+        } as unknown as ClientRequest,
+        _CreateMessageResultSchema,
+        { suppressToast: true },
       );
+
+      setResponse(samplingResult);
+      toast.success("Sampling request completed");
     } catch (error) {
       console.error("Error during sampling:", error);
-      toast.error("Failed to complete sampling", {
-        description: error instanceof Error ? error.message : String(error),
+      toast.error("Sampling is not available from this server/proxy", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Server does not implement sampling/createMessage",
       });
     } finally {
       setSampling(false);

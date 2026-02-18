@@ -35,6 +35,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConnection } from "@/hooks/useConnection";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 
 import { ToolManagement } from "./components/tool-management";
@@ -152,7 +153,23 @@ export default function McpServerDetailPage({
       console.log("MCP Notification:", notification);
     },
     onStdErrNotification: (notification) => {
-      console.error("MCP StdErr:", notification);
+      const stderrContent =
+        "params" in notification &&
+        notification.params &&
+        typeof notification.params === "object" &&
+        "content" in notification.params
+          ? (notification.params as { content?: unknown }).content
+          : undefined;
+
+      if (typeof stderrContent === "string" && stderrContent.trim()) {
+        console.error("MCP StdErr:", stderrContent);
+        return;
+      }
+
+      console.debug(
+        "Ignored MCP stderr notification without printable content",
+        notification,
+      );
     },
     enabled: Boolean(
       server &&
@@ -489,8 +506,7 @@ export default function McpServerDetailPage({
                     {t("mcp-servers:detail.created")}:
                   </span>
                   <p className="text-sm text-right flex-1 ml-6">
-                    {new Date(server.created_at).toLocaleDateString()}{" "}
-                    {new Date(server.created_at).toLocaleTimeString()}
+                    {formatDeterministicDateTime(server.created_at)}
                   </p>
                 </div>
                 <div className="flex justify-between items-center">

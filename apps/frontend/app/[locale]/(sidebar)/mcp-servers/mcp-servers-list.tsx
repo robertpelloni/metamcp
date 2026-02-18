@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  McpServer,
-  McpServerErrorStatusEnum,
-  McpServerTypeEnum,
-} from "@repo/zod-types";
+import { McpServer, McpServerTypeEnum } from "@repo/zod-types";
 import {
   ColumnDef,
   flexRender,
@@ -15,6 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  Activity,
   ArrowUpDown,
   Copy,
   Edit,
@@ -31,6 +28,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { EditMcpServer } from "@/components/edit-mcp-server";
+import { HealthStatusBadge } from "@/components/health-status-badge";
 import { McpServersListSkeleton } from "@/components/skeletons/mcp-servers-list-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,6 +56,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 
 interface McpServersListProps {
@@ -90,6 +89,18 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
     isLoading,
     refetch,
   } = trpc.frontend.mcpServers.list.useQuery();
+
+  // Health check query
+  const { data: healthData, refetch: refetchHealth } =
+    trpc.frontend.serverHealth.getHealth.useQuery(
+      {},
+      {
+        refetchInterval: 30000, // Auto-refresh health every 30s
+      },
+    );
+
+  const checkHealthMutation =
+    trpc.frontend.serverHealth.checkHealth.useMutation();
 
   // tRPC mutation for deleting server
   const deleteServerMutation = trpc.frontend.mcpServers.delete.useMutation({
@@ -137,6 +148,16 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
     utils.frontend.mcpServers.list.invalidate();
     setEditDialogOpen(false);
     setServerToEdit(null);
+  };
+
+  const handleCheckHealth = async (uuid: string) => {
+    toast.promise(checkHealthMutation.mutateAsync({ serverUuids: [uuid] }), {
+      loading: "Checking server health...",
+      success: "Health check completed",
+      error: "Failed to check health",
+    });
+    // Optimistically refetch health
+    setTimeout(() => refetchHealth(), 1000);
   };
 
   // Define columns for the data table
@@ -201,21 +222,19 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            {t("mcp-servers:list.errorStatus")}
+            Health
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const errorStatus = row.getValue("error_status") as string;
-        const hasError = errorStatus === McpServerErrorStatusEnum.Enum.ERROR;
+        const server = row.original;
+        const health = healthData?.data?.find(
+          (h) => h.serverUuid === server.uuid,
+        );
         return (
-          <div className="px-3 py-2">
-            <Badge variant={hasError ? "destructive" : "success"}>
-              {hasError
-                ? t("mcp-servers:list.error")
-                : t("mcp-servers:list.noError")}
-            </Badge>
+          <div className="px-3 py-2 flex items-center gap-2">
+            <HealthStatusBadge health={health} />
           </div>
         );
       },
@@ -303,11 +322,11 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
         );
       },
       cell: ({ row }) => {
-        const date = new Date(row.getValue("created_at"));
+        const date = formatDeterministicDateTime(
+          row.getValue("created_at") as string,
+        );
         return (
-          <div className="text-sm text-muted-foreground px-3 py-2">
-            {date.toLocaleDateString()} {date.toLocaleTimeString()}
-          </div>
+          <div className="text-sm text-muted-foreground px-3 py-2">{date}</div>
         );
       },
     },
@@ -412,6 +431,10 @@ export function McpServersList({ onRefresh }: McpServersListProps) {
               <DropdownMenuItem onClick={handleEditClick}>
                 <Edit className="mr-2 h-4 w-4" />
                 {t("mcp-servers:editServer")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleCheckHealth(server.uuid)}>
+                <Activity className="mr-2 h-4 w-4" />
+                Check Health
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600 focus:text-red-600"

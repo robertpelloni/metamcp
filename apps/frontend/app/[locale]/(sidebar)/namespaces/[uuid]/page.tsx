@@ -21,6 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConnection } from "@/hooks/useConnection";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 
 import { NamespaceServersTable } from "./components/namespace-servers-table";
@@ -92,7 +93,7 @@ export default function NamespaceDetailPage({
   const connection = useConnection({
     mcpServerUuid: uuid, // Using namespace UUID as the "server" UUID for connection
     transportType: McpServerTypeEnum.Enum.SSE,
-    command: "", // Not needed for metamcp proxy
+    command: "",
     args: "",
     url: `/mcp-proxy/metamcp/${uuid}/sse`, // Connect to metamcp proxy endpoint
     env: {},
@@ -103,7 +104,23 @@ export default function NamespaceDetailPage({
       console.log("MetaMCP Notification:", notification);
     },
     onStdErrNotification: (notification) => {
-      console.error("MetaMCP StdErr:", notification);
+      const stderrContent =
+        "params" in notification &&
+        notification.params &&
+        typeof notification.params === "object" &&
+        "content" in notification.params
+          ? (notification.params as { content?: unknown }).content
+          : undefined;
+
+      if (typeof stderrContent === "string" && stderrContent.trim()) {
+        console.error("MetaMCP StdErr:", stderrContent);
+        return;
+      }
+
+      console.debug(
+        "Ignored MetaMCP stderr notification without printable content",
+        notification,
+      );
     },
     enabled: Boolean(namespace && !isLoading),
   });
@@ -212,15 +229,8 @@ export default function NamespaceDetailPage({
   };
 
   // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatDate = (dateString: string) =>
+    formatDeterministicDateTime(dateString);
 
   if (error) {
     const isNotFound =

@@ -35,11 +35,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
 import { trpc } from "@/lib/trpc";
 import { createTranslatedZodResolver } from "@/lib/zod-resolver";
 
+import { AutoDiscovery } from "./auto-discovery";
 import { ExportImportButtons } from "./export-import-buttons";
 import { McpServersList } from "./mcp-servers-list";
 
@@ -462,7 +464,18 @@ export default function McpServersPage() {
         </div>
       </div>
 
-      <McpServersList />
+      <Tabs defaultValue="managed" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsTrigger value="managed">Managed Servers</TabsTrigger>
+          <TabsTrigger value="discovery">Auto Discovery</TabsTrigger>
+        </TabsList>
+        <TabsContent value="managed" className="mt-6">
+          <McpServersList />
+        </TabsContent>
+        <TabsContent value="discovery" className="mt-6">
+          <AutoDiscovery />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

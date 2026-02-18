@@ -80,30 +80,19 @@ export async function middleware(request: NextRequest) {
   }
 
   // Now handle authentication for the pathname without locale
-  const publicRoutes = ["/login", "/register", "/", "/cors-error"];
+  const publicRoutes = ["/login", "/register", "/"];
   if (publicRoutes.includes(pathnameWithoutLocale)) {
     return NextResponse.next();
   }
 
   try {
-    // Get the original host for nginx compatibility
-    const originalHost =
-      request.headers.get("x-forwarded-host") ||
-      request.headers.get("host") ||
-      "";
+    const authBaseUrl = process.env.APP_URL || request.nextUrl.origin;
 
     // Check if user is authenticated by calling the session endpoint
     const { data: session } = await betterFetch("/api/auth/get-session", {
-      // this hardcoded is correct, because in same container, we should use localhost, outside url won't work
-      baseURL: "http://localhost:12009",
+      baseURL: authBaseUrl,
       headers: {
         cookie: request.headers.get("cookie") || "",
-        // Pass nginx-forwarded host headers for better-auth baseURL resolution
-        host: originalHost,
-        // Include nginx forwarding headers if present
-        "x-forwarded-host": request.headers.get("x-forwarded-host") || "",
-        "x-forwarded-proto": request.headers.get("x-forwarded-proto") || "",
-        "x-forwarded-for": request.headers.get("x-forwarded-for") || "",
       },
     });
 

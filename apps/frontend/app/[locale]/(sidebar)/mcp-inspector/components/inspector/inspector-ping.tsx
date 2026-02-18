@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 
 interface PingHistory {
   id: string;
@@ -246,7 +247,7 @@ export function InspectorPing({ makeRequest }: InspectorPingProps) {
               </div>
             </div>
             <div className="text-xs text-muted-foreground">
-              {currentPing.timestamp.toLocaleTimeString()}
+              {formatDeterministicDateTime(currentPing.timestamp)}
             </div>
           </div>
         </div>
@@ -321,7 +322,9 @@ export function InspectorPing({ makeRequest }: InspectorPingProps) {
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {ping.timestamp.toLocaleString()} • {ping.method}
+                        {formatDeterministicDateTime(ping.timestamp)} •
+                        {" "}
+                        {ping.method}
                       </div>
                       {ping.error && (
                         <div className="text-xs text-red-600 mt-1">

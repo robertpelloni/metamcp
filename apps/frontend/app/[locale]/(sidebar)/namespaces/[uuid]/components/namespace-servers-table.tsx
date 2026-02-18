@@ -48,6 +48,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 
 interface NamespaceServersTableProps {
@@ -343,11 +344,11 @@ export function NamespaceServersTable({
         );
       },
       cell: ({ row }) => {
-        const date = new Date(row.getValue("created_at"));
+        const date = formatDeterministicDateTime(
+          row.getValue("created_at") as string,
+        );
         return (
-          <div className="text-sm text-muted-foreground px-3 py-2">
-            {date.toLocaleDateString()} {date.toLocaleTimeString()}
-          </div>
+          <div className="text-sm text-muted-foreground px-3 py-2">{date}</div>
         );
       },
     },

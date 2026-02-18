@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
-import { DomainWarningBanner } from "@/components/domain-warning-banner";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,8 +35,9 @@ function LoginForm() {
         const isDisabled =
           await vanillaTrpcClient.frontend.config.getSignupDisabled.query();
         setIsSignupDisabled(isDisabled);
-      } catch (error) {
-        console.error("Failed to fetch signup status:", error);
+      } catch {
+        // Fail open in auth UX when config service is unavailable.
+        setIsSignupDisabled(false);
       }
     };
 
@@ -51,8 +51,9 @@ function LoginForm() {
         const isDisabled =
           await vanillaTrpcClient.frontend.config.getBasicAuthDisabled.query();
         setIsBasicAuthDisabled(isDisabled);
-      } catch (error) {
-        console.error("Failed to fetch basic auth config:", error);
+      } catch {
+        // Fail open in auth UX when config service is unavailable.
+        setIsBasicAuthDisabled(false);
       }
     };
 
@@ -69,8 +70,9 @@ function LoginForm() {
           (provider) => provider.id === "oidc" && provider.enabled,
         );
         setIsOidcEnabled(!!oidcProvider);
-      } catch (error) {
-        console.error("Failed to fetch OIDC config:", error);
+      } catch {
+        // Fail closed for optional OIDC affordance when config lookup fails.
+        setIsOidcEnabled(false);
       } finally {
         setAuthProvidersLoading(false);
       }
@@ -225,7 +227,6 @@ export default function LoginPage() {
         <LanguageSwitcher />
       </div>
       <div className="w-full max-w-sm mx-auto flex flex-col justify-center space-y-6">
-        <DomainWarningBanner />
         <Suspense fallback={<div>Loading...</div>}>
           <LoginForm />
         </Suspense>

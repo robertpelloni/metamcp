@@ -39,15 +39,15 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { SESSION_KEYS } from "@/lib/constants";
+import { getAppUrl } from "@/lib/env";
 
 import { ConnectionStatus } from "../lib/constants";
-import { getAppUrl } from "../lib/env";
 import {
   Notification,
+  StdErrNotification,
   StdErrNotificationSchema,
 } from "../lib/notificationTypes";
 import { createAuthProvider } from "../lib/oauth-provider";
-import { trpc } from "../lib/trpc";
 
 interface UseConnectionOptions {
   mcpServerUuid: string;
@@ -86,7 +86,7 @@ export function useConnection({
   includeInactiveServers = false,
   enabled = true,
 }: UseConnectionOptions) {
-  const authProvider = createAuthProvider(mcpServerUuid, url);
+  const authProvider = createAuthProvider(mcpServerUuid, url || "");
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
   const [serverCapabilities, setServerCapabilities] =
@@ -100,19 +100,25 @@ export function useConnection({
   >([]);
   const [completionsSupported, setCompletionsSupported] = useState(true);
 
-  // Fetch timeout configurations from the database
-  const { data: mcpTimeout } = trpc.frontend.config.getMcpTimeout.useQuery(
-    undefined,
-    { enabled: enabled },
+  const hasStdErrContent = useMemoizedFn(
+    (notification: unknown): notification is StdErrNotification => {
+      if (
+        !notification ||
+        typeof notification !== "object" ||
+        !("params" in notification)
+      ) {
+        return false;
+      }
+
+      const params = (notification as { params?: unknown }).params;
+      if (!params || typeof params !== "object" || !("content" in params)) {
+        return false;
+      }
+
+      const content = (params as { content?: unknown }).content;
+      return typeof content === "string" && content.trim().length > 0;
+    },
   );
-  const { data: mcpMaxTotalTimeout } =
-    trpc.frontend.config.getMcpMaxTotalTimeout.useQuery(undefined, {
-      enabled: enabled,
-    });
-  const { data: mcpResetTimeoutOnProgress } =
-    trpc.frontend.config.getMcpResetTimeoutOnProgress.useQuery(undefined, {
-      enabled: enabled,
-    });
 
   const pushHistory = useMemoizedFn((request: object, response?: object) => {
     setRequestHistory((prev) => [
@@ -136,16 +142,13 @@ export function useConnection({
       try {
         const abortController = new AbortController();
 
-        // Get configurable timeout values from database, similar to backend metamcp-proxy.ts
+        // prepare MCP Client request options
+        // TODO: add configurable options e.g., max time out
         const mcpRequestOptions: RequestOptions = {
           signal: options?.signal ?? abortController.signal,
-          resetTimeoutOnProgress:
-            options?.resetTimeoutOnProgress ??
-            mcpResetTimeoutOnProgress ??
-            true,
-          timeout: options?.timeout ?? mcpTimeout ?? 60000,
-          maxTotalTimeout:
-            options?.maxTotalTimeout ?? mcpMaxTotalTimeout ?? 60000,
+          resetTimeoutOnProgress: options?.resetTimeoutOnProgress ?? true,
+          timeout: options?.timeout ?? 60000,
+          maxTotalTimeout: options?.maxTotalTimeout ?? 60000,
         };
 
         // If progress notifications are enabled, add an onprogress hook to the MCP Client request options
@@ -274,17 +277,10 @@ export function useConnection({
   });
 
   const is401Error = useMemoizedFn((error: unknown): boolean => {
-    return Boolean(
+    return (
       (error instanceof SseError && error.code === 401) ||
-        (error instanceof Error && error.message.includes("401")) ||
-        (error instanceof Error && error.message.includes("Unauthorized")) ||
-        // Handle fetch errors that might come from streamable HTTP
-        (error instanceof TypeError && error.message.includes("401")) ||
-        // Handle response errors
-        (error &&
-          typeof error === "object" &&
-          "status" in error &&
-          (error as { status: number }).status === 401),
+      (error instanceof Error && error.message.includes("401")) ||
+      (error instanceof Error && error.message.includes("Unauthorized"))
     );
   });
 
@@ -296,9 +292,13 @@ export function useConnection({
   });
 
   const handleAuthError = useMemoizedFn(async (error: unknown) => {
-    if (is401Error(error)) {
-      sessionStorage.setItem(SESSION_KEYS.SERVER_URL, url || "");
-      sessionStorage.setItem(SESSION_KEYS.MCP_SERVER_UUID, mcpServerUuid);
+    if (error instanceof SseError && error.code === 401) {
+      try {
+        sessionStorage.setItem(SESSION_KEYS.SERVER_URL, url || "");
+        sessionStorage.setItem(SESSION_KEYS.MCP_SERVER_UUID, mcpServerUuid);
+      } catch (storageError) {
+        console.warn("Unable to persist session auth context to sessionStorage", storageError);
+      }
 
       const result = await auth(authProvider, {
         serverUrl: url || "",
@@ -433,13 +433,6 @@ export function useConnection({
                   headers,
                   credentials: "include",
                 },
-                // Use maxTotalTimeout from database for reconnection delay, with fallback to 30s
-                reconnectionOptions: {
-                  maxReconnectionDelay: mcpMaxTotalTimeout ?? 30000,
-                  initialReconnectionDelay: 1000,
-                  reconnectionDelayGrowFactor: 1.5,
-                  maxRetries: 2,
-                },
               };
               break;
 
@@ -462,13 +455,6 @@ export function useConnection({
                   headers,
                   credentials: "include",
                 },
-                // Use maxTotalTimeout from database for reconnection delay, with fallback to 30s
-                reconnectionOptions: {
-                  maxReconnectionDelay: mcpMaxTotalTimeout ?? 30000,
-                  initialReconnectionDelay: 1000,
-                  reconnectionDelayGrowFactor: 1.5,
-                  maxRetries: 2,
-                },
               };
               break;
 
@@ -476,7 +462,6 @@ export function useConnection({
               mcpProxyServerUrl = new URL(`/mcp-proxy/server/mcp`, getAppUrl());
               mcpProxyServerUrl.searchParams.append("url", url);
               transportOptions = {
-                authProvider: authProvider,
                 eventSourceInit: {
                   fetch: (
                     url: string | URL | globalThis.Request,
@@ -492,9 +477,9 @@ export function useConnection({
                   headers,
                   credentials: "include",
                 },
-                // Use maxTotalTimeout from database for reconnection delay, with fallback to 30s
+                // TODO these should be configurable...
                 reconnectionOptions: {
-                  maxReconnectionDelay: mcpMaxTotalTimeout ?? 30000,
+                  maxReconnectionDelay: 30000,
                   initialReconnectionDelay: 1000,
                   reconnectionDelayGrowFactor: 1.5,
                   maxRetries: 2,
@@ -534,7 +519,17 @@ export function useConnection({
         if (onStdErrNotification) {
           client.setNotificationHandler(
             StdErrNotificationSchema,
-            onStdErrNotification,
+            (notification) => {
+              if (hasStdErrContent(notification)) {
+                onStdErrNotification(notification);
+                return;
+              }
+
+              console.warn(
+                "Ignoring empty or malformed MCP stderr notification",
+                notification,
+              );
+            },
           );
         }
 
