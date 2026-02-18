@@ -8,7 +8,9 @@ import {
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  doublePrecision,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -652,5 +654,31 @@ export const auditLogsTable = pgTable(
     index("audit_logs_action_idx").on(table.action),
     index("audit_logs_resource_type_idx").on(table.resource_type),
     index("audit_logs_created_at_idx").on(table.created_at),
+  ],
+);
+
+export const llmUsageLogsTable = pgTable(
+  "llm_usage_logs",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    model: text("model").notNull(),
+    context: text("context").notNull(), // 'agent', 'search', 'embedding'
+    input_tokens: integer("input_tokens").notNull().default(0),
+    output_tokens: integer("output_tokens").notNull().default(0),
+    total_tokens: integer("total_tokens").notNull().default(0),
+    cost_usd: doublePrecision("cost_usd").notNull().default(0.0),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("llm_usage_logs_user_id_idx").on(table.user_id),
+    index("llm_usage_logs_context_idx").on(table.context),
+    index("llm_usage_logs_model_idx").on(table.model),
+    index("llm_usage_logs_created_at_idx").on(table.created_at),
   ],
 );

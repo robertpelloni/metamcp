@@ -1,0 +1,831 @@
+
+> metamcp@ build /app
+> turbo run build
+
+turbo 2.5.5
+
+• Packages in scope: @repo/eslint-config, @repo/trpc, @repo/typescript-config, @repo/zod-types, backend, frontend
+• Running build in 6 packages
+• Remote caching disabled
+@repo/zod-types:build: cache miss, executing 4b80fa159b1b3f18
+@repo/zod-types:build:
+@repo/zod-types:build: > @repo/zod-types@3.7.0 build /app/packages/zod-types
+@repo/zod-types:build: > tsup
+@repo/zod-types:build:
+@repo/zod-types:build: CLI Building entry: src/index.ts
+@repo/zod-types:build: CLI Using tsconfig: tsconfig.json
+@repo/zod-types:build: CLI tsup v8.5.0
+@repo/zod-types:build: CLI Using tsup config: /app/packages/zod-types/tsup.config.ts
+@repo/zod-types:build: CLI Target: node18
+@repo/zod-types:build: ESM Build start
+@repo/zod-types:build: ESM dist/index.js     61.38 KB
+@repo/zod-types:build: ESM dist/index.js.map 126.50 KB
+@repo/zod-types:build: ESM ⚡️ Build success in 253ms
+@repo/zod-types:build: DTS Build start
+@repo/zod-types:build: DTS ⚡️ Build success in 4736ms
+@repo/zod-types:build: DTS dist/index.d.ts 269.25 KB
+@repo/trpc:build: cache miss, executing b266808647189ad3
+@repo/trpc:build:
+@repo/trpc:build: > @repo/trpc@3.7.0 build /app/packages/trpc
+@repo/trpc:build: > tsup
+@repo/trpc:build:
+@repo/trpc:build: CLI Building entry: src/index.ts
+@repo/trpc:build: CLI Using tsconfig: tsconfig.json
+@repo/trpc:build: CLI tsup v8.5.0
+@repo/trpc:build: CLI Using tsup config: /app/packages/trpc/tsup.config.ts
+@repo/trpc:build: CLI Target: node18
+@repo/trpc:build: ESM Build start
+@repo/trpc:build: ESM dist/index.js     26.81 KB
+@repo/trpc:build: ESM dist/index.js.map 62.28 KB
+@repo/trpc:build: ESM ⚡️ Build success in 41ms
+@repo/trpc:build: DTS Build start
+@repo/trpc:build: DTS ⚡️ Build success in 3426ms
+@repo/trpc:build: DTS dist/index.d.ts 172.59 KB
+backend:build: cache miss, executing 6692ee236dfbb21e
+frontend:build: cache miss, executing f4db4facb5736471
+frontend:build:
+frontend:build: > frontend@3.7.0 build /app/apps/frontend
+frontend:build: > next build
+frontend:build:
+backend:build:
+backend:build: > backend@3.7.0 build /app/apps/backend
+backend:build: > tsup
+backend:build:
+backend:build: CLI Building entry: src/index.ts
+backend:build: CLI Using tsconfig: tsconfig.json
+backend:build: CLI tsup v8.5.0
+backend:build: CLI Using tsup config: /app/apps/backend/tsup.config.ts
+backend:build: CLI Target: node18
+backend:build: CLI Cleaning output folder
+backend:build: ESM Build start
+backend:build: ESM You have emitDecoratorMetadata enabled but @swc/core was not installed, skipping swc plugin
+backend:build: ESM dist/index.js     544.01 KB
+backend:build: ESM dist/index.js.map 986.34 KB
+backend:build: ESM ⚡️ Build success in 209ms
+frontend:build:    ▲ Next.js 15.4.8
+frontend:build:    - Experiments (use with caution):
+frontend:build:      · proxyTimeout: 120000
+frontend:build:
+frontend:build:    Creating an optimized production build ...
+frontend:build:  ✓ Compiled successfully in 25.0s
+frontend:build:    Linting and checking validity of types ...
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/agent/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 4:20  Warning: 'useEffect' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 4:20  Warning: 'useEffect' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 9:10  Warning: 'Input' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 9:10  Warning: 'Input' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 24:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 24:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 37:6  Warning: Delete `·`  prettier/prettier
+frontend:build: 39:47  Warning: Insert `,`  prettier/prettier
+frontend:build: 40:6  Warning: Insert `,`  prettier/prettier
+frontend:build: 51:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 70:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 129:20  Warning: Replace `⏎··············className="w-full"⏎··············onClick={handleRun}⏎··············disabled={isRunning}⏎············` with `·className="w-full"·onClick={handleRun}·disabled={isRunning}`  prettier/prettier
+frontend:build: 150:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 151:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 152:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 153:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 154:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 155:17  Warning: Replace `········{isRunning·&&·<span·className="text-xs·text-green-500·animate-pulse">●·Live</span>}` with `{isRunning·&&·(⏎··················<span·className="text-xs·text-green-500·animate-pulse">⏎····················●·Live⏎··················</span>`  prettier/prettier
+frontend:build: 156:1  Warning: Replace `····················` with `················)}⏎··············`  prettier/prettier
+frontend:build: 157:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 158:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 159:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 160:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 161:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 162:21  Warning: Replace `············{isRunning·?·"Waiting·for·agent·activity..."` with `{isRunning⏎······················?·"Waiting·for·agent·activity..."⏎·····················`  prettier/prettier
+frontend:build: 163:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 164:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 165:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 166:1  Warning: Replace `································` with `····················`  prettier/prettier
+frontend:build: 167:1  Warning: Replace `····································` with `······················`  prettier/prettier
+frontend:build: 167:72  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 168:21  Warning: Delete `············`  prettier/prettier
+frontend:build: 169:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 170:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 171:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 172:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 173:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 175:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 176:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 178:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 181:1  Warning: Replace `················` with `··············`  prettier/prettier
+frontend:build: 183:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 185:15  Warning: Delete `··`  prettier/prettier
+frontend:build: 187:1  Warning: Replace `····················` with `··················`  prettier/prettier
+frontend:build: 189:15  Warning: Delete `··`  prettier/prettier
+frontend:build: 191:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/audit/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 5:9  Warning: Replace `·Card,·CardContent,·CardHeader,·CardTitle,·CardDescription·` with `⏎··Card,⏎··CardContent,⏎··CardHeader,⏎··CardTitle,⏎··CardDescription,⏎`  prettier/prettier
+frontend:build: 6:9  Warning: Replace `·Table,·TableBody,·TableCell,·TableHead,·TableHeader,·TableRow·` with `⏎··Table,⏎··TableBody,⏎··TableCell,⏎··TableHead,⏎··TableHeader,⏎··TableRow,⏎`  prettier/prettier
+frontend:build: 11:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 11:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 12:72  Warning: Replace `·limit:·100` with `⏎····limit:·100,⏎·`  prettier/prettier
+frontend:build: 22:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 23:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 29:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 30:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 31:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 32:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 35:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 36:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 37:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 38:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 39:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 40:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 41:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 42:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 43:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 44:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 45:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 46:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 47:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 48:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 49:19  Warning: Delete `··········`  prettier/prettier
+frontend:build: 50:1  Warning: Replace `································` with `····················`  prettier/prettier
+frontend:build: 51:19  Warning: Delete `··········`  prettier/prettier
+frontend:build: 52:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 53:1  Warning: Delete `············`  prettier/prettier
+frontend:build: 54:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 55:1  Warning: Replace `····························<TableCell·className="font-mono·text-xs">{log.userId·||·"System"}` with `··················<TableCell·className="font-mono·text-xs">⏎····················{log.userId·||·"System"}⏎··················`  prettier/prettier
+frontend:build: 56:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 57:1  Warning: Replace `································<span·className="font-medium·text-xs·bg-muted·px-1·py-0.5·rounded·mr-1">{log.resourceType}</span>` with `····················<span·className="font-medium·text-xs·bg-muted·px-1·py-0.5·rounded·mr-1">⏎······················{log.resourceType}`  prettier/prettier
+frontend:build: 58:21  Warning: Replace `············<span·className="text-xs·text-muted-foreground">{log.resourceId}</span>` with `</span>⏎····················<span·className="text-xs·text-muted-foreground">⏎······················{log.resourceId}`  prettier/prettier
+frontend:build: 59:21  Warning: Insert `</span>⏎··········`  prettier/prettier
+frontend:build: 60:1  Warning: Replace `····························<TableCell·className="font-mono·text-xs">{log.ipAddress·||·"-"}</TableCell>` with `··················<TableCell·className="font-mono·text-xs">⏎····················{log.ipAddress·||·"-"}`  prettier/prettier
+frontend:build: 61:1  Warning: Replace `····························<` with `··················</`  prettier/prettier
+frontend:build: 62:19  Warning: Insert `<TableCell>⏎······`  prettier/prettier
+frontend:build: 63:1  Warning: Delete `··············`  prettier/prettier
+frontend:build: 64:1  Warning: Replace `········································` with `························`  prettier/prettier
+frontend:build: 65:23  Warning: Delete `··············`  prettier/prettier
+frontend:build: 66:1  Warning: Replace `································` with `····················`  prettier/prettier
+frontend:build: 67:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 68:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 69:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 70:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 71:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 72:18  Warning: Replace `···········<TableCell·colSpan={6}·className="text-center·py-8·text-muted-foreground">` with `·<TableCell⏎····················colSpan={6}⏎····················className="text-center·py-8·text-muted-foreground"`  prettier/prettier
+frontend:build: 73:19  Warning: Insert `>⏎······`  prettier/prettier
+frontend:build: 74:19  Warning: Delete `··········`  prettier/prettier
+frontend:build: 75:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 76:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 77:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 78:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/layout.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 152:36  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 176:56  Warning: Replace `v{packageJson.version}` with `⏎············v{packageJson.version}⏎··········`  prettier/prettier
+frontend:build: 256:23  Warning: Replace `·href="http://localhost:9853"·target="_blank"·rel="noopener·noreferrer"` with `⏎······················href="http://localhost:9853"⏎······················target="_blank"⏎······················rel="noopener·noreferrer"⏎····················`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/live-logs/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 3:9  Warning: Replace `·ChevronDown,·ChevronRight,·FileTerminal,·RefreshCw,·Trash2·` with `⏎··ChevronDown,⏎··ChevronRight,⏎··FileTerminal,⏎··RefreshCw,⏎··Trash2,⏎`  prettier/prettier
+frontend:build: 3:10  Warning: 'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 3:10  Warning: 'ChevronDown' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 3:23  Warning: 'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 3:23  Warning: 'ChevronRight' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 20:10  Warning: 'MetaMcpLogEntry' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 20:10  Warning: 'MetaMcpLogEntry' is defined but never used.  unused-imports/no-unused-imports
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/mcp-inspector/components/notifications-panel.tsx
+frontend:build: 133:42  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 141:50  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/mcp-servers/[uuid]/components/tool-management.tsx
+frontend:build: 100:9  Warning: 'pageCount' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 100:9  Warning: 'pageCount' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 101:1  Warning: Delete `········`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/namespaces/[uuid]/components/enhanced-namespace-tools-table.tsx
+frontend:build: 455:54  Warning: Replace `⏎······tool.overrideAnnotations,⏎····` with `tool.overrideAnnotations`  prettier/prettier
+frontend:build: 465:36  Warning: Replace `⏎······|·Record<string,·unknown>⏎······|·null⏎······|·undefined·=` with `·Record<string,·unknown>·|·null·|·undefined·=⏎·····`  prettier/prettier
+frontend:build: 470:1  Warning: Replace `········` with `····`  prettier/prettier
+frontend:build: 471:7  Warning: Replace `····if·(⏎············currentAnnotationsText.trim()·===·""·||⏎············matchesOriginalAnnotations⏎··········` with `if·(currentAnnotationsText.trim()·===·""·||·matchesOriginalAnnotations`  prettier/prettier
+frontend:build: 475:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 476:7  Warning: Delete `····`  prettier/prettier
+frontend:build: 477:1  Warning: Replace `············` with `········`  prettier/prettier
+frontend:build: 478:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 944:28  Warning: Replace `⏎··························"namespaces:enhancedToolsTable.annotationsTooltip",⏎························` with `"namespaces:enhancedToolsTable.annotationsTooltip"`  prettier/prettier
+frontend:build: 1226:68  Warning: Insert `⏎············································`  prettier/prettier
+frontend:build: 1288:39  Warning: Insert `····`  prettier/prettier
+frontend:build: 1289:1  Warning: Insert `····`  prettier/prettier
+frontend:build: 1290:41  Warning: Insert `····`  prettier/prettier
+frontend:build: 1291:1  Warning: Replace `········································` with `············································`  prettier/prettier
+frontend:build: 1292:1  Warning: Insert `····`  prettier/prettier
+frontend:build: 1293:37  Warning: Insert `····`  prettier/prettier
+frontend:build: 1294:1  Warning: Insert `····`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/observability/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 5:9  Warning: Replace `·Card,·CardContent,·CardHeader,·CardTitle,·CardDescription·` with `⏎··Card,⏎··CardContent,⏎··CardHeader,⏎··CardTitle,⏎··CardDescription,⏎`  prettier/prettier
+frontend:build: 7:9  Warning: Replace `·Activity,·AlertTriangle,·CheckCircle,·BarChart3,·Search,·DollarSign,·Coins·` with `⏎··Activity,⏎··AlertTriangle,⏎··CheckCircle,⏎··BarChart3,⏎··Search,⏎··DollarSign,⏎··Coins,⏎`  prettier/prettier
+frontend:build: 7:59  Warning: 'Search' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 7:59  Warning: 'Search' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 12:3  Warning: 'Cell' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 12:3  Warning: 'Cell' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 13:3  Warning: 'Legend' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 13:3  Warning: 'Legend' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 14:3  Warning: 'Line' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 14:3  Warning: 'Line' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 15:3  Warning: 'LineChart' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 15:3  Warning: 'LineChart' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 23:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 23:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 31:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 32:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 38:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 39:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 40:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 43:21  Warning: Replace `·value="dashboard"·className="flex-1·overflow-y-auto·mt-4·space-y-6">` with `⏎··········value="dashboard"⏎··········className="flex-1·overflow-y-auto·mt-4·space-y-6"`  prettier/prettier
+frontend:build: 44:9  Warning: Insert `>⏎······`  prettier/prettier
+frontend:build: 45:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 46:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 47:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 48:1  Warning: Replace `························<CardTitle·className="text-sm·font-medium">Total·Tool·Calls` with `················<CardTitle·className="text-sm·font-medium">⏎··················Total·Tool·Calls⏎················`  prettier/prettier
+frontend:build: 49:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 50:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 51:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 52:1  Warning: Replace `························<div·className="text-2xl·font-bold">{analytics?.totalCalls·||·0}</div>` with `················<div·className="text-2xl·font-bold">⏎··················{analytics?.totalCalls·||·0}`  prettier/prettier
+frontend:build: 53:17  Warning: Replace `········<p·className="text-xs·text-muted-foreground">Lifetime·tool·executions</p>` with `</div>⏎················<p·className="text-xs·text-muted-foreground">⏎··················Lifetime·tool·executions`  prettier/prettier
+frontend:build: 54:13  Warning: Replace `········` with `····</p>⏎··············`  prettier/prettier
+frontend:build: 55:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 56:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 57:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 58:17  Warning: Replace `········<CardTitle·className="text-sm·font-medium">Success·Rate` with `<CardTitle·className="text-sm·font-medium">⏎··················Success·Rate⏎················`  prettier/prettier
+frontend:build: 59:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 60:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 61:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 62:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 63:1  Warning: Replace `····························{analytics·?·((1·-·analytics.errorRate)·*·100).toFixed(1)·:·0}%` with `··················{analytics·?·((1·-·analytics.errorRate)·*·100).toFixed(1)·:·0}`  prettier/prettier
+frontend:build: 64:19  Warning: Replace `······</div>⏎························<p·className="text-xs·text-muted-foreground">Successful·executions</p>` with `%⏎················</div>⏎················<p·className="text-xs·text-muted-foreground">⏎··················Successful·executions`  prettier/prettier
+frontend:build: 66:7  Warning: Insert `··········</p>⏎`  prettier/prettier
+frontend:build: 67:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 68:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 69:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 70:17  Warning: Replace `········<CardTitle·className="text-sm·font-medium">Error·Rate` with `<CardTitle·className="text-sm·font-medium">⏎··················Error·Rate⏎················`  prettier/prettier
+frontend:build: 71:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 72:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 73:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 74:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 75:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 76:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 77:1  Warning: Replace `························<p·className="text-xs·text-muted-foreground">Failed·executions</p>` with `················<p·className="text-xs·text-muted-foreground">⏎··················Failed·executions`  prettier/prettier
+frontend:build: 78:1  Warning: Replace `····················` with `················</p>⏎··············`  prettier/prettier
+frontend:build: 79:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 80:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 81:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 82:1  Warning: Replace `························<CardTitle·className="text-sm·font-medium">Total·Cost` with `················<CardTitle·className="text-sm·font-medium">⏎··················Total·Cost⏎················`  prettier/prettier
+frontend:build: 83:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 84:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 85:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 86:17  Warning: Replace `········<div·className="text-2xl·font-bold">${costStats?.totalCost.toFixed(4)·||·"0.0000"}</div>` with `<div·className="text-2xl·font-bold">⏎··················${costStats?.totalCost.toFixed(4)·||·"0.0000"}`  prettier/prettier
+frontend:build: 87:17  Warning: Replace `········<p·className="text-xs·text-muted-foreground">Estimated·API·costs</p>` with `</div>⏎················<p·className="text-xs·text-muted-foreground">⏎··················Estimated·API·costs`  prettier/prettier
+frontend:build: 88:12  Warning: Replace `·········` with `·····</p>⏎··············`  prettier/prettier
+frontend:build: 89:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 90:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 92:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 93:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 94:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 95:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 96:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 97:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 98:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 99:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 100:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 101:21  Warning: Delete `············`  prettier/prettier
+frontend:build: 102:1  Warning: Replace `····································` with `······················`  prettier/prettier
+frontend:build: 103:23  Warning: Replace `··············<XAxis·dataKey="date"·fontSize={12}·tickLine={false}·axisLine={false}·/>⏎··············` with `<XAxis⏎························dataKey="date"⏎························fontSize={12}⏎························tickLine={false}⏎························axisLine={false}⏎······················/>⏎`  prettier/prettier
+frontend:build: 105:23  Warning: Replace `··············<Tooltip·⏎········································contentStyle={{·backgroundColor:·'#1f2937',·borderColor:·'#374151',·color:·'#f3f4f6'·}}` with `<Tooltip⏎························contentStyle={{⏎··························backgroundColor:·"#1f2937",⏎··························borderColor:·"#374151",⏎··························color:·"#f3f4f6",`  prettier/prettier
+frontend:build: 107:22  Warning: Replace `···················itemStyle={{·color:·'#f3f4f6'` with `···}}⏎························itemStyle={{·color:·"#f3f4f6"`  prettier/prettier
+frontend:build: 108:23  Warning: Replace `··············/>` with `/>⏎······················<Bar`  prettier/prettier
+frontend:build: 109:1  Warning: Replace `····································<Bar·dataKey="count"·fill="#3b82f6"·radius={[4,·4,·0,·0]}·/>⏎············` with `························dataKey="count"⏎························fill="#3b82f6"⏎························radius={[4,·4,·0,·0]}⏎······················/>⏎`  prettier/prettier
+frontend:build: 111:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 112:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 113:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 114:1  Warning: Replace `································` with `····················`  prettier/prettier
+frontend:build: 115:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 116:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 117:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 118:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 120:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 121:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 122:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 123:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 124:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 125:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 126:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 127:21  Warning: Replace `············<BarChart·layout="vertical"·data={analytics.topTools}·margin={{·left:·20·}}>` with `<BarChart⏎······················layout="vertical"⏎······················data={analytics.topTools}⏎······················margin={{·left:·20·}}`  prettier/prettier
+frontend:build: 128:21  Warning: Replace `················<CartesianGrid·strokeDasharray="3·3"·opacity={0.2}·horizontal={true}·vertical={false}·/>⏎····································<XAxis·type="number"·fontSize={12}·tickLine={false}·axisLine={false}·/>` with `>⏎······················<CartesianGrid⏎························strokeDasharray="3·3"⏎························opacity={0.2}⏎························horizontal={true}⏎························vertical={false}⏎······················/>⏎······················<XAxis⏎························type="number"⏎························fontSize={12}⏎························tickLine={false}⏎························axisLine={false}`  prettier/prettier
+frontend:build: 130:23  Warning: Replace `··············<YAxis·⏎········································type="category"·` with `/>⏎······················<YAxis⏎························type="category"`  prettier/prettier
+frontend:build: 132:1  Warning: Replace `········································dataKey="name"·` with `························dataKey="name"`  prettier/prettier
+frontend:build: 133:1  Warning: Replace `········································width={150}·` with `························width={150}`  prettier/prettier
+frontend:build: 134:1  Warning: Replace `········································fontSize={11}·` with `························fontSize={11}`  prettier/prettier
+frontend:build: 135:1  Warning: Replace `········································tickLine={false}·` with `························tickLine={false}`  prettier/prettier
+frontend:build: 136:1  Warning: Delete `················`  prettier/prettier
+frontend:build: 137:23  Warning: Delete `··············`  prettier/prettier
+frontend:build: 138:1  Warning: Replace `····································<Tooltip·` with `······················<Tooltip`  prettier/prettier
+frontend:build: 139:25  Warning: Replace `················contentStyle={{·backgroundColor:·'#1f2937',·borderColor:·'#374151',·color:·'#f3f4f6'·}}` with `contentStyle={{⏎··························backgroundColor:·"#1f2937",⏎··························borderColor:·"#374151",⏎··························color:·"#f3f4f6",`  prettier/prettier
+frontend:build: 140:22  Warning: Replace `···················itemStyle={{·color:·'#f3f4f6'` with `···}}⏎························itemStyle={{·color:·"#f3f4f6"`  prettier/prettier
+frontend:build: 141:23  Warning: Replace `··············/>⏎····································<Bar·dataKey="count"·fill="#10b981"·radius={[0,·4,·4,·0]}·/>` with `/>⏎······················<Bar⏎························dataKey="count"⏎························fill="#10b981"⏎························radius={[0,·4,·4,·0]}`  prettier/prettier
+frontend:build: 143:23  Warning: Insert `/>⏎··········`  prettier/prettier
+frontend:build: 144:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 145:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 146:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 147:21  Warning: Delete `············`  prettier/prettier
+frontend:build: 148:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 149:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 150:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 151:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 152:1  Warning: Replace `············` with `··········`  prettier/prettier
+frontend:build: 155:21  Warning: Replace `·value="cost"·className="flex-1·overflow-y-auto·mt-4·space-y-6">` with `⏎··········value="cost"⏎··········className="flex-1·overflow-y-auto·mt-4·space-y-6"`  prettier/prettier
+frontend:build: 156:7  Warning: Replace `······` with `··>⏎··········`  prettier/prettier
+frontend:build: 157:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 158:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 159:1  Warning: Replace `························<CardTitle·className="text-sm·font-medium">Total·Tokens` with `················<CardTitle·className="text-sm·font-medium">⏎··················Total·Tokens⏎················`  prettier/prettier
+frontend:build: 160:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 161:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 162:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 163:1  Warning: Replace `························<div·className="text-2xl·font-bold">{(costStats?.totalTokens·||·0).toLocaleString()}</div>` with `················<div·className="text-2xl·font-bold">⏎··················{(costStats?.totalTokens·||·0).toLocaleString()}`  prettier/prettier
+frontend:build: 164:17  Warning: Replace `········<p·className="text-xs·text-muted-foreground">Input·+·Output·tokens</p>` with `</div>⏎················<p·className="text-xs·text-muted-foreground">⏎··················Input·+·Output·tokens`  prettier/prettier
+frontend:build: 165:14  Warning: Insert `···</p>⏎·······`  prettier/prettier
+frontend:build: 166:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 167:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 168:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 169:17  Warning: Replace `········<CardTitle·className="text-sm·font-medium">Estimated·Cost` with `<CardTitle·className="text-sm·font-medium">⏎··················Estimated·Cost⏎················`  prettier/prettier
+frontend:build: 170:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 171:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 172:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 173:1  Warning: Replace `························<div·className="text-2xl·font-bold">${costStats?.totalCost.toFixed(4)·||·"0.0000"}</div>` with `················<div·className="text-2xl·font-bold">⏎··················${costStats?.totalCost.toFixed(4)·||·"0.0000"}`  prettier/prettier
+frontend:build: 174:17  Warning: Replace `········<p·className="text-xs·text-muted-foreground">Based·on·OpenAI·pricing</p>` with `</div>⏎················<p·className="text-xs·text-muted-foreground">⏎··················Based·on·OpenAI·pricing`  prettier/prettier
+frontend:build: 175:15  Warning: Insert `··</p>⏎········`  prettier/prettier
+frontend:build: 176:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 177:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 178:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 179:17  Warning: Replace `········<CardTitle·className="text-sm·font-medium">LLM·Interactions` with `<CardTitle·className="text-sm·font-medium">⏎··················LLM·Interactions⏎················`  prettier/prettier
+frontend:build: 180:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 181:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 182:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 183:1  Warning: Replace `························<div·className="text-2xl·font-bold">{costStats?.count·||·0}</div>` with `················<div·className="text-2xl·font-bold">⏎··················{costStats?.count·||·0}`  prettier/prettier
+frontend:build: 184:17  Warning: Replace `········<p·className="text-xs·text-muted-foreground">Total·API·calls·tracked</p>` with `</div>⏎················<p·className="text-xs·text-muted-foreground">⏎··················Total·API·calls·tracked`  prettier/prettier
+frontend:build: 185:16  Warning: Insert `·</p>⏎·········`  prettier/prettier
+frontend:build: 186:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 187:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 189:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 190:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 191:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 192:15  Warning: Replace `······<CardDescription>Token·consumption·by·model·and·context·(Placeholder·-·detailed·breakdown·coming·soon)` with `<CardDescription>⏎················Token·consumption·by·model·and·context·(Placeholder·-·detailed⏎················breakdown·coming·soon)⏎··············`  prettier/prettier
+frontend:build: 193:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 194:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 195:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 196:1  Warning: Replace `························Detailed·charts·for·usage·over·time·and·model·breakdown·will·be` with `················Detailed·charts·for·usage·over·time·and·model·breakdown·will·be⏎···············`  prettier/prettier
+frontend:build: 197:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 198:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 199:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 202:21  Warning: Replace `·value="inspector"·className="flex-1·border·rounded-lg·overflow-hidden·bg-background·mt-4">` with `⏎··········value="inspector"⏎··········className="flex-1·border·rounded-lg·overflow-hidden·bg-background·mt-4"`  prettier/prettier
+frontend:build: 203:3  Warning: Insert `······>⏎`  prettier/prettier
+frontend:build: 208:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/policies/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 24:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 24:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 30:10  Warning: Replace `·data:·policies,·isLoading,·refetch` with `⏎····data:·policies,⏎····isLoading,⏎····refetch,⏎·`  prettier/prettier
+frontend:build: 35:5  Warning: Delete `··`  prettier/prettier
+frontend:build: 36:1  Warning: Replace `··········const·allowList·=·newAllow.split(",").map(s·=>·s.trim()).filter(s` with `······const·allowList·=·newAllow⏎········.split(",")⏎········.map((s)·=>·s.trim())⏎········.filter((s)`  prettier/prettier
+frontend:build: 37:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 38:1  Warning: Replace `··············` with `········`  prettier/prettier
+frontend:build: 39:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 40:1  Warning: Replace `··············` with `········`  prettier/prettier
+frontend:build: 41:1  Warning: Replace `··················allow:·allowList` with `··········allow:·allowList,`  prettier/prettier
+frontend:build: 42:1  Warning: Replace `··············}` with `········},`  prettier/prettier
+frontend:build: 43:1  Warning: Replace `··········` with `······`  prettier/prettier
+frontend:build: 44:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 45:1  Warning: Replace `··········` with `······`  prettier/prettier
+frontend:build: 46:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 47:7  Warning: Delete `····`  prettier/prettier
+frontend:build: 48:1  Warning: Replace `··········` with `······`  prettier/prettier
+frontend:build: 49:7  Warning: Delete `····`  prettier/prettier
+frontend:build: 50:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 50:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 51:7  Warning: Delete `····`  prettier/prettier
+frontend:build: 52:5  Warning: Delete `··`  prettier/prettier
+frontend:build: 56:1  Warning: Replace `······` with `····`  prettier/prettier
+frontend:build: 57:5  Warning: Delete `··`  prettier/prettier
+frontend:build: 58:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 59:7  Warning: Delete `····`  prettier/prettier
+frontend:build: 60:1  Warning: Replace `··········` with `······`  prettier/prettier
+frontend:build: 61:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 61:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 62:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 63:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 79:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 80:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 88:58  Warning: Replace `{policy.name}` with `⏎················{policy.name}⏎··············`  prettier/prettier
+frontend:build: 89:22  Warning: Replace `·variant="ghost"·size="icon"·onClick={()·=>·handleDelete(policy.uuid)}>` with `⏎················variant="ghost"⏎················size="icon"⏎················onClick={()·=>·handleDelete(policy.uuid)}`  prettier/prettier
+frontend:build: 90:9  Warning: Replace `··········` with `······>⏎················`  prettier/prettier
+frontend:build: 98:17  Warning: Delete `··`  prettier/prettier
+frontend:build: 99:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 100:1  Warning: Replace `······················` with `··················`  prettier/prettier
+frontend:build: 101:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 104:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 127:21  Warning: Replace `·value={newName}·onChange={(e)·=>·setNewName(e.target.value)}·placeholder="e.g.·Read-Only·GitHub"` with `⏎················value={newName}⏎················onChange={(e)·=>·setNewName(e.target.value)}⏎················placeholder="e.g.·Read-Only·GitHub"⏎·············`  prettier/prettier
+frontend:build: 131:21  Warning: Replace `·value={newDescription}·onChange={(e)·=>·setNewDescription(e.target.value)}` with `⏎················value={newDescription}⏎················onChange={(e)·=>·setNewDescription(e.target.value)}⏎·············`  prettier/prettier
+frontend:build: 134:15  Warning: Delete `··`  prettier/prettier
+frontend:build: 135:1  Warning: Replace `················` with `··············`  prettier/prettier
+frontend:build: 136:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 137:1  Warning: Replace `····················` with `················`  prettier/prettier
+frontend:build: 138:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 139:1  Warning: Replace `················` with `··············`  prettier/prettier
+frontend:build: 140:1  Warning: Replace `················<p·className="text-[0.8rem]·text-muted-foreground">Use·glob·patterns·(e.g.·*)` with `··············<p·className="text-[0.8rem]·text-muted-foreground">⏎················Use·glob·patterns·(e.g.·*)⏎··············`  prettier/prettier
+frontend:build: 144:78  Warning: Replace `Cancel` with `⏎··············Cancel⏎············`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/registry/page.tsx
+frontend:build: 3:9  Warning: Replace `·Check,·Download,·ExternalLink,·Library,·Search,·Zap·` with `⏎··Check,⏎··Download,⏎··ExternalLink,⏎··Library,⏎··Search,⏎··Zap,⏎`  prettier/prettier
+frontend:build: 9:9  Warning: Replace `·Card,·CardContent,·CardDescription,·CardHeader,·CardTitle·` with `⏎··Card,⏎··CardContent,⏎··CardDescription,⏎··CardHeader,⏎··CardTitle,⏎`  prettier/prettier
+frontend:build: 21:9  Warning: Replace `·Select,·SelectContent,·SelectItem,·SelectTrigger,·SelectValue·` with `⏎··Select,⏎··SelectContent,⏎··SelectItem,⏎··SelectTrigger,⏎··SelectValue,⏎`  prettier/prettier
+frontend:build: 27:50  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 33:44  Warning: Insert `⏎···`  prettier/prettier
+frontend:build: 34:1  Warning: Insert `··`  prettier/prettier
+frontend:build: 35:5  Warning: Insert `··`  prettier/prettier
+frontend:build: 36:5  Warning: Insert `··`  prettier/prettier
+frontend:build: 37:1  Warning: Insert `··`  prettier/prettier
+frontend:build: 42:37  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 46:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 48:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 49:1  Warning: Replace `········` with `······`  prettier/prettier
+frontend:build: 50:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 52:7  Warning: Delete `··`  prettier/prettier
+frontend:build: 53:1  Warning: Replace `········` with `······`  prettier/prettier
+frontend:build: 61:9  Warning: Replace `··const·missing·=·Object.entries(installItem.template.env)` with `const·missing·=·Object.entries(installItem.template.env).filter(`  prettier/prettier
+frontend:build: 62:1  Warning: Replace `············.filter(([key,·config]:·[string,·any])·=>·config.required·&&·!templateEnv[key]);` with `··········([key,·config]:·[string,·any])·=>⏎············config.required·&&·!templateEnv[key],`  prettier/prettier
+frontend:build: 62:46  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 63:9  Warning: Replace `··` with `);⏎`  prettier/prettier
+frontend:build: 64:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 65:11  Warning: Replace `····toast.error(`Missing·required·environment·variables:·${missing.map(m·=>·m[0]).join(",·")}`);` with `toast.error(⏎············`Missing·required·environment·variables:·${missing.map((m)·=>·m[0]).join(",·")}`,`  prettier/prettier
+frontend:build: 66:11  Warning: Insert `);⏎······`  prettier/prettier
+frontend:build: 67:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 80:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 115:44  Warning: Replace `'')}` with `"")}{"·"}⏎···············`  prettier/prettier
+frontend:build: 128:19  Warning: Delete `··`  prettier/prettier
+frontend:build: 129:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 130:1  Warning: Replace `····························<CardTitle·className="text-lg·leading-tight">{item.name}` with `······················<CardTitle·className="text-lg·leading-tight">⏎························{item.name}⏎······················`  prettier/prettier
+frontend:build: 131:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 132:25  Warning: Replace `········<Badge·variant="default"·className="text-[10px]·h-5·bg-green-600·hover:bg-green-700">` with `<Badge⏎··························variant="default"⏎··························className="text-[10px]·h-5·bg-green-600·hover:bg-green-700"`  prettier/prettier
+frontend:build: 133:16  Warning: Replace `·····················` with `·········>⏎··························`  prettier/prettier
+frontend:build: 134:1  Warning: Delete `········`  prettier/prettier
+frontend:build: 135:23  Warning: Delete `······`  prettier/prettier
+frontend:build: 136:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 137:19  Warning: Replace `··</div>` with `</div>⏎··················<a`  prettier/prettier
+frontend:build: 138:21  Warning: Replace `<a·href={item.url}·target="_blank"·rel="noopener·noreferrer"·className="text-muted-foreground·hover:text-primary">` with `href={item.url}⏎····················target="_blank"⏎····················rel="noopener·noreferrer"⏎····················className="text-muted-foreground·hover:text-primary"`  prettier/prettier
+frontend:build: 139:1  Warning: Replace `························` with `··················>⏎····················`  prettier/prettier
+frontend:build: 140:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 149:27  Warning: Replace `·key={cat}·variant="secondary"·className="text-[10px]"` with `⏎······················key={cat}⏎······················variant="secondary"⏎······················className="text-[10px]"⏎····················`  prettier/prettier
+frontend:build: 150:50  Warning: Replace `'').split('·')[0]}` with `"").split("·")[0]}{"·"}⏎·····················`  prettier/prettier
+frontend:build: 154:24  Warning: Delete `·`  prettier/prettier
+frontend:build: 155:1  Warning: Replace `····················className="w-full"·` with `··················className="w-full"`  prettier/prettier
+frontend:build: 156:1  Warning: Replace `····················variant={item.template·?·"default"·:·"outline"}·` with `··················variant={item.template·?·"default"·:·"outline"}`  prettier/prettier
+frontend:build: 157:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 159:36  Warning: Replace `<Zap·className="mr-2·h-4·w-4"·/>·:·<Download·className="mr-2·h-4·w-4"·/>` with `(⏎····················<Zap·className="mr-2·h-4·w-4"·/>⏎··················)·:·(⏎····················<Download·className="mr-2·h-4·w-4"·/>⏎··················)`  prettier/prettier
+frontend:build: 165:72  Warning: Insert `⏎···········`  prettier/prettier
+frontend:build: 166:1  Warning: Replace `············` with `··············`  prettier/prettier
+frontend:build: 167:15  Warning: Insert `··`  prettier/prettier
+frontend:build: 168:13  Warning: Insert `··`  prettier/prettier
+frontend:build: 169:1  Warning: Insert `··`  prettier/prettier
+frontend:build: 173:14  Warning: Replace `·open={!!installItem}·onOpenChange={(open)·=>·!open·&&·setInstallItem(null)}` with `⏎········open={!!installItem}⏎········onOpenChange={(open)·=>·!open·&&·setInstallItem(null)}⏎······`  prettier/prettier
+frontend:build: 178:37  Warning: Delete `·`  prettier/prettier
+frontend:build: 186:21  Warning: Replace `·value={serverName}·onChange={(e)·=>·setServerName(e.target.value)}` with `⏎················value={serverName}⏎················onChange={(e)·=>·setServerName(e.target.value)}⏎·············`  prettier/prettier
+frontend:build: 188:1  Warning: Delete `············`  prettier/prettier
+frontend:build: 190:15  Warning: Delete `··`  prettier/prettier
+frontend:build: 191:1  Warning: Replace `················` with `··············`  prettier/prettier
+frontend:build: 192:1  Warning: Replace `····················<Label·className="text-xs·font-semibold·uppercase·text-muted-foreground">Configuration` with `················<Label·className="text-xs·font-semibold·uppercase·text-muted-foreground">⏎··················Configuration⏎················`  prettier/prettier
+frontend:build: 193:1  Warning: Replace `····················{Object.entries(installItem.template.env).map(` with `················{Object.entries(installItem.template.env).map(⏎··················`  prettier/prettier
+frontend:build: 193:92  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 194:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 195:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 196:25  Warning: Replace `········{key}·{config.required·&&·<span·className="text-red-500">*</span>}` with `{key}{"·"}⏎························{config.required·&&·(⏎··························<span·className="text-red-500">*</span>`  prettier/prettier
+frontend:build: 197:9  Warning: Replace `····················` with `················)}⏎······················`  prettier/prettier
+frontend:build: 198:23  Warning: Replace `······<Input·` with `<Input`  prettier/prettier
+frontend:build: 199:1  Warning: Replace `································value={templateEnv[key]·||·""}·` with `························value={templateEnv[key]·||·""}`  prettier/prettier
+frontend:build: 200:1  Warning: Replace `································onChange={(e)·=>·setTemplateEnv({...templateEnv,·[key]:·e.target.value})}` with `························onChange={(e)·=>⏎··························setTemplateEnv({⏎····························...templateEnv,⏎····························[key]:·e.target.value,⏎··························})`  prettier/prettier
+frontend:build: 201:1  Warning: Replace `········` with `························}⏎`  prettier/prettier
+frontend:build: 202:25  Warning: Replace `········type={key.includes("KEY")·||·key.includes("TOKEN")·||·key.includes("SECRET")·?·"password"·:·"text"}` with `type={⏎··························key.includes("KEY")·||⏎··························key.includes("TOKEN")·||⏎··························key.includes("SECRET")⏎····························?·"password"⏎····························:·"text"`  prettier/prettier
+frontend:build: 203:25  Warning: Replace `····/>⏎····························<p·className="text-[0.8rem]·text-muted-foreground">{config.description}` with `}⏎······················/>⏎······················<p·className="text-[0.8rem]·text-muted-foreground">⏎························{config.description}⏎······················`  prettier/prettier
+frontend:build: 205:1  Warning: Replace `························` with `····················`  prettier/prettier
+frontend:build: 206:19  Warning: Replace `··))}` with `),`  prettier/prettier
+frontend:build: 207:5  Warning: Insert `············)}⏎`  prettier/prettier
+frontend:build: 208:1  Warning: Replace `························<p·className="text-sm·text-muted-foreground·italic">No·configuration·required.` with `··················<p·className="text-sm·text-muted-foreground·italic">⏎····················No·configuration·required.⏎··················`  prettier/prettier
+frontend:build: 209:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 210:15  Warning: Delete `··`  prettier/prettier
+frontend:build: 212:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 213:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 214:17  Warning: Delete `····`  prettier/prettier
+frontend:build: 215:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 216:19  Warning: Replace `··<Input·value={serverCommand}·onChange={(e)·=>·setServerCommand(e.target.value)}·placeholder="npx"·/>⏎··············` with `<Input⏎····················value={serverCommand}⏎····················onChange={(e)·=>·setServerCommand(e.target.value)}⏎····················placeholder="npx"⏎··················/>⏎··········`  prettier/prettier
+frontend:build: 218:1  Warning: Replace `····················` with `················`  prettier/prettier
+frontend:build: 219:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 220:19  Warning: Replace `··<Input·` with `<Input`  prettier/prettier
+frontend:build: 221:1  Warning: Replace `························value={serverArgs.join("·")}·` with `····················value={serverArgs.join("·")}`  prettier/prettier
+frontend:build: 222:1  Warning: Replace `························onChange={(e)·=>·setServerArgs(e.target.value.split("·"))}·` with `····················onChange={(e)·=>·setServerArgs(e.target.value.split("·"))}`  prettier/prettier
+frontend:build: 223:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 224:19  Warning: Delete `··`  prettier/prettier
+frontend:build: 225:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 226:1  Warning: Replace `························Check·the·<a·href={installItem?.url}·target="_blank"·className="underline">repository·README</a>` with `····················Check·the{"·"}⏎····················<a⏎······················href={installItem?.url}⏎······················target="_blank"⏎······················className="underline"⏎····················>⏎······················repository·README⏎····················</a>{"·"}⏎···················`  prettier/prettier
+frontend:build: 226:35  Warning: Using target="_blank" without rel="noreferrer" (which implies rel="noopener") is a security risk in older browsers: see https://mathiasbynens.github.io/rel-noopener/#recommendations  react/jsx-no-target-blank
+frontend:build: 227:19  Warning: Delete `··`  prettier/prettier
+frontend:build: 228:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 229:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 233:76  Warning: Replace `Cancel` with `⏎··············Cancel⏎············`  prettier/prettier
+frontend:build: 235:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/scripts/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 3:28  Warning: 'Play' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 3:28  Warning: 'Play' is defined but never used.  unused-imports/no-unused-imports
+frontend:build: 29:10  Warning: 'agentTask' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 29:10  Warning: 'agentTask' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 29:21  Warning: 'setAgentTask' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 29:21  Warning: 'setAgentTask' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 31:10  Warning: 'agentRunning' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 31:10  Warning: 'agentRunning' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 36:23  Warning: Insert `⏎·······`  prettier/prettier
+frontend:build: 39:44  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 40:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 41:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 42:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 46:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 46:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 55:6  Warning: React Hook useEffect has a missing dependency: 'fetchScripts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+frontend:build: 60:68  Warning: Replace `·uuid:·deleteId` with `⏎········uuid:·deleteId,⏎·····`  prettier/prettier
+frontend:build: 63:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 63:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 70:9  Warning: 'runTestAgent' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 70:9  Warning: 'runTestAgent' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 71:5  Warning: Delete `··`  prettier/prettier
+frontend:build: 72:5  Warning: Delete `··`  prettier/prettier
+frontend:build: 73:1  Warning: Replace `······` with `····`  prettier/prettier
+frontend:build: 74:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 75:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 76:7  Warning: Delete `····`  prettier/prettier
+frontend:build: 77:1  Warning: Replace `··········` with `······`  prettier/prettier
+frontend:build: 78:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 80:1  Warning: Replace `··········` with `······`  prettier/prettier
+frontend:build: 81:7  Warning: Replace `····setAgentResult("To·run·the·agent,·please·connect·an·MCP·Client·(like·Claude·Desktop)·and·use·the·`run_agent`·tool.·Frontend·execution·coming·soon.");` with `setAgentResult(⏎········"To·run·the·agent,·please·connect·an·MCP·Client·(like·Claude·Desktop)·and·use·the·`run_agent`·tool.·Frontend·execution·coming·soon.",`  prettier/prettier
+frontend:build: 82:3  Warning: Insert `····);⏎`  prettier/prettier
+frontend:build: 82:16  Warning: 'e' is defined but never used. Allowed unused caught errors must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 82:16  Warning: 'e' is defined but never used. Allowed unused caught errors must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 83:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 84:5  Warning: Delete `··`  prettier/prettier
+frontend:build: 85:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 86:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 95:52  Warning: Replace `{t("navigation:savedScripts")}` with `⏎··············{t("navigation:savedScripts")}⏎············`  prettier/prettier
+frontend:build: 102:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 103:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 136:79  Warning: Insert `⏎···········`  prettier/prettier
+frontend:build: 141:14  Warning: Replace `·open={!!deleteId}·onOpenChange={(open)·=>·!open·&&·setDeleteId(null)}` with `⏎········open={!!deleteId}⏎········onOpenChange={(open)·=>·!open·&&·setDeleteId(null)}⏎······`  prettier/prettier
+frontend:build: 146:81  Warning: Insert `⏎·············`  prettier/prettier
+frontend:build: 162:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 163:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 164:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 165:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 166:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 167:1  Warning: Replace `············` with `··········`  prettier/prettier
+frontend:build: 168:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 169:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 170:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 171:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 172:9  Warning: Replace `················<li>Connect·your·MCP·Client·(e.g.·Claude·Desktop)·to·MetaMCP.` with `········<li>⏎··················Connect·your·MCP·Client·(e.g.·Claude·Desktop)·to·MetaMCP.⏎················`  prettier/prettier
+frontend:build: 173:16  Warning: Replace `·········<li>Type:·<span·className="font-mono·bg-background·px-1·rounded">Run·an·agent·to·[your·task]</span>` with `·<li>⏎··················Type:{"·"}⏎··················<span·className="font-mono·bg-background·px-1·rounded">⏎····················Run·an·agent·to·[your·task]⏎··················</span>⏎················`  prettier/prettier
+frontend:build: 174:16  Warning: Replace `·········<li>The·Hub·will·use·<span·className="font-mono">run_agent</span>·to·execute·it.</li>` with `·<li>⏎··················The·Hub·will·use·<span·className="font-mono">run_agent</span>{"·"}⏎··················to·execute·it.`  prettier/prettier
+frontend:build: 175:17  Warning: Insert `</li>⏎··········`  prettier/prettier
+frontend:build: 176:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 177:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 178:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 179:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 180:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 181:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 182:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 183:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 184:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 185:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/system/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 5:9  Warning: Replace `·Card,·CardContent,·CardHeader,·CardTitle,·CardDescription·` with `⏎··Card,⏎··CardContent,⏎··CardHeader,⏎··CardTitle,⏎··CardDescription,⏎`  prettier/prettier
+frontend:build: 6:9  Warning: Replace `·Table,·TableBody,·TableCell,·TableHead,·TableHeader,·TableRow·` with `⏎··Table,⏎··TableBody,⏎··TableCell,⏎··TableHead,⏎··TableHeader,⏎··TableRow,⏎`  prettier/prettier
+frontend:build: 12:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 12:11  Warning: 't' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 20:12  Warning: Replace `<div·className="p-8·text-red-500">Failed·to·load·system·information.</div>` with `(⏎······<div·className="p-8·text-red-500">Failed·to·load·system·information.</div>⏎····)`  prettier/prettier
+frontend:build: 33:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 34:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 35:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 36:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 37:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 38:1  Warning: Replace `············` with `··········`  prettier/prettier
+frontend:build: 39:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 40:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 41:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 42:15  Warning: Replace `······<Badge·variant="default"·className="text-lg·px-3·py-1">{info.version}` with `<Badge·variant="default"·className="text-lg·px-3·py-1">⏎················{info.version}⏎··············`  prettier/prettier
+frontend:build: 43:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 44:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 45:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 46:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 47:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 48:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 49:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 50:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 51:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 52:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 53:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 54:15  Warning: Replace `······<span·className="text-sm">{new·Date(info.buildDate).toLocaleString()}` with `<span·className="text-sm">⏎················{new·Date(info.buildDate).toLocaleString()}⏎··············`  prettier/prettier
+frontend:build: 55:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 56:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 60:1  Warning: Replace `············` with `··········`  prettier/prettier
+frontend:build: 61:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 62:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 63:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 64:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 65:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 66:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 67:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 68:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 69:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 70:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 71:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 72:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 73:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 74:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 75:1  Warning: Delete `··········`  prettier/prettier
+frontend:build: 76:17  Warning: Delete `········`  prettier/prettier
+frontend:build: 77:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 78:15  Warning: Delete `······`  prettier/prettier
+frontend:build: 79:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 80:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 81:1  Warning: Delete `············`  prettier/prettier
+frontend:build: 82:1  Warning: Replace `····································` with `······················`  prettier/prettier
+frontend:build: 83:25  Warning: Delete `················`  prettier/prettier
+frontend:build: 84:1  Warning: Replace `········································` with `························`  prettier/prettier
+frontend:build: 85:1  Warning: Replace `············································<span·className="text-xs·text-muted-foreground">{sub.description}</span>` with `··························<span·className="text-xs·text-muted-foreground">⏎····························{sub.description}`  prettier/prettier
+frontend:build: 86:1  Warning: Replace `········································)}` with `··························</span>`  prettier/prettier
+frontend:build: 87:15  Warning: Insert `··········)}⏎`  prettier/prettier
+frontend:build: 88:21  Warning: Delete `············`  prettier/prettier
+frontend:build: 89:1  Warning: Delete `············`  prettier/prettier
+frontend:build: 90:23  Warning: Delete `··············`  prettier/prettier
+frontend:build: 91:1  Warning: Delete `············`  prettier/prettier
+frontend:build: 92:21  Warning: Delete `············`  prettier/prettier
+frontend:build: 93:1  Warning: Delete `··············`  prettier/prettier
+frontend:build: 94:25  Warning: Replace `················<a·` with `<a`  prettier/prettier
+frontend:build: 95:1  Warning: Replace `············································href={sub.url}·` with `··························href={sub.url}`  prettier/prettier
+frontend:build: 96:1  Warning: Replace `············································target="_blank"·` with `··························target="_blank"`  prettier/prettier
+frontend:build: 97:1  Warning: Delete `··················`  prettier/prettier
+frontend:build: 98:1  Warning: Replace `············································` with `··························`  prettier/prettier
+frontend:build: 99:1  Warning: Replace `········································` with `························`  prettier/prettier
+frontend:build: 100:1  Warning: Delete `··················`  prettier/prettier
+frontend:build: 101:1  Warning: Replace `········································` with `························`  prettier/prettier
+frontend:build: 102:1  Warning: Replace `····································` with `······················`  prettier/prettier
+frontend:build: 103:1  Warning: Replace `································` with `····················`  prettier/prettier
+frontend:build: 104:1  Warning: Replace `····························` with `··················`  prettier/prettier
+frontend:build: 105:1  Warning: Replace `························` with `················`  prettier/prettier
+frontend:build: 106:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 107:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 108:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 115:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 116:11  Warning: Replace `··<CardDescription>⏎················Excerpt·from·CHANGELOG.md⏎············` with `<CardDescription>Excerpt·from·CHANGELOG.md`  prettier/prettier
+frontend:build: 121:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 122:1  Warning: Replace `················<ReactMarkdown>{info.changelogSnippet·||·"No·changelog·available."}` with `············<ReactMarkdown>⏎··············{info.changelogSnippet·||·"No·changelog·available."}⏎············`  prettier/prettier
+frontend:build: 123:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 130:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 133:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 134:1  Warning: Insert `············`  prettier/prettier
+frontend:build: 147:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./app/[locale]/(sidebar)/tool-sets/page.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 35:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 35:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 44:6  Warning: React Hook useEffect has a missing dependency: 'fetchToolSets'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+frontend:build: 49:64  Warning: Replace `·uuid:·deleteId` with `⏎········uuid:·deleteId,⏎·····`  prettier/prettier
+frontend:build: 52:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  @typescript-eslint/no-unused-vars
+frontend:build: 52:14  Warning: 'error' is defined but never used. Allowed unused caught errors must match /^_/u.  unused-imports/no-unused-vars
+frontend:build: 65:52  Warning: Replace `{t("navigation:toolSets")}` with `⏎··············{t("navigation:toolSets")}⏎············`  prettier/prettier
+frontend:build: 77:58  Warning: Replace `⏎················{set.name}⏎··············` with `{set.name}`  prettier/prettier
+frontend:build: 110:77  Warning: Insert `⏎···········`  prettier/prettier
+frontend:build: 115:14  Warning: Replace `·open={!!deleteId}·onOpenChange={(open)·=>·!open·&&·setDeleteId(null)}` with `⏎········open={!!deleteId}⏎········onOpenChange={(open)·=>·!open·&&·setDeleteId(null)}⏎······`  prettier/prettier
+frontend:build: 120:80  Warning: Insert `⏎·············`  prettier/prettier
+frontend:build:
+frontend:build: ./components/log-entry.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 20:11  Warning: Replace `··{expanded·?·<ChevronDown·className="h-4·w-4"·/>·:·<ChevronRight·className="h-4·w-4"·/>` with `{expanded·?·(⏎············<ChevronDown·className="h-4·w-4"·/>⏎··········)·:·(⏎············<ChevronRight·className="h-4·w-4"·/>⏎··········)`  prettier/prettier
+frontend:build: 25:53  Warning: Replace `⏎··········[{log.serverName}]⏎········` with `[{log.serverName}]`  prettier/prettier
+frontend:build: 28:14  Warning: Replace `·className={`flex-1·${log.level·===·'error'·?·'text-red-400'·:·''}`}` with `⏎··········className={`flex-1·${log.level·===·"error"·?·"text-red-400"·:·""}`}⏎········`  prettier/prettier
+frontend:build: 34:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 35:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 36:1  Warning: Delete `······`  prettier/prettier
+frontend:build: 37:1  Warning: Replace `····················<pre·className="text-gray-400">{JSON.stringify(log.arguments,·null,·2)}` with `··············<pre·className="text-gray-400">⏎················{JSON.stringify(log.arguments,·null,·2)}⏎··············`  prettier/prettier
+frontend:build: 38:1  Warning: Delete `····`  prettier/prettier
+frontend:build: 39:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 40:11  Warning: Delete `··`  prettier/prettier
+frontend:build: 41:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 42:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 43:15  Warning: Replace `······<pre·className="text-gray-400">{JSON.stringify(log.result,·null,·2)}` with `<pre·className="text-gray-400">⏎················{JSON.stringify(log.result,·null,·2)}⏎··············`  prettier/prettier
+frontend:build: 44:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 45:1  Warning: Replace `············` with `··········`  prettier/prettier
+frontend:build: 46:1  Warning: Delete `··`  prettier/prettier
+frontend:build: 47:1  Warning: Replace `················` with `············`  prettier/prettier
+frontend:build: 48:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 49:1  Warning: Replace `····················` with `··············`  prettier/prettier
+frontend:build: 50:13  Warning: Delete `····`  prettier/prettier
+frontend:build: 51:1  Warning: Delete `··`  prettier/prettier
+frontend:build:
+frontend:build: ./components/logs-status-indicator.tsx
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build:
+frontend:build: ./components/ui/scroll-area.tsx
+frontend:build: 1:13  Warning: Insert `;`  prettier/prettier
+frontend:build: 3:1  Warning: Run autofix to sort these imports!  simple-import-sort/imports
+frontend:build: 3:31  Warning: Insert `;`  prettier/prettier
+frontend:build: 4:67  Warning: Insert `;`  prettier/prettier
+frontend:build: 6:33  Warning: Insert `;`  prettier/prettier
+frontend:build: 23:3  Warning: Insert `;`  prettier/prettier
+frontend:build: 24:62  Warning: Insert `;`  prettier/prettier
+frontend:build: 39:16  Warning: Insert `,`  prettier/prettier
+frontend:build: 45:3  Warning: Insert `;`  prettier/prettier
+frontend:build: 46:76  Warning: Insert `;`  prettier/prettier
+frontend:build: 48:33  Warning: Insert `;`  prettier/prettier
+frontend:build:
+frontend:build: ./lib/i18n.ts
+frontend:build: 12:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 13:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 14:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 15:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 16:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 17:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 18:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 19:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 20:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 21:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 22:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 23:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 150:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build:
+frontend:build: ./lib/validation-utils.ts
+frontend:build: 6:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build:
+frontend:build: ./lib/zod-resolver.ts
+frontend:build: 8:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build: 18:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+frontend:build:
+frontend:build: info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+frontend:build:    Collecting page data ...
+frontend:build:    Generating static pages (0/5) ...
+frontend:build:    Generating static pages (1/5)
+frontend:build:    Generating static pages (2/5)
+frontend:build:    Generating static pages (3/5)
+frontend:build:  ✓ Generating static pages (5/5)
+frontend:build:    Finalizing page optimization ...
+frontend:build:    Collecting build traces ...
+frontend:build:
+frontend:build: Route (app)                                 Size  First Load JS
+frontend:build: ┌ ƒ /_not-found                             1 kB         102 kB
+frontend:build: ├ ƒ /[locale]                            1.54 kB         102 kB
+frontend:build: ├ ƒ /[locale]/agent                      5.68 kB         171 kB
+frontend:build: ├ ƒ /[locale]/api-keys                   17.1 kB         216 kB
+frontend:build: ├ ƒ /[locale]/audit                       4.5 kB         132 kB
+frontend:build: ├ ƒ /[locale]/cors-error                 4.28 kB         190 kB
+frontend:build: ├ ƒ /[locale]/endpoints                  9.01 kB         269 kB
+frontend:build: ├ ƒ /[locale]/live-logs                   6.3 kB         155 kB
+frontend:build: ├ ƒ /[locale]/login                      4.17 kB         222 kB
+frontend:build: ├ ƒ /[locale]/mcp-inspector                19 kB         333 kB
+frontend:build: ├ ƒ /[locale]/mcp-servers                8.06 kB         242 kB
+frontend:build: ├ ƒ /[locale]/mcp-servers/[uuid]         7.32 kB         327 kB
+frontend:build: ├ ƒ /[locale]/namespaces                 4.42 kB         223 kB
+frontend:build: ├ ƒ /[locale]/namespaces/[uuid]            15 kB         349 kB
+frontend:build: ├ ƒ /[locale]/observability               115 kB         251 kB
+frontend:build: ├ ƒ /[locale]/policies                   5.23 kB         154 kB
+frontend:build: ├ ƒ /[locale]/register                   4.16 kB         222 kB
+frontend:build: ├ ƒ /[locale]/registry                   10.7 kB         179 kB
+frontend:build: ├ ƒ /[locale]/scripts                    4.86 kB         154 kB
+frontend:build: ├ ƒ /[locale]/search                     5.86 kB         211 kB
+frontend:build: ├ ƒ /[locale]/settings                   7.88 kB         176 kB
+frontend:build: ├ ƒ /[locale]/system                     39.3 kB         167 kB
+frontend:build: ├ ƒ /[locale]/tool-sets                  4.66 kB         154 kB
+frontend:build: └ ƒ /fe-oauth/callback                    4.3 kB         228 kB
+frontend:build: + First Load JS shared by all             101 kB
+frontend:build:   ├ chunks/4674-6f024a714503a597.js      44.3 kB
+frontend:build:   ├ chunks/cf4bf725-86886be5946aa782.js  54.1 kB
+frontend:build:   └ other shared chunks (total)          2.41 kB
+frontend:build:
+frontend:build:
+frontend:build: ƒ Middleware                             36.4 kB
+frontend:build:
+frontend:build: ƒ  (Dynamic)  server-rendered on demand
+frontend:build:
+
+ Tasks:    4 successful, 4 total
+Cached:    0 cached, 4 total
+  Time:    1m43.179s

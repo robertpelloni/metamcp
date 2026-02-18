@@ -4,6 +4,7 @@ import { toolSearchService } from "./tool-search.service";
 import { codeExecutorService } from "../sandbox/code-executor.service";
 import { policyService } from "../access-control/policy.service";
 import { memoryService } from "../memory/memory.service";
+import { costTrackingService } from "../analytics/cost-tracking.service";
 
 export class AgentService {
   private openai: OpenAI | null = null;
@@ -105,6 +106,18 @@ Generate ONLY the code. No markdown formatting.
         ],
         temperature: 0,
     });
+
+    // Track usage
+    if (completion.usage) {
+        await costTrackingService.trackUsage(
+            this.model,
+            "agent",
+            completion.usage.prompt_tokens,
+            completion.usage.completion_tokens,
+            userId,
+            { task_preview: task.substring(0, 50) }
+        );
+    }
 
     const code = completion.choices[0].message.content?.replace(/```typescript|```js|```/g, "").trim();
 

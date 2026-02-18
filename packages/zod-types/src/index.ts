@@ -21,3 +21,4 @@ export * from "./registry.zod";
 export * from "./analytics.zod";
 export * from "./system.zod";
 export * from "./audit.zod";
+export * from "./cost.zod";

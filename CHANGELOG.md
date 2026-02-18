@@ -16,6 +16,15 @@ All notable changes to this project will be documented in this file.
   - **Middleware**: `rate-limit.functional.ts` integrated into Proxy
   - **Default**: 60 requests per minute per user/session
 
+## [3.7.0] - 2026-01-26
+
+### Added
+
+- **Cost Tracking**: Estimate and track LLM usage costs
+  - **Backend**: `CostTrackingService` and `llm_usage_logs` table
+  - **UI**: New "Cost & Usage" tab in Observability dashboard
+  - **Integration**: Tracks usage for Agent (GPT-4o) and Embeddings (text-embedding-3-small)
+
 ## [3.5.0] - 2026-01-26
 
 ### Added

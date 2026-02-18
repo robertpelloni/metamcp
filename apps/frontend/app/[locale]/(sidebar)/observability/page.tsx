@@ -2,9 +2,9 @@
 
 import { useTranslations } from "@/hooks/useTranslations";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, AlertTriangle, CheckCircle, BarChart3, Search } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle, BarChart3, Search, DollarSign, Coins } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -22,6 +22,7 @@ import {
 export default function ObservabilityPage() {
   const { t } = useTranslations();
   const { data: analytics } = trpc.frontend.analytics.getStats.useQuery();
+  const { data: costStats } = trpc.frontend.analytics.getCostStats.useQuery();
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] gap-4">
@@ -35,6 +36,7 @@ export default function ObservabilityPage() {
       <Tabs defaultValue="dashboard" className="flex-1 flex flex-col">
         <TabsList className="w-fit">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="cost">Cost & Usage</TabsTrigger>
             <TabsTrigger value="inspector">Traffic Inspector</TabsTrigger>
         </TabsList>
 
@@ -73,6 +75,16 @@ export default function ObservabilityPage() {
                             {analytics ? (analytics.errorRate * 100).toFixed(1) : 0}%
                         </div>
                         <p className="text-xs text-muted-foreground">Failed executions</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">${costStats?.totalCost.toFixed(4) || "0.0000"}</div>
+                        <p className="text-xs text-muted-foreground">Estimated API costs</p>
                     </CardContent>
                 </Card>
             </div>
@@ -138,6 +150,53 @@ export default function ObservabilityPage() {
                     </CardContent>
                 </Card>
             </div>
+        </TabsContent>
+
+        <TabsContent value="cost" className="flex-1 overflow-y-auto mt-4 space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Tokens</CardTitle>
+                        <Coins className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{(costStats?.totalTokens || 0).toLocaleString()}</div>
+                        <p className="text-xs text-muted-foreground">Input + Output tokens</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Estimated Cost</CardTitle>
+                        <DollarSign className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">${costStats?.totalCost.toFixed(4) || "0.0000"}</div>
+                        <p className="text-xs text-muted-foreground">Based on OpenAI pricing</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">LLM Interactions</CardTitle>
+                        <Activity className="h-4 w-4 text-blue-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{costStats?.count || 0}</div>
+                        <p className="text-xs text-muted-foreground">Total API calls tracked</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Usage Breakdown</CardTitle>
+                    <CardDescription>Token consumption by model and context (Placeholder - detailed breakdown coming soon)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-[200px] flex items-center justify-center text-muted-foreground border rounded-md border-dashed">
+                        Detailed charts for usage over time and model breakdown will be available in future updates.
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="inspector" className="flex-1 border rounded-lg overflow-hidden bg-background mt-4">

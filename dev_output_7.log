@@ -272,3 +272,113 @@ backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules
 backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
 backend:dev:
 backend:dev: Node.js v22.22.0
+backend:dev: 2:59:25 AM [tsx] change in ./src/db/schema.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 3:00:48 AM [tsx] change in ./src/lib/ai/agent.service.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 3:00:53 AM [tsx] unlink in ./src/lib/ai/embedding.service.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/zod-types:dev: CLI Change detected: change src/index.ts
+@repo/zod-types:dev: ESM Build start
+@repo/zod-types:dev: DTS Build start
+@repo/zod-types:dev: ESM dist/index.js     61.38 KB
+@repo/zod-types:dev: ESM dist/index.js.map 126.50 KB
+@repo/zod-types:dev: ESM ⚡️ Build success in 281ms
+backend:dev: 3:01:02 AM [tsx] change in ./../../packages/zod-types/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/zod-types:dev: DTS ⚡️ Build success in 6819ms
+@repo/trpc:dev: CLI Change detected: change src/routers/frontend/analytics.ts
+@repo/trpc:dev: ESM Build start
+@repo/trpc:dev: DTS Build start
+@repo/trpc:dev: ESM dist/index.js     26.81 KB
+@repo/trpc:dev: ESM dist/index.js.map 62.28 KB
+@repo/trpc:dev: ESM ⚡️ Build success in 277ms
+backend:dev: 3:01:44 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+@repo/trpc:dev: DTS ⚡️ Build success in 5617ms
+backend:dev: 3:01:56 AM [tsx] change in ./src/trpc/analytics.impl.ts Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 3:05:46 AM [tsx] change in ./../../packages/zod-types/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0
+backend:dev: 3:05:52 AM [tsx] change in ./../../packages/trpc/dist/index.js Rerunning...
+backend:dev: /app/apps/backend/src/db/index.ts:9
+backend:dev:   throw new Error("DATABASE_URL is not set");
+backend:dev:         ^
+backend:dev:
+backend:dev: Error: DATABASE_URL is not set
+backend:dev:     at <anonymous> (/app/apps/backend/src/db/index.ts:9:9)
+backend:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+backend:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+backend:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+backend:dev:
+backend:dev: Node.js v22.22.0

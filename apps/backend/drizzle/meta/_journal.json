@@ -141,6 +141,13 @@
       "when": 1770534985807,
       "tag": "0019_clever_firelord",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1771383575350,
+      "tag": "0020_tired_vertigo",
+      "breakpoints": true
     }
   ]
 }
