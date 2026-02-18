@@ -18,12 +18,14 @@ We welcome contributions to MetaMCP! This guide will help you get started.
 3. Set up environment:
    ```bash
    cp example.env .env
+   # Edit .env to set DATABASE_URL and OPENAI_API_KEY
    ```
 
 4. Start development:
    ```bash
    pnpm dev
    ```
+
 ### **🐳 Docker Development with Hot Reload**
 
 For development with Docker that includes hot reloading for both frontend and backend:
@@ -50,6 +52,25 @@ pnpm run dev:docker:clean
 - `.env` file configured (copy from `example.env`)
 
 **Note:** The first run may take longer as it builds the development image. Subsequent runs will be faster.
+
+## 📦 Versioning & Release Process
+
+**Every build or significant change must have a version number.**
+
+1.  **Bump Version**:
+    *   Update `version` in the root `package.json`.
+    *   Update `version` in `apps/backend/package.json`.
+    *   Update `version` in `apps/frontend/package.json`.
+    *   *Note: The Frontend automatically displays the version from `package.json` in the sidebar.*
+
+2.  **Update Changelog**:
+    *   Edit `CHANGELOG.md` at the root.
+    *   Add a new section `## [Version] - YYYY-MM-DD`.
+    *   List changes under `### Added`, `### Changed`, `### Fixed`.
+
+3.  **Database Migrations**:
+    *   If you change `schema.ts`, run `pnpm db:generate`.
+    *   Apply migrations with `pnpm db:migrate` (local) or ensure they run on startup.
 
 ## OpenID Connect (OIDC) Provider Setup
 
@@ -85,14 +106,14 @@ Once configured, users will see a "Login with OIDC" button on the login page. Th
 ### Security Considerations
 
 - PKCE (Proof Key for Code Exchange) is enabled by default for enhanced security
-- The redirect URI is automatically configured as `${APP_URL}/api/auth/oauth2/callback/oidc`
+- The redirect URI is automatically configured as `/api/auth/oauth2/callback/oidc`
 - Ensure your OIDC provider is configured to allow this redirect URI
 
 ### Troubleshooting
 
 **Common Issues:**
 
-1. **Invalid Redirect URI**: Ensure your OIDC provider allows `${APP_URL}/api/auth/oauth2/callback/oidc`
+1. **Invalid Redirect URI**: Ensure your OIDC provider allows `/api/auth/oauth2/callback/oidc`
 2. **Scope Issues**: Some providers require specific scopes beyond the default `openid email profile`
 3. **User Creation**: Users are automatically created on first login. Ensure your provider returns email and name claims
 
@@ -104,16 +125,18 @@ Enable debug logging by setting the auth logger level in `apps/backend/src/auth.
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Make your changes
-4. Test your changes
-5. Commit your changes: `git commit -m "Description of changes"`
-6. Push to your fork: `git push origin feature/your-feature-name`
-7. Open a Pull Request
+3. **Important**: Bump version in `package.json` files.
+4. Make your changes
+5. Test your changes (`pnpm test` for backend, `python scripts/verify_frontend.py` for frontend)
+6. Commit your changes: `git commit -m "Description of changes"`
+7. Push to your fork: `git push origin feature/your-feature-name`
+8. Open a Pull Request
 
 ## Pull Request Guidelines
 
 - Provide a clear description of the changes
 - Explain how to test (human test is fine)
+- Ensure `CHANGELOG.md` is updated
 
 ## Issues
 
@@ -123,4 +146,4 @@ Enable debug logging by setting the auth logger level in `apps/backend/src/auth.
 
 ## License
 
-By contributing to MetaMCP, you agree that your contributions will be licensed under the MIT License. 
+By contributing to MetaMCP, you agree that your contributions will be licensed under the MIT License.

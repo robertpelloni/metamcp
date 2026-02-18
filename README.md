@@ -1,4 +1,4 @@
-# 🚀 MetaMCP (MCP Aggregator, Orchestrator, Middleware, Gateway in one docker) <!-- omit in toc -->
+# 🚀 MetaMCP (MCP Aggregator, Orchestrator, Middleware, Gateway in one docker)
 
 <div align="center">
 
@@ -20,8 +20,6 @@
 
 </div>
 
-> **📢 Update:** *[From the author: apologize for some recent maintainence delay, but will at least keep merging PRs, more background [here](recent-updates.md)]*
-
 **MetaMCP** is a MCP proxy that lets you dynamically aggregate MCP servers into a unified MCP server, and apply middlewares. MetaMCP itself is a MCP server so it can be easily plugged into **ANY** MCP clients.
 
 ![MetaMCP Diagram](metamcp.svg)
@@ -31,20 +29,18 @@
 For more details, consider visiting our documentation site: https://docs.metamcp.com
 
 English | [中文](./README_cn.md)
-## 📋 Table of Contents <!-- omit in toc -->
+
+## 📋 Table of Contents
 
 - [🎯 Use Cases](#-use-cases)
 - [📖 Concepts](#-concepts)
-  - [🖥️ **MCP Server**](#️-mcp-server)
-    - [🔐 **Environment Variables \& Secrets (STDIO MCP Servers)**](#-environment-variables--secrets-stdio-mcp-servers)
-  - [🏷️ **MetaMCP Namespace**](#️-metamcp-namespace)
-  - [🌐 **MetaMCP Endpoint**](#-metamcp-endpoint)
-  - [⚙️ **Middleware**](#️-middleware)
-  - [🔍 **Inspector**](#-inspector)
-  - [✏️ **Tool Overrides \& Annotations**](#️-tool-overrides--annotations)
+  - [🖥️ MCP Server](#️-mcp-server)
+  - [🏷️ MetaMCP Namespace](#️-metamcp-namespace)
+  - [🌐 MetaMCP Endpoint](#-metamcp-endpoint)
+  - [⚙️ Middleware](#️-middleware)
+  - [🔍 Inspector](#-inspector)
 - [🚀 Quick Start](#-quick-start)
   - [🐳 Run with Docker Compose (Recommended)](#-run-with-docker-compose-recommended)
-  - [📦 Build development environment with Dev Containers (VSCode/Cursor)](#-build-development-environment-with-dev-containers-vscodecursor)
   - [💻 Local Development](#-local-development)
 - [🔌 MCP Protocol Compatibility](#-mcp-protocol-compatibility)
 - [🔗 Connect to MetaMCP](#-connect-to-metamcp)
@@ -52,19 +48,12 @@ English | [中文](./README_cn.md)
   - [🖥️ Connecting Claude Desktop and Other STDIO-only Clients](#️-connecting-claude-desktop-and-other-stdio-only-clients)
   - [🔧 API Key Auth Troubleshooting](#-api-key-auth-troubleshooting)
 - [❄️ Cold Start Problem and Custom Dockerfile](#️-cold-start-problem-and-custom-dockerfile)
-- [🧾 Log Levels](#-log-levels)
 - [🔐 Authentication](#-authentication)
-- [🚦 Traffic Management](#-traffic-management)
-  - [🚧 **MCP Rate Limit**](#-mcp-rate-limit)
 - [🔗 OpenID Connect (OIDC) Provider Support](#-openid-connect-oidc-provider-support)
-  - [🛠️ **Configuration**](#️-configuration)
-  - [🏢 **Supported Providers**](#-supported-providers)
-  - [🔒 **Security Features**](#-security-features)
-  - [📱 **Usage**](#-usage)
-- [⚙️ Registration Controls](#️-registration-controls)
-  - [🎛️ **Available Controls**](#️-available-controls)
-  - [🏢 **Enterprise Use Cases**](#-enterprise-use-cases)
-  - [🛠️ **Configuration**](#️-configuration-1)
+  - [🛠️ Configuration](#️-configuration)
+  - [🏢 Supported Providers](#-supported-providers)
+  - [🔒 Security Features](#-security-features)
+  - [📱 Usage](#-usage)
 - [🌐 Custom Deployment and SSE conf for Nginx](#-custom-deployment-and-sse-conf-for-nginx)
 - [🏗️ Architecture](#️-architecture)
   - [📊 Sequence Diagram](#-sequence-diagram)
@@ -73,6 +62,7 @@ English | [中文](./README_cn.md)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 - [🙏 Credits](#-credits)
+
 
 ## 🎯 Use Cases
 - 🏷️ **Group MCP servers into namespaces, host them as meta-MCPs, and assign public endpoints** (SSE or Streamable HTTP), with auth. One-click to switch a namespace for an endpoint.
@@ -125,7 +115,6 @@ DATABASE_URL=${DB_CONNECTION_STRING}
 - Group one or more MCP servers into a namespace
 - Enable/disable MCP servers or at tool level
 - Apply middlewares to MCP requests and responses
-- Override tool names/titles/descriptions per namespace and attach custom MCP annotations (e.g. `{ "annotations": { "readOnlyHint": false } }`)
 
 ### 🌐 **MetaMCP Endpoint**
 - Create endpoints and assign namespace to endpoints
@@ -140,12 +129,6 @@ DATABASE_URL=${DB_CONNECTION_STRING}
 
 ### 🔍 **Inspector**
 Similar to the official MCP inspector, but with **saved server configs** - MetaMCP automatically creates configurations so you can debug MetaMCP endpoints immediately.
-
-### ✏️ **Tool Overrides & Annotations**
-- Open a namespace → **Tools** tab to see every tool coming from connected MCP servers.
-- Each saved tool can be expanded and edited inline: update the display **name/title/description** or provide a JSON blob with namespace-specific annotations (for example `{ "annotations": { "readOnlyHint": false } }`).
-- Badges in the table ("Overridden", "Annotations") show which tools currently have custom metadata. Hover them to read a tooltip describing what was overridden.
-- Annotation overrides are merged with whatever the upstream MCP server returns, so you can safely add custom UI hints without losing provider metadata.
 
 ## 🚀 Quick Start
 
@@ -170,39 +153,34 @@ volumes:
     driver: local
 ```
 
-### **📦 Build development environment with Dev Containers (VSCode/Cursor)**
-
-You can use the VSCode/Cursor extension to build the development environment in a container.
-
-It only requires that you have an environment running Docker or a similar alternative (the `docker`/`docker compose` command is required), and no other dependent components need to be installed on your host machine.
-
-1. First, clone the MetaMCP source code, open project in Visual Studio Code.
-```bash
-git clone https://github.com/metatool-ai/metamcp.git
-cd metamcp
-code .
-```
-2. Switch to Dev Containers. Open the VSCode Command Palette, and execute `Dev Containers: Reopen in Container`.
-
-VSCode will open the Dev Containers project in a new window, where it will build the runtime and install the toolchain according to the `Dockerfile` before starting the connection and finally installing the MetaMCP dependencies.
-<img width="895" height="153" alt="image" src="https://github.com/user-attachments/assets/d3e1420d-43c1-4ed6-9229-b91ea09c142a" />
-
-> **note**
-> This process requires a reliable network connection, and it will access Docker Hub, GitHub, and some other sites. You will need to ensure the network connection yourself, otherwise the container build may fail.
-
-Wait some minutes, depending on the internet connection or computer performance, it may take from a few minutes to tens of minutes, you can click on the Progress Bar in the bottom right corner to view a live log where you will be able to check unusual stuck.
-<img width="732" height="173" alt="image" src="https://github.com/user-attachments/assets/6e5752f8-7353-4a8f-b489-c13daef6700e" />
-
-After finished, you can run `pnpm dev` to start the development server.
-
 ### **💻 Local Development**
 
+**Option 1: PostgreSQL (Recommended)**
 Still recommend running postgres through docker for easy setup:
 
 ```bash
 pnpm install
 pnpm dev
 ```
+
+**Option 2: SQLite (Simpler Setup)**
+For local development, you can also use SQLite instead of PostgreSQL:
+
+```bash
+# Copy the SQLite example environment
+cp example.env.sqlite .env.local
+
+# Set up SQLite database
+cd apps/backend
+npm run setup:sqlite
+npm run db:generate:sqlite:dev
+npm run db:migrate:sqlite:dev
+
+# Start the application
+pnpm dev
+```
+
+See [SQLITE_SETUP.md](./SQLITE_SETUP.md) for detailed SQLite configuration.
 
 ## 🔌 MCP Protocol Compatibility
 
@@ -295,28 +273,6 @@ For more details and alternative approaches, see [issue #76](https://github.com/
 
 🛠️ **Solution**: Customize the Dockerfile to add dependencies or pre-install packages to reduce cold start time.
 
-## 🧾 Log Levels
-
-MetaMCP’s backend writes logs to files and optionally mirrors selected levels to the console. Control console mirroring with the `LOG_LEVEL` environment variable.
-
-- Files
-  - `app.log`: receives `DEBUG`, `INFO`, and `WARN`
-  - `error.log`: receives `ERROR`
-
-- Console mirroring (`LOG_LEVEL`)
-  - `all`: mirror `DEBUG`, `INFO`, `WARN`, `ERROR` to console
-  - `info`: mirror only `INFO` to console
-  - `errors-only`: mirror `WARN` and `ERROR` to console
-  - `none`: no console output
-
-- Defaults and examples
-  - Default (when unset or invalid): `errors-only`
-  - `.env` example:
-    ```bash
-    LOG_LEVEL='errors-only' # 'all', 'info', 'errors-only', 'none'
-    ```
-  - `docker-compose.dev.yml` uses: `LOG_LEVEL: ${LOG_LEVEL:-all}`
-
 ## 🔐 Authentication
 
 - 🛡️ **Better Auth** for frontend & backend (TRPC procedures)
@@ -325,33 +281,6 @@ MetaMCP’s backend writes logs to files and optionally mirrors selected levels 
 - 🪪 **MCP OAuth**: Exposed endpoints have options to use standard OAuth in MCP Spec 2025-06-18, easy to connect.
 - 🏢 **Multi-tenancy**: Designed for organizations to deploy on their own machines. Supports both private and public access scopes. Users can create MCPs, namespaces, endpoints, and API keys for themselves or for everyone. Public API keys cannot access private MetaMCPs.
 - ⚙️ **Separate Registration Controls**: Administrators can independently control UI registration and SSO/OAuth registration through the settings page, allowing for flexible enterprise deployment scenarios.
-
-## 🚦 Traffic Management
-
-### 🚧 MCP Rate Limit
-The MCP Rate Limit feature allows you to set the maximum requests a MCP tool (a endpoint) will accept in a given time window. There are two different strategies to set limits that you can use separately or together:
-
- * `Endpoint rate-limiting (Rate Limiting)`: applies simultaneously to all clients using the endpoint, sharing a unique counter.
- * `User rate-limiting (Client Rate Limiting)`: sets a counter to each individual user.
-
-Both types can coexist and they complement each other, and store the counters in-memory. On a cluster, each machine sees and counts only its passing traffic.
-
-### **Endpoint rate-limiting**
-The endpoint rate limit acts on the number of simultaneous transactions an endpoint can process. This type of limit protects the service for all customers.
-When the users connected to an endpoint together exceed the `rate-limiting`, MetaMCP starts to reject connections with a status code `503 Service Unavailable`.
-
-#### **Endpoint rate-limiting options**
- * `Max Rate`: Defines how many requests will you accept from all users together at any given instant. When the gateway starts, the bucket is full. As requests from users come, the remaining tokens in the bucket decrease. At the same time, the rate-limiting refills the bucket at the desired rate until its maximum capacity is reached.
- * `Max Rate Seconds`: Time period in which the maximum rates operate in seconds. For instance, if you set an max rate seconds of 60s and a rate-limiting of 5, you are allowing 5 requests every sixty seconds.
-
-### **User rate-limiting**
-The client or user rate limit applies one counter to each individual user and endpoint. When a single user connected to an endpoint exceeds their `client-max-rate`, MetaMCP starts rejecting connections with a status code `429 Too Many Requests`
-
-#### **User rate-limiting options**
- * `Client Max Rate`: Number of tokens you add to the Token Bucket for each individual user (user quota) in the time interval you want (Client Max Rate Seconds). The remaining tokens in the bucket are the requests a specific user can do.
- * `Client Max Rate Seconds`: Time period in which the maximum rates operate in seconds. For instance, if you set an every of 60s and a rate of 5, you are allowing 5 requests every sixty seconds.
- * `Client Max Rate Strategy`: Sets the strategy you will use to set client counters. Choose ip when the restrictions apply to the client’s IP address, or set it to header when there is a header that identifies a user uniquely. That header must be defined with the key entry.
- * `Client Max Rate Strategy Key`: It is the header name containing the user identification (e.g., Authorization on tokens, or X-Original-Forwarded-For for IPs).
 
 ## 🔗 OpenID Connect (OIDC) Provider Support
 

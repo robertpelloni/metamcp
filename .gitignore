@@ -45,3 +45,7 @@ yarn-error.log*
 # Docker Files
 docker-compose.override.yml
 compose.override.yml
+
+# Auto-save artifacts
+.yoke/
+curl_output.txt

@@ -26,6 +26,14 @@
 
 ---
 
+## 🚀 部署到 DigitalOcean
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/metatool-ai/metamcp/tree/digitalocean&refcode=8944aced2580)
+
+**一键部署到 DigitalOcean App Platform** - 零配置，几分钟内即可运行 MetaMCP！
+
+---
+
 欲了解更多详情，请访问我们的文档站点：https://docs.metamcp.com （暂时没有中文）
 
 [English](./README.md) | 中文
@@ -110,6 +118,12 @@ MCP 服务器配置，告诉 MetaMCP 如何启动 MCP 服务器。
 
 ## 🚀 快速开始
 
+### **☁️ 部署到 DigitalOcean（最简单）**
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/metatool-ai/metamcp/tree/digitalocean&refcode=8944aced2580)
+
+**一键部署** - 零配置，几分钟内即可在 DigitalOcean App Platform 上运行 MetaMCP！
+
 ### **🐳 使用 Docker Compose 运行（推荐）**
 
 克隆仓库，准备 `.env` 文件，并用 docker compose 启动：
@@ -120,8 +134,6 @@ cd metamcp
 cp example.env .env
 docker compose up -d
 ```
-
-如果你修改了 APP_URL 环境变量，确保只从 APP_URL 访问，因为 MetaMCP 在该 URL 上强制执行 CORS 策略，其他 URL 无法访问。
 
 注意：pg 卷名可能与其他 pg docker 冲突（全局），可在 `docker-compose.yml` 中重命名：
 
