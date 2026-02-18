@@ -49,3 +49,6 @@ compose.override.yml
 # Auto-save artifacts
 .yoke/
 curl_output.txt
+
+apps/backend/mcp.json
+apps/backend/.vibe-config.json
