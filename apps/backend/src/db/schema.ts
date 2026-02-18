@@ -17,6 +17,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const mcpServerTypeEnum = pgEnum(
@@ -398,6 +399,58 @@ export const configTable = pgTable("config", {
     .defaultNow(),
 });
 
+// Audit logs table (security/audit trail)
+export const auditLogsTable = pgTable(
+  "audit_logs",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    action: text("action").notNull(),
+    resource_type: text("resource_type").notNull(),
+    resource_id: text("resource_id"),
+    details: jsonb("details").$type<Record<string, unknown> | null>(),
+    ip_address: text("ip_address"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("audit_logs_user_id_idx").on(table.user_id),
+    index("audit_logs_action_idx").on(table.action),
+    index("audit_logs_resource_type_idx").on(table.resource_type),
+    index("audit_logs_created_at_idx").on(table.created_at),
+  ],
+);
+
+// Memories table (agent memory and semantic recall)
+export const memoriesTable = pgTable(
+  "memories",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    agent_id: text("agent_id"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("memories_user_id_idx").on(table.user_id),
+  ],
+);
+
 // OAuth Registered Clients table
 export const oauthClientsTable = pgTable("oauth_clients", {
   client_id: text("client_id").primaryKey(),
@@ -482,5 +535,161 @@ export const oauthAccessTokensTable = pgTable(
     index("oauth_access_tokens_client_id_idx").on(table.client_id),
     index("oauth_access_tokens_user_id_idx").on(table.user_id),
     index("oauth_access_tokens_expires_at_idx").on(table.expires_at),
+  ],
+);
+
+// Docker Sessions table (docker-in-docker feature)
+export const dockerSessionStatusEnum = pgEnum("docker_session_status", [
+  "PENDING",
+  "RUNNING",
+  "STOPPED",
+  "ERROR",
+  "NOT_FOUND",
+]);
+
+export const dockerSessionsTable = pgTable(
+  "docker_sessions",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    mcp_server_uuid: uuid("mcp_server_uuid")
+      .notNull()
+      .references(() => mcpServersTable.uuid, { onDelete: "cascade" }),
+    container_id: text("container_id").notNull(),
+    container_name: text("container_name"),
+    url: text("url"),
+    status: dockerSessionStatusEnum("status").notNull().default("PENDING"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    started_at: timestamp("started_at", { withTimezone: true }),
+    stopped_at: timestamp("stopped_at", { withTimezone: true }),
+    error_message: text("error_message"),
+    retry_count: integer("retry_count").notNull().default(0),
+    last_retry_at: timestamp("last_retry_at", { withTimezone: true }),
+    max_retries: integer("max_retries").notNull().default(3),
+  },
+  (table) => [
+    index("docker_sessions_mcp_server_uuid_idx").on(table.mcp_server_uuid),
+    index("docker_sessions_status_idx").on(table.status),
+    unique("docker_sessions_unique_server_idx").on(table.mcp_server_uuid),
+  ],
+);
+
+// Policies table (access control feature)
+export const policiesTable = pgTable(
+  "policies",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    rules: jsonb("rules").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("policies_name_unique_idx").on(table.name),
+  ],
+);
+
+// Tool Call Logs table (observability feature)
+export const toolCallLogsTable = pgTable(
+  "tool_call_logs",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    tool_name: text("tool_name").notNull(),
+    session_id: text("session_id").notNull(),
+    arguments: jsonb("arguments").$type<Record<string, unknown>>(),
+    result: jsonb("result").$type<Record<string, unknown>>(),
+    error: text("error"),
+    duration_ms: integer("duration_ms"),
+    parent_call_uuid: text("parent_call_uuid"),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_call_logs_tool_name_idx").on(table.tool_name),
+    index("tool_call_logs_session_id_idx").on(table.session_id),
+    index("tool_call_logs_parent_call_uuid_idx").on(table.parent_call_uuid),
+    index("tool_call_logs_user_id_idx").on(table.user_id),
+    index("tool_call_logs_created_at_idx").on(table.created_at),
+  ],
+);
+
+// Tool Sets table (tool organization feature)
+export const toolSetsTable = pgTable(
+  "tool_sets",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+  },
+  (table) => [
+    unique("tool_sets_name_user_unique_idx").on(table.name, table.user_id),
+  ],
+);
+
+// Tool Set Items table (tool set membership)
+export const toolSetItemsTable = pgTable(
+  "tool_set_items",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    tool_set_uuid: uuid("tool_set_uuid")
+      .notNull()
+      .references(() => toolSetsTable.uuid, { onDelete: "cascade" }),
+    tool_uuid: uuid("tool_uuid")
+      .notNull()
+      .references(() => toolsTable.uuid, { onDelete: "cascade" }),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("tool_set_items_tool_set_uuid_idx").on(table.tool_set_uuid),
+    index("tool_set_items_tool_uuid_idx").on(table.tool_uuid),
+    unique("tool_set_items_unique_idx").on(table.tool_set_uuid, table.tool_uuid),
+  ],
+);
+
+// Saved Scripts table (code execution feature)
+export const savedScriptsTable = pgTable(
+  "saved_scripts",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    code: text("code").notNull(),
+    language: text("language").notNull().default("javascript"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }),
+  },
+  (table) => [
+    unique("saved_scripts_name_user_unique_idx").on(table.name, table.user_id),
   ],
 );

@@ -3,7 +3,9 @@ import { ServerParameters } from "@repo/zod-types";
 import { mcpServersRepository, namespacesRepository } from "../db/repositories";
 import { initializeEnvironmentConfiguration } from "./bootstrap.service";
 import { metaMcpServerPool } from "./metamcp";
+import { mcpJsonHotReloadService } from "./metamcp/mcp-json-hot-reload.service";
 import { convertDbServerToParams } from "./metamcp/utils";
+import { mcpConfigService } from "./mcp-config.service";
 
 /**
  * Startup initialization that must happen before the HTTP server begins listening.
@@ -20,7 +22,20 @@ export async function initializeOnStartup(): Promise<void> {
   };
 
   const enableEnvBootstrap = parseBool(process.env.BOOTSTRAP_ENABLE, true);
+  const enableMcpJsonHotReload = parseBool(
+    process.env.MCP_JSON_HOT_RELOAD,
+    true,
+  );
   const failHard = parseBool(process.env.BOOTSTRAP_FAIL_HARD, false);
+
+  // Initialize McpConfigService (JSON Storage)
+  try {
+    await mcpConfigService.init();
+    await mcpConfigService.syncWithDatabase();
+  } catch (err) {
+    console.error("❌ Error initializing McpConfigService:", err);
+    if (failHard) throw err;
+  }
 
   if (enableEnvBootstrap) {
     try {
@@ -36,6 +51,19 @@ export async function initializeOnStartup(): Promise<void> {
     }
   } else {
     console.log("Environment bootstrap disabled via BOOTSTRAP_ENABLE=false");
+  }
+
+  if (enableMcpJsonHotReload) {
+    try {
+      await mcpJsonHotReloadService.initialize();
+    } catch (err) {
+      console.error("❌ Error initializing mcp.json hot-reload (ignored):", err);
+      if (failHard) {
+        throw err;
+      }
+    }
+  } else {
+    console.log("mcp.json hot-reload disabled via MCP_JSON_HOT_RELOAD=false");
   }
 }
 

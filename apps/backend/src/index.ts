@@ -28,7 +28,8 @@ app.use(async (req, res, next) => {
   if (req.path.startsWith("/api/auth")) {
     try {
       // Create a web Request object from Express request
-      const url = new URL(req.url, `http://${req.headers.host}`);
+      const authBaseUrl = process.env.APP_URL || `http://${req.headers.host}`;
+      const url = new URL(req.url, authBaseUrl);
       const headers = new Headers();
 
       // Copy headers from Express request

@@ -12,7 +12,20 @@ import { logsImplementations } from "../trpc/logs.impl";
 import { mcpServersImplementations } from "../trpc/mcp-servers.impl";
 import { namespacesImplementations } from "../trpc/namespaces.impl";
 import { oauthImplementations } from "../trpc/oauth.impl";
+import { savedScriptsImplementations } from "../trpc/saved-scripts.impl";
+import { toolSetsImplementations } from "../trpc/tool-sets.impl";
 import { toolsImplementations } from "../trpc/tools.impl";
+import { policiesImplementations } from "../trpc/policies.impl";
+import { agentImplementations } from "../trpc/agent.impl";
+import { serverHealthImplementations } from "../trpc/server-health.impl";
+import { analyticsImplementations } from "../trpc/analytics.impl";
+import { auditImplementations } from "../trpc/audit.impl";
+import { autoDiscoveryImplementations } from "../trpc/auto-discovery.impl";
+import { autoReconnectImplementations } from "../trpc/auto-reconnect.impl";
+import { catalogImplementations } from "../trpc/catalog.impl";
+import { memoriesImplementations } from "../trpc/memories.impl";
+import { registryImplementations } from "../trpc/registry.impl";
+import { systemImplementations } from "../trpc/system.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -25,6 +38,19 @@ const appRouter = createAppRouter({
     apiKeys: apiKeysImplementations,
     config: configImplementations,
     logs: logsImplementations,
+    savedScripts: savedScriptsImplementations,
+    toolSets: toolSetsImplementations,
+    policies: policiesImplementations,
+    agent: agentImplementations,
+    serverHealth: serverHealthImplementations,
+    analytics: analyticsImplementations,
+    audit: auditImplementations,
+    autoDiscovery: autoDiscoveryImplementations,
+    autoReconnect: autoReconnectImplementations,
+    catalog: catalogImplementations,
+    memories: memoriesImplementations,
+    registry: registryImplementations,
+    system: systemImplementations,
   },
 });
 
@@ -38,7 +64,7 @@ const trpcRouter = express.Router();
 trpcRouter.use(helmet());
 trpcRouter.use(
   cors({
-    origin: process.env.APP_URL,
+    origin: process.env.APP_URL || true,
     credentials: true,
   }),
 );

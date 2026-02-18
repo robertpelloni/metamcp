@@ -6,8 +6,6 @@ import {
 } from "@repo/zod-types";
 import { z } from "zod";
 
-import logger from "@/utils/logger";
-
 import { toolsRepository } from "../db/repositories";
 import { ToolsSerializer } from "../db/serializers";
 import { toolsSyncCache } from "../lib/metamcp/tools-sync-cache";
@@ -27,7 +25,7 @@ export const toolsImplementations = {
         message: "Tools retrieved successfully",
       };
     } catch (error) {
-      logger.error("Error fetching tools by MCP server UUID:", error);
+      console.error("Error fetching tools by MCP server UUID:", error);
       return {
         success: false as const,
         data: [],
@@ -59,7 +57,7 @@ export const toolsImplementations = {
         message: `Successfully saved ${results.length} tools`,
       };
     } catch (error) {
-      logger.error("Error saving tools to database:", error);
+      console.error("Error saving tools to database:", error);
       return {
         success: false as const,
         count: 0,
@@ -67,6 +65,7 @@ export const toolsImplementations = {
       };
     }
   },
+
 
   /**
    * Smart sync with hash-check and cleanup
@@ -86,10 +85,7 @@ export const toolsImplementations = {
 
       // Check if tools changed using hash
       const toolNames = input.tools.map((tool) => tool.name);
-      const hasChanged = toolsSyncCache.hasChanged(
-        input.mcpServerUuid,
-        toolNames,
-      );
+      const hasChanged = toolsSyncCache.hasChanged(input.mcpServerUuid, toolNames);
 
       if (hasChanged) {
         // Update cache
@@ -101,10 +97,9 @@ export const toolsImplementations = {
           mcpServerUuid: input.mcpServerUuid,
         });
 
-        const message =
-          deleted.length > 0
-            ? `Successfully synced ${upserted.length} tools (removed ${deleted.length} obsolete)`
-            : `Successfully synced ${upserted.length} tools`;
+        const message = deleted.length > 0
+          ? `Successfully synced ${upserted.length} tools (removed ${deleted.length} obsolete)`
+          : `Successfully synced ${upserted.length} tools`;
 
         return {
           success: true as const,

@@ -18,10 +18,30 @@ if (!process.env.APP_URL) {
 const BETTER_AUTH_SECRET = process.env.BETTER_AUTH_SECRET;
 const BETTER_AUTH_URL = process.env.APP_URL;
 
+async function readBooleanConfigSafely(
+  reader: () => Promise<boolean>,
+  configName: string,
+  fallback: boolean,
+): Promise<boolean> {
+  try {
+    return await reader();
+  } catch (error) {
+    logger.error(
+      `[auth] failed to read ${configName}; using fallback ${fallback}:`,
+      error,
+    );
+    return fallback;
+  }
+}
+
 // Helper function to create basic auth middleware
 const createBasicAuthCheckMiddleware = () => {
   return async (request: unknown) => {
-    const isBasicAuthDisabled = await configService.isBasicAuthDisabled();
+    const isBasicAuthDisabled = await readBooleanConfigSafely(
+      () => configService.isBasicAuthDisabled(),
+      "DISABLE_BASIC_AUTH",
+      false,
+    );
     if (isBasicAuthDisabled) {
       throw new Error(
         "Basic email/password authentication is currently disabled. Please use SSO/OIDC authentication instead.",
@@ -133,8 +153,16 @@ export const auth = betterAuth({
       create: {
         before: async (user, context) => {
           // Check if signup is disabled based on the registration method
-          const isSignupDisabled = await configService.isSignupDisabled();
-          const isSsoSignupDisabled = await configService.isSsoSignupDisabled();
+          const isSignupDisabled = await readBooleanConfigSafely(
+            () => configService.isSignupDisabled(),
+            "DISABLE_SIGNUP",
+            false,
+          );
+          const isSsoSignupDisabled = await readBooleanConfigSafely(
+            () => configService.isSsoSignupDisabled(),
+            "DISABLE_SSO_SIGNUP",
+            false,
+          );
 
           // Determine if this is an SSO/OAuth registration by checking the request path
           // OAuth/SSO registrations typically come through callback endpoints

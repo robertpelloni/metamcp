@@ -6,8 +6,6 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import logger from "@/utils/logger";
-
 import { configService } from "../../../lib/config.service";
 import { ConnectedClient } from "../../../lib/metamcp";
 import { getMcpServers } from "../../../lib/metamcp/fetch-metamcp";
@@ -89,7 +87,7 @@ export const createOriginalListToolsHandler = (
 
           allTools.push(...toolsWithSource);
         } catch (error) {
-          logger.error(`Error fetching tools from: ${serverName}`, error);
+          console.error(`Error fetching tools from: ${serverName}`, error);
         }
       }),
     );
@@ -179,7 +177,7 @@ export const createOriginalCallToolHandler = (): CallToolHandler => {
       // Cast the result to CallToolResult type
       return result as CallToolResult;
     } catch (error) {
-      logger.error(
+      console.error(
         `Error calling tool "${name}" through ${
           targetSession.client.getServerVersion()?.name || "unknown"
         }:`,
@@ -194,11 +192,13 @@ export const createOriginalCallToolHandler = (): CallToolHandler => {
 export const createMiddlewareEnabledHandlers = (
   sessionId: string,
   namespaceUuid: string,
+  userId?: string,
 ) => {
   // Create the handler context
   const handlerContext: MetaMCPHandlerContext = {
     namespaceUuid,
     sessionId,
+    userId,
   };
 
   // Create original handlers

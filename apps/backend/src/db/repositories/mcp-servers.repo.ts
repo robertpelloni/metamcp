@@ -3,250 +3,222 @@ import {
   McpServerCreateInput,
   McpServerErrorStatusEnum,
   McpServerUpdateInput,
+  McpServerTypeEnum,
 } from "@repo/zod-types";
-import { and, desc, eq, isNull, or } from "drizzle-orm";
-import { DatabaseError } from "pg";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 import logger from "@/utils/logger";
-
+import { mcpConfigService } from "../../lib/mcp-config.service";
 import { db } from "../index";
 import { mcpServersTable } from "../schema";
+import { eq } from "drizzle-orm";
 
-// Helper function to handle PostgreSQL errors
-function handleDatabaseError(
-  error: unknown,
-  operation: string,
-  serverName?: string,
-): never {
-  logger.error(`Database error in ${operation}:`, error);
-
-  // Extract the actual PostgreSQL error from Drizzle's error structure
-  let pgError: DatabaseError | undefined;
-
-  if (
-    error instanceof Error &&
-    "cause" in error &&
-    error.cause instanceof DatabaseError
-  ) {
-    // Drizzle wraps the PostgreSQL error in the cause property
-    pgError = error.cause;
-  } else if (error instanceof DatabaseError) {
-    // Direct PostgreSQL error
-    pgError = error;
-  }
-
-  if (pgError) {
-    // Handle unique constraint violation for server name
-    if (
-      pgError.code === "23505" &&
-      pgError.constraint === "mcp_servers_name_user_unique_idx"
-    ) {
-      throw new Error(
-        `Server name "${serverName}" already exists. Server names must be unique within your scope.`,
-      );
-    }
-
-    // Handle regex constraint violation for server name
-    if (
-      pgError.code === "23514" &&
-      pgError.constraint === "mcp_servers_name_regex_check"
-    ) {
-      throw new Error(
-        `Server name "${serverName}" is invalid. Server names must only contain letters, numbers, underscores, and hyphens.`,
-      );
-    }
-  }
-
-  // For any other database errors, throw a generic user-friendly message
-  throw new Error(
-    `Failed to ${operation} MCP server. Please check your input and try again.`,
-  );
+// Helper to convert JSON config to DatabaseMcpServer shape
+function toDatabaseMcpServer(
+  key: string,
+  config: any
+): DatabaseMcpServer {
+  return {
+    uuid: config.uuid || randomUUID(),
+    name: config.name || key,
+    description: null,
+    type: config.type as z.infer<typeof McpServerTypeEnum>,
+    command: config.command || null,
+    args: config.args || [],
+    env: config.env || {},
+    url: config.url || null,
+    error_status: McpServerErrorStatusEnum.Enum.NONE,
+    created_at: new Date(),
+    bearerToken: null,
+    headers: {},
+    user_id: config.user_id || null,
+  };
 }
 
 export class McpServersRepository {
   async create(input: McpServerCreateInput): Promise<DatabaseMcpServer> {
-    try {
-      const [createdServer] = await db
-        .insert(mcpServersTable)
-        .values(input)
-        .returning();
-
-      return createdServer;
-    } catch (error: unknown) {
-      handleDatabaseError(error, "create", input.name);
+    const servers = mcpConfigService.getServers();
+    if (servers[input.name]) {
+      throw new Error(`Server name "${input.name}" already exists.`);
     }
+
+    const uuid = randomUUID();
+    const newServer = {
+      uuid,
+      name: input.name,
+      type: input.type,
+      command: input.command || undefined,
+      args: input.args || [],
+      env: input.env || {},
+      url: input.url || undefined,
+      enabled: true,
+      user_id: input.user_id || undefined,
+    };
+
+    // 1. Write to JSON (Source of Truth for Config)
+    await mcpConfigService.addServer(input.name, newServer);
+
+    // 2. Write to DB (Mirror for Relations/FKs)
+    try {
+      await db.insert(mcpServersTable).values({
+        uuid,
+        name: input.name,
+        type: input.type,
+        command: input.command,
+        args: input.args || [],
+        env: input.env || {},
+        url: input.url,
+        user_id: input.user_id,
+        description: input.description,
+      });
+    } catch (dbError) {
+      logger.error("Failed to mirror MCP server to DB:", dbError);
+      // We don't rollback JSON because JSON is source of truth. 
+      // User might need to run a sync script later if DB fails.
+    }
+
+    return toDatabaseMcpServer(input.name, newServer);
   }
 
   async findAll(): Promise<DatabaseMcpServer[]> {
-    return await db
-      .select()
-      .from(mcpServersTable)
-      .orderBy(desc(mcpServersTable.created_at));
+    const servers = mcpConfigService.getServers();
+    return Object.entries(servers).map(([key, config]) =>
+      toDatabaseMcpServer(key, config)
+    );
   }
 
-  // Find servers accessible to a specific user (public + user's own servers)
   async findAllAccessibleToUser(userId: string): Promise<DatabaseMcpServer[]> {
-    return await db
-      .select()
-      .from(mcpServersTable)
-      .where(
-        or(
-          isNull(mcpServersTable.user_id), // Public servers
-          eq(mcpServersTable.user_id, userId), // User's own servers
-        ),
-      )
-      .orderBy(desc(mcpServersTable.created_at));
+    // For now, return all servers from JSON.
+    // In future, filter by user_id if present in JSON
+    const servers = mcpConfigService.getServers();
+    return Object.entries(servers)
+      .map(([key, config]) => toDatabaseMcpServer(key, config))
+      .filter(s => !s.user_id || s.user_id === userId);
   }
 
-  // Find only public servers (no user ownership)
   async findPublicServers(): Promise<DatabaseMcpServer[]> {
-    return await db
-      .select()
-      .from(mcpServersTable)
-      .where(isNull(mcpServersTable.user_id))
-      .orderBy(desc(mcpServersTable.created_at));
+    const servers = mcpConfigService.getServers();
+    return Object.entries(servers)
+      .map(([key, config]) => toDatabaseMcpServer(key, config))
+      .filter(s => !s.user_id);
   }
 
-  // Find servers owned by a specific user
   async findByUserId(userId: string): Promise<DatabaseMcpServer[]> {
-    return await db
-      .select()
-      .from(mcpServersTable)
-      .where(eq(mcpServersTable.user_id, userId))
-      .orderBy(desc(mcpServersTable.created_at));
+    const servers = mcpConfigService.getServers();
+    return Object.entries(servers)
+      .map(([key, config]) => toDatabaseMcpServer(key, config))
+      .filter(s => s.user_id === userId);
   }
 
   async findByUuid(uuid: string): Promise<DatabaseMcpServer | undefined> {
-    const [server] = await db
-      .select()
-      .from(mcpServersTable)
-      .where(eq(mcpServersTable.uuid, uuid))
-      .limit(1);
-
-    return server;
+    const servers = mcpConfigService.getServers();
+    const entry = Object.entries(servers).find(([_, config]) => config.uuid === uuid);
+    if (!entry) return undefined;
+    return toDatabaseMcpServer(entry[0], entry[1]);
   }
 
   async findByName(name: string): Promise<DatabaseMcpServer | undefined> {
-    const [server] = await db
-      .select()
-      .from(mcpServersTable)
-      .where(eq(mcpServersTable.name, name))
-      .limit(1);
-
-    return server;
+    const server = mcpConfigService.getServer(name);
+    if (!server) return undefined;
+    return toDatabaseMcpServer(name, server);
   }
 
-  // Find server by name within user scope (for uniqueness checks)
   async findByNameAndUserId(
     name: string,
-    userId: string | null,
+    userId: string | null
   ): Promise<DatabaseMcpServer | undefined> {
-    const [server] = await db
-      .select()
-      .from(mcpServersTable)
-      .where(
-        and(
-          eq(mcpServersTable.name, name),
-          userId
-            ? eq(mcpServersTable.user_id, userId)
-            : isNull(mcpServersTable.user_id),
-        ),
-      )
-      .limit(1);
-
-    return server;
+    return this.findByName(name);
   }
 
   async deleteByUuid(uuid: string): Promise<DatabaseMcpServer | undefined> {
-    const [deletedServer] = await db
-      .delete(mcpServersTable)
-      .where(eq(mcpServersTable.uuid, uuid))
-      .returning();
+    const server = await this.findByUuid(uuid);
+    if (!server) return undefined;
 
-    return deletedServer;
+    // 1. Remove from JSON
+    await mcpConfigService.removeServer(server.name);
+
+    // 2. Remove from DB (Cascades to Tools)
+    try {
+      await db.delete(mcpServersTable).where(eq(mcpServersTable.uuid, uuid));
+    } catch (dbError) {
+      logger.error("Failed to remove MCP server from DB:", dbError);
+    }
+
+    return server;
   }
 
   async update(
-    input: McpServerUpdateInput,
+    input: McpServerUpdateInput
   ): Promise<DatabaseMcpServer | undefined> {
-    const { uuid, ...updateData } = input;
+    const server = await this.findByUuid(input.uuid);
+    if (!server) return undefined;
 
-    try {
-      const [updatedServer] = await db
-        .update(mcpServersTable)
-        .set(updateData)
-        .where(eq(mcpServersTable.uuid, uuid))
-        .returning();
+    const newName = input.name || server.name;
 
-      return updatedServer;
-    } catch (error: unknown) {
-      handleDatabaseError(error, "update", input.name);
+    // Rename handling
+    if (input.name && input.name !== server.name) {
+      const existingParams = mcpConfigService.getServer(server.name)!;
+      await mcpConfigService.removeServer(server.name);
+      await mcpConfigService.addServer(newName, { ...existingParams, name: newName });
     }
+
+    const updates: any = {};
+    if (input.type) updates.type = input.type;
+    if (input.command !== undefined) updates.command = input.command || undefined;
+    if (input.args) updates.args = input.args;
+    if (input.env) updates.env = input.env;
+    if (input.url !== undefined) updates.url = input.url || undefined;
+
+    // 1. Update JSON
+    await mcpConfigService.updateServer(newName, updates);
+
+    // 2. Update DB
+    try {
+      // filtering out undefined values for DB update is handled by Drizzle usually?
+      // better to be explicit
+      const dbUpdates: any = {};
+      if (input.name) dbUpdates.name = input.name;
+      if (input.type) dbUpdates.type = input.type;
+      if (input.command !== undefined) dbUpdates.command = input.command;
+      if (input.args) dbUpdates.args = input.args;
+      if (input.env) dbUpdates.env = input.env;
+      if (input.url !== undefined) dbUpdates.url = input.url;
+      if (input.description !== undefined) dbUpdates.description = input.description;
+
+      await db.update(mcpServersTable)
+        .set(dbUpdates)
+        .where(eq(mcpServersTable.uuid, input.uuid));
+    } catch (dbError) {
+      logger.error("Failed to update MCP server in DB:", dbError);
+    }
+
+    return this.findByName(newName);
   }
 
   async bulkCreate(
-    servers: McpServerCreateInput[],
+    servers: McpServerCreateInput[]
   ): Promise<DatabaseMcpServer[]> {
-    try {
-      return await db.insert(mcpServersTable).values(servers).returning();
-    } catch (error: unknown) {
-      // For bulk operations, we don't have a specific server name to report
-      // Extract the actual PostgreSQL error from Drizzle's error structure
-      let pgError: DatabaseError | undefined;
-
-      if (
-        error instanceof Error &&
-        "cause" in error &&
-        error.cause instanceof DatabaseError
-      ) {
-        pgError = error.cause;
-      } else if (error instanceof DatabaseError) {
-        pgError = error;
-      }
-
-      if (pgError) {
-        // Handle unique constraint violation for server name
-        if (
-          pgError.code === "23505" &&
-          pgError.constraint === "mcp_servers_name_user_unique_idx"
-        ) {
-          throw new Error(
-            "One or more server names already exist. Server names must be unique within your scope.",
-          );
-        }
-
-        // Handle regex constraint violation for server name
-        if (
-          pgError.code === "23514" &&
-          pgError.constraint === "mcp_servers_name_regex_check"
-        ) {
-          throw new Error(
-            "One or more server names are invalid. Server names must only contain letters, numbers, underscores, and hyphens.",
-          );
-        }
-      }
-
-      logger.error("Database error in bulk create:", error);
-      throw new Error(
-        "Failed to bulk create MCP servers. Please check your input and try again.",
-      );
+    const results: DatabaseMcpServer[] = [];
+    for (const serverInput of servers) {
+      const created = await this.create(serverInput);
+      results.push(created);
     }
+    return results;
   }
 
   async updateServerErrorStatus(input: {
     serverUuid: string;
     errorStatus: z.infer<typeof McpServerErrorStatusEnum>;
   }) {
-    const [updatedServer] = await db
-      .update(mcpServersTable)
-      .set({
-        error_status: input.errorStatus,
-      })
-      .where(eq(mcpServersTable.uuid, input.serverUuid))
-      .returning();
+    // Only update DB for status, as JSON config is static
+    try {
+      await db.update(mcpServersTable)
+        .set({ error_status: input.errorStatus })
+        .where(eq(mcpServersTable.uuid, input.serverUuid));
+    } catch (e) { /* ignore */ }
 
-    return updatedServer;
+    return this.findByUuid(input.serverUuid);
   }
 }
 

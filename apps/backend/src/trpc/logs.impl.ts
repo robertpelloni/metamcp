@@ -3,41 +3,136 @@ import {
   GetLogsRequestSchema,
   GetLogsResponseSchema,
 } from "@repo/zod-types";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import logger from "@/utils/logger";
+import { db } from "../db";
+import { toolCallLogsTable } from "../db/schema";
+import { parseToolName } from "../lib/metamcp/tool-name-parser";
 
-import { metamcpLogStore } from "../lib/metamcp/log-store";
+function isLogsStorageUnavailableError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  const causeMessage =
+    error.cause instanceof Error ? error.cause.message.toLowerCase() : "";
+
+  return (
+    message.includes('relation "tool_call_logs" does not exist') ||
+    message.includes("no such table: tool_call_logs") ||
+    message.includes("econnrefused") ||
+    causeMessage.includes('relation "tool_call_logs" does not exist') ||
+    causeMessage.includes("no such table: tool_call_logs") ||
+    causeMessage.includes("econnrefused")
+  );
+}
 
 export const logsImplementations = {
   getLogs: async (
     input: z.infer<typeof GetLogsRequestSchema>,
+    context?: { user?: { id: string } },
   ): Promise<z.infer<typeof GetLogsResponseSchema>> => {
     try {
-      const logs = metamcpLogStore.getLogs(input.limit);
-      const totalCount = metamcpLogStore.getLogCount();
+      const limit = input.limit || 100;
+
+      let query = db
+        .select({
+          uuid: toolCallLogsTable.uuid,
+          tool_name: toolCallLogsTable.tool_name,
+          arguments: toolCallLogsTable.arguments,
+          result: toolCallLogsTable.result,
+          error: toolCallLogsTable.error,
+          duration_ms: toolCallLogsTable.duration_ms,
+          session_id: toolCallLogsTable.session_id,
+          parent_call_uuid: toolCallLogsTable.parent_call_uuid,
+          created_at: toolCallLogsTable.created_at,
+        })
+        .from(toolCallLogsTable)
+        .orderBy(desc(toolCallLogsTable.created_at))
+        .limit(limit)
+        .$dynamic();
+
+      if (input.sessionId) {
+        query = query.where(eq(toolCallLogsTable.session_id, input.sessionId));
+      }
+
+      const logs = await query;
+
+      // Map to Zod schema format
+      const formattedLogs = logs.map(log => {
+        const parsed = parseToolName(log.tool_name);
+        const serverName = parsed ? parsed.serverName : "metamcp";
+
+        return {
+          id: log.uuid,
+          timestamp: log.created_at,
+          serverName: serverName,
+          level: log.error ? "error" as const : "info" as const,
+          message: log.error
+            ? `Error calling ${log.tool_name}: ${log.error}`
+            : `Called ${log.tool_name} (${log.duration_ms || '?'}ms)`,
+          error: log.error || undefined,
+
+          // Extended fields
+          toolName: log.tool_name,
+          arguments: log.arguments as Record<string, unknown>,
+          result: log.result as Record<string, unknown>,
+          durationMs: log.duration_ms || undefined,
+          sessionId: log.session_id,
+          parentCallUuid: log.parent_call_uuid,
+        };
+      });
+
+      const totalCount = logs.length;
 
       return {
         success: true as const,
-        data: logs,
+        data: formattedLogs,
         totalCount,
       };
     } catch (error) {
-      logger.error("Error getting logs:", error);
-      throw new Error("Failed to get logs");
+      console.error("Error getting logs:", error);
+      if (error instanceof Error) {
+        console.error("Stack trace:", error.stack);
+      }
+
+      if (isLogsStorageUnavailableError(error)) {
+        console.warn(
+          "[logs.impl] logs storage unavailable; returning empty logs response",
+        );
+        return {
+          success: true as const,
+          data: [],
+          totalCount: 0,
+        };
+      }
+
+      throw new Error(
+        `Failed to get logs: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 
-  clearLogs: async (): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
+  clearLogs: async (context?: { user?: { id: string } }): Promise<z.infer<typeof ClearLogsResponseSchema>> => {
     try {
-      metamcpLogStore.clearLogs();
+      await db.delete(toolCallLogsTable);
 
       return {
         success: true as const,
         message: "All logs have been cleared successfully",
       };
     } catch (error) {
-      logger.error("Error clearing logs:", error);
+      console.error("Error clearing logs:", error);
+
+      if (isLogsStorageUnavailableError(error)) {
+        return {
+          success: true as const,
+          message: "Logs storage is unavailable; no logs were cleared",
+        };
+      }
+
       throw new Error("Failed to clear logs");
     }
   },

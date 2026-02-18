@@ -1,10 +1,20 @@
-// TODO resolve any issue with better-auth
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 
 import logger from "@/utils/logger";
 
 import { auth } from "../auth";
+
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: Record<string, unknown>;
+    session?: Record<string, unknown>;
+  }
+}
+
+interface SessionDataResponse {
+  user?: Record<string, unknown>;
+  session?: Record<string, unknown>;
+}
 
 /**
  * Better Auth middleware for MCP proxy routes
@@ -25,11 +35,11 @@ export const betterAuthMcpMiddleware = async (
       });
     }
 
-    // Verify the session using better-auth with original cookies
-    const sessionUrl = new URL(
-      "/api/auth/get-session",
-      `http://${req.headers.host}`,
-    );
+    // Verify session against configured auth base URL for consistency.
+    // Proxy/rewrite host headers can differ from backend auth base and cause
+    // false session misses when using req.headers.host directly.
+    const authBaseUrl = process.env.APP_URL || "http://localhost:12009";
+    const sessionUrl = new URL("/api/auth/get-session", authBaseUrl);
 
     const headers = new Headers();
     headers.set("cookie", req.headers.cookie);
@@ -49,7 +59,7 @@ export const betterAuthMcpMiddleware = async (
       });
     }
 
-    const sessionData = (await sessionResponse.json()) as any;
+    const sessionData = (await sessionResponse.json()) as SessionDataResponse;
 
     if (!sessionData || !sessionData.user) {
       logger.info("Auth middleware - no valid user session found");
@@ -60,8 +70,8 @@ export const betterAuthMcpMiddleware = async (
     }
 
     // Add user info to request for downstream use
-    (req as any).user = sessionData.user;
-    (req as any).session = sessionData.session;
+    req.user = sessionData.user;
+    req.session = sessionData.session;
 
     next();
   } catch (error) {

@@ -5,7 +5,6 @@ import {
   ApiKeyAuthenticatedRequest,
   authenticateApiKey,
 } from "@/middleware/api-key-oauth.middleware";
-import logger from "@/utils/logger";
 
 import { metaMcpServerPool } from "../../../lib/metamcp/metamcp-server-pool";
 import { lookupEndpoint } from "../../../middleware/lookup-endpoint-middleware";
@@ -81,7 +80,7 @@ openApiRouter.get(
   lookupEndpoint,
   authenticateApiKey,
   async (req, res) => {
-    const { namespaceUuid, endpointName } = req as ApiKeyAuthenticatedRequest;
+    const { namespaceUuid, endpointName, apiKeyUserId, oauthUserId } = req as ApiKeyAuthenticatedRequest;
 
     try {
       // Get or create persistent OpenAPI session for this namespace
@@ -94,9 +93,12 @@ openApiRouter.get(
       // Use deterministic session ID for OpenAPI endpoints
       const sessionId = `openapi_${namespaceUuid}`;
 
+      // Determine userId from either API key or OAuth
+      const userId = apiKeyUserId || oauthUserId;
+
       // Create middleware-enabled handlers
       const { handlerContext, listToolsWithMiddleware } =
-        createMiddlewareEnabledHandlers(sessionId, namespaceUuid);
+        createMiddlewareEnabledHandlers(sessionId, namespaceUuid, userId);
 
       // Use middleware-enabled list tools handler
       const listToolsRequest: ListToolsRequest = {
@@ -116,7 +118,7 @@ openApiRouter.get(
 
       res.json(openApiSchema);
     } catch (error) {
-      logger.error("Error generating OpenAPI schema:", error);
+      console.error("Error generating OpenAPI schema:", error);
       res.status(500).json({
         error: "Internal server error",
         message: "Failed to generate OpenAPI schema",

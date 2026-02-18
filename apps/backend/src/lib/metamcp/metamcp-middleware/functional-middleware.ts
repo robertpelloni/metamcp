@@ -9,6 +9,7 @@ import {
 export interface MetaMCPHandlerContext {
   namespaceUuid: string;
   sessionId: string;
+  userId?: string; // User ID for access control and logging
 }
 
 // Handler function types
@@ -84,12 +85,14 @@ export function createFunctionalMiddleware<TRequest, TResponse>(options: {
 /**
  * Compose multiple middleware functions together
  */
-// TODO better typing for middleware design
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function compose<T extends (...args: any[]) => any>(
-  ...middlewares: Array<(handler: T) => T>
-): (handler: T) => T {
-  return (handler: T) => {
+export function compose<TArgs extends unknown[], TResult>(
+  ...middlewares: Array<
+    (handler: (...args: TArgs) => TResult) => (...args: TArgs) => TResult
+  >
+): (
+  handler: (...args: TArgs) => TResult,
+) => (...args: TArgs) => TResult {
+  return (handler: (...args: TArgs) => TResult) => {
     return middlewares.reduceRight(
       (wrapped, middleware) => middleware(wrapped),
       handler,

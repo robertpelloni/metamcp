@@ -29,6 +29,7 @@ export const apiKeysImplementations = {
 
       const result = await apiKeysRepository.create({
         name: input.name,
+        type: input.type,
         user_id: apiKeyUserId,
         is_active: true,
       });
@@ -53,7 +54,9 @@ export const apiKeysImplementations = {
       };
     } catch (error) {
       logger.error("Error fetching API keys:", error);
-      throw new Error("Failed to fetch API keys");
+      throw new Error(
+        error instanceof Error ? error.message : "Internal server error",
+      );
     }
   },
 
@@ -64,6 +67,7 @@ export const apiKeysImplementations = {
     try {
       const result = await apiKeysRepository.update(input.uuid, userId, {
         name: input.name,
+        type: input.type,
         is_active: input.is_active,
       });
 

@@ -3,11 +3,21 @@ import { ConfigKey, ConfigKeyEnum } from "@repo/zod-types";
 import { configRepo } from "../db/repositories/config.repo";
 
 export const configService = {
+  // ... existing methods ...
+
   async isSignupDisabled(): Promise<boolean> {
-    const config = await configRepo.getConfig(
-      ConfigKeyEnum.Enum.DISABLE_SIGNUP,
-    );
-    return config?.value === "true";
+    try {
+      const config = await configRepo.getConfig(
+        ConfigKeyEnum.Enum.DISABLE_SIGNUP,
+      );
+      return config?.value === "true";
+    } catch (error) {
+      console.warn(
+        "[config.service] isSignupDisabled failed; using fallback false:",
+        error,
+      );
+      return false;
+    }
   },
 
   async setSignupDisabled(disabled: boolean): Promise<void> {
@@ -19,10 +29,18 @@ export const configService = {
   },
 
   async isSsoSignupDisabled(): Promise<boolean> {
-    const config = await configRepo.getConfig(
-      ConfigKeyEnum.Enum.DISABLE_SSO_SIGNUP,
-    );
-    return config?.value === "true";
+    try {
+      const config = await configRepo.getConfig(
+        ConfigKeyEnum.Enum.DISABLE_SSO_SIGNUP,
+      );
+      return config?.value === "true";
+    } catch (error) {
+      console.warn(
+        "[config.service] isSsoSignupDisabled failed; using fallback false:",
+        error,
+      );
+      return false;
+    }
   },
 
   async setSsoSignupDisabled(disabled: boolean): Promise<void> {
@@ -34,10 +52,18 @@ export const configService = {
   },
 
   async isBasicAuthDisabled(): Promise<boolean> {
-    const config = await configRepo.getConfig(
-      ConfigKeyEnum.Enum.DISABLE_BASIC_AUTH,
-    );
-    return config?.value === "true";
+    try {
+      const config = await configRepo.getConfig(
+        ConfigKeyEnum.Enum.DISABLE_BASIC_AUTH,
+      );
+      return config?.value === "true";
+    } catch (error) {
+      console.warn(
+        "[config.service] isBasicAuthDisabled failed; using fallback false:",
+        error,
+      );
+      return false;
+    }
   },
 
   async setBasicAuthDisabled(disabled: boolean): Promise<void> {
@@ -171,4 +197,46 @@ export const configService = {
 
     return providers;
   },
+
+  async getDockerMcpProxyImage(): Promise<string | undefined> {
+    const config = await configRepo.getConfig(
+      ConfigKeyEnum.Enum.DOCKER_MCP_PROXY_IMAGE,
+    );
+    return config?.value;
+  },
+
+  async setDockerMcpProxyImage(imageName: string): Promise<void> {
+    await configRepo.setConfig(
+      ConfigKeyEnum.Enum.DOCKER_MCP_PROXY_IMAGE,
+      imageName,
+      "Docker image to use for the MCP Proxy container",
+    );
+  },
+
+  /**
+   * Get the memory limit for Code Mode execution in MB.
+   * Defaults to 128MB.
+   */
+  getCodeExecutionMemoryLimit(): number {
+    const envVal = process.env.CODE_EXECUTION_MEMORY_LIMIT;
+    if (envVal) {
+      const parsed = parseInt(envVal, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+    return 128;
+  },
+
+  /**
+   * Validate that OPENAI_API_KEY is present if required features are enabled.
+   * Logs a warning if not present.
+   */
+  validateOpenAiKey(): void {
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn(
+        "WARN: OPENAI_API_KEY is not set. Semantic Search and Autonomous Agent features will not work."
+      );
+    }
+  }
 };
