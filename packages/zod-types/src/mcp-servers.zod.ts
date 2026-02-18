@@ -2,6 +2,13 @@ import { z } from "zod";
 
 export const McpServerTypeEnum = z.enum(["STDIO", "SSE", "STREAMABLE_HTTP"]);
 export const McpServerStatusEnum = z.enum(["ACTIVE", "INACTIVE"]);
+export const DockerSessionStatusEnum = z.enum([
+  "RUNNING",
+  "STOPPED",
+  "ERROR",
+  "REMOVED",
+  "NOT_FOUND",
+]);
 
 export const McpServerErrorStatusEnum = z.enum(["NONE", "ERROR"]);
 
@@ -366,6 +373,30 @@ export const UpdateMcpServerResponseSchema = z.object({
   error: z.string().optional(),
 });
 
+// Headless API response schemas (simplified without success/failure wrappers)
+// Since we now throw TRPCErrors directly, these schemas only represent successful responses
+export const HeadlessCreateMcpServerResponseSchema = z.object({
+  data: McpServerSchema,
+  message: z.string(),
+});
+
+export const HeadlessListMcpServersResponseSchema = z.object({
+  data: z.array(McpServerSchema),
+});
+
+export const HeadlessGetMcpServerResponseSchema = z.object({
+  data: McpServerSchema,
+});
+
+export const HeadlessDeleteMcpServerResponseSchema = z.object({
+  message: z.string(),
+});
+
+export const HeadlessUpdateMcpServerResponseSchema = z.object({
+  data: McpServerSchema,
+  message: z.string(),
+});
+
 export type DeleteMcpServerRequest = z.infer<
   typeof DeleteMcpServerRequestSchema
 >;
@@ -450,3 +481,24 @@ export const DatabaseMcpServerSchema = z.object({
 });
 
 export type DatabaseMcpServer = z.infer<typeof DatabaseMcpServerSchema>;
+export type DockerSessionStatus = z.infer<typeof DockerSessionStatusEnum>;
+
+// Docker Session schema
+export const DockerSessionSchema = z.object({
+  uuid: z.string(),
+  mcp_server_uuid: z.string(),
+  container_id: z.string(),
+  container_name: z.string(),
+  url: z.string(),
+  status: DockerSessionStatusEnum,
+  created_at: z.date(),
+  updated_at: z.date(),
+  started_at: z.date().nullable().optional(),
+  stopped_at: z.date().nullable().optional(),
+  error_message: z.string().nullable().optional(),
+  retry_count: z.number(),
+  last_retry_at: z.date().nullable().optional(),
+  max_retries: z.number(),
+});
+
+export type DockerSession = z.infer<typeof DockerSessionSchema>;
