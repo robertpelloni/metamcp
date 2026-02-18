@@ -5,6 +5,9 @@ FROM ghcr.io/astral-sh/uv:debian AS base
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
+    python3 \
+    make \
+    g++ \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g pnpm@10.12.0 \
@@ -58,13 +61,19 @@ WORKDIR /app
 
 # OCI image labels
 LABEL org.opencontainers.image.source="https://github.com/metatool-ai/metamcp"
-LABEL org.opencontainers.image.description="MetaMCP - aggregates MCP servers into a unified MetaMCP"
+LABEL org.opencontainers.image.description="MetaMCP-docker-per-mcp - aggregates MCP servers into a unified MetaMCP"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.title="MetaMCP"
+LABEL org.opencontainers.image.title="MetaMCP-docker-per-mcp"
 LABEL org.opencontainers.image.vendor="metatool-ai"
 
 # Install curl for health checks
 RUN apt-get update && apt-get install -y curl postgresql-client && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Docker CLI for container management (required for DinD functionality)
+RUN apt-get update && apt-get install -y \
+    docker.io \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user with proper home directory
 RUN addgroup --system --gid 1001 nodejs
@@ -95,8 +104,6 @@ RUN cd apps/backend && pnpm add drizzle-kit@0.31.1
 # Copy startup script
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
-
-USER nextjs
 
 # Expose frontend port (Next.js)
 EXPOSE 12008
