@@ -64,7 +64,7 @@ const trpcRouter = express.Router();
 trpcRouter.use(helmet());
 trpcRouter.use(
   cors({
-    origin: process.env.APP_URL,
+    origin: process.env.APP_URL || true,
     credentials: true,
   }),
 );

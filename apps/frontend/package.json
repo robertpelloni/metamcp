@@ -1,10 +1,16 @@
 {
   "name": "frontend",
+<<<<<<< HEAD
   "version": "3.6.3",
+=======
+  "version": "3.6.30",
+>>>>>>> fix/detached-head-recovery
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 12008",
+    "predev": "node -e \"const fs=require('fs');fs.rmSync('.next',{recursive:true,force:true});\"",
+    "dev": "next dev --port 12008",
+    "prebuild": "node -e \"const fs=require('fs');fs.rmSync('.next',{recursive:true,force:true});\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",

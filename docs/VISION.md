@@ -1,7 +1,7 @@
 # MetaMCP Project Vision
 
-**Document Version:** 3.0.0  
-**Last Updated:** 2026-02-12  
+**Document Version:** 3.7.0  
+**Last Updated:** 2026-02-17  
 **Context:** MetaMCP's position within the broader Borg ecosystem
 
 ---
@@ -132,27 +132,33 @@ Borg (Parent Monorepo)
    - `search_tools`, `load_tool`, `run_code`, `run_agent`
    - 85-98% token reduction
 
-2. **Semantic Search (Tool RAG)**
+2. **Hybrid Storage Architecture (v3.7.0)**
+   - `mcp.json` is source of truth for configuration
+   - `api-keys.json` and `memories.json` for file-based resilience
+   - Decoupled from Database strict dependency for critical paths
+   - Seamless degradation to JSON-only mode
+
+3. **Semantic Search (Tool RAG)**
    - pgvector + OpenAI embeddings
    - Find tools by intent, not exact name
    - Auto-indexing on upsert
 
-3. **Code Mode**
+4. **Code Mode**
    - TypeScript/JavaScript sandbox (isolated-vm)
    - Tool chaining via `mcp.call()`
    - Recursive routing through middleware
 
-4. **Autonomous Agents**
+5. **Autonomous Agents**
    - Natural language → code generation → execution
    - Policy-scoped access control
    - Transforms any MCP client into a coding agent
 
-5. **Agent Memory**
+6. **Agent Memory**
    - Long-term context persistence
    - Semantic retrieval via `pgvector`
    - Enables continuous learning across sessions
 
-6. **MCP Registry**
+7. **MCP Registry**
    - Centralized discovery and installation
    - One-click server templates
    - Expands capabilities with community tools

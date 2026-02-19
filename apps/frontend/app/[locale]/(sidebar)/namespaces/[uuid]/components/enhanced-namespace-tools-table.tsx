@@ -51,6 +51,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { parseToolName } from "@/lib/tool-name-parser";
 import { trpc } from "@/lib/trpc";
 
@@ -665,13 +666,7 @@ export function EnhancedNamespaceToolsTable({
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDeterministicDateTime(dateString);
   };
 
   // Get tool parameters from schema

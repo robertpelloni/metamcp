@@ -1,13 +1,23 @@
 {
   "name": "metamcp",
+<<<<<<< HEAD
   "version": "3.6.3",
+=======
+  "version": "3.7.0",
+>>>>>>> fix/detached-head-recovery
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "clean": "./scripts/cleanup-managed-containers.sh",
+<<<<<<< HEAD
     "dev": "dotenv -e .env.local turbo run dev",
     "dev:backend": "dotenv -e .env.local turbo run dev:backend --filter=backend",
     "dev:frontend": "dotenv -e .env.local turbo run dev:frontend --filter=frontend",
+=======
+    "dev": "dotenv -e .env.local -e .env turbo run dev",
+    "dev:backend": "dotenv -e .env.local -e .env turbo run dev:backend --filter=backend",
+    "dev:frontend": "dotenv -e .env.local -e .env turbo run dev:frontend --filter=frontend",
+>>>>>>> fix/detached-head-recovery
     "dev:docker": "docker compose -f docker-compose.dev.yml up --build",
     "dev:docker:down": "docker compose -f docker-compose.dev.yml down",
     "dev:docker:clean": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",

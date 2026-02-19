@@ -56,9 +56,10 @@ export const createContext = async ({
       }
     }
   } catch (error) {
-    // Log error but don't throw - we want to allow unauthenticated requests
     logger.error("Error getting session in tRPC context:", error);
   }
+
+
 
   return {
     req,

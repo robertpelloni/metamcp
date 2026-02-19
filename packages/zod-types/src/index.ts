@@ -22,3 +22,8 @@ export * from "./registry.zod";
 export * from "./agent.zod";
 export * from "./server-health.zod";
 export * from "./system.zod";
+<<<<<<< HEAD
+=======
+export * from "./mcp-config.zod";
+
+>>>>>>> fix/detached-head-recovery

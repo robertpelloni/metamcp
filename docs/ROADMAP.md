@@ -1,8 +1,9 @@
-# MetaMCP Feature Roadmap (Reality-Aligned)
+# MetaMCP Roadmap (Reality-Aligned)
 
-**Current Version**: 3.6.0  
-**Last Updated**: 2026-02-16  
-**Purpose**: Reflect actual implementation maturity (not just historical intent) to guide implementor models.
+**Current Version**: 3.6.6  
+**Last Updated**: 2026-02-17
+
+This roadmap tracks what is truly shippable now versus what still contains simulation paths, placeholders, or correctness debt.
 
 ---
 
@@ -10,150 +11,132 @@
 
 | Status | Meaning |
 | :-- | :-- |
-| ✅ | Implemented and actively wired in core UX/API path |
-| 🟡 | Implemented but partial/fragile/not fully productionized |
-| 🧩 | Implemented in code but not mounted/wired into active router/UI |
-| 🧪 | UI/demo placeholder or simulated behavior |
-| 📋 | Planned (not meaningfully implemented yet) |
+| ✅ | Implemented, mounted, and actively used |
+| 🟡 | Implemented but partial/fragile or still needs correctness hardening |
+| 🧪 | Simulated/stubbed UX path |
+| 📋 | Planned and not yet implemented |
 
 ---
 
-## Reality Snapshot (Critical)
+## Snapshot (2026-02-17)
 
-### 2026-02-16 Update (P0 Progress)
+### Newly completed in this cycle
 
-- ✅ Router wiring mismatch addressed for the previously unwired namespaces.
-- ✅ Legacy mock route `apps/backend/src/routers/logs.ts` removed.
-- ✅ Shared schema exports and DB schema references were aligned to restore build health after wiring.
-- 🟡 Remaining high-priority gaps are now primarily **UI simulation paths** and **data correctness hardening** (audit totals/filters, inspector simulation paths).
+- ✅ **Hybrid Storage Architecture (v3.7.0)**:
+  - `mcp.json` is now the source of truth for configuration.
+  - API Keys are stored in `api-keys.json`.
+  - Memories use pluggable storage (`memories.json` default).
+  - 500 Errors on API Key list resolved.
+- ✅ `mcp.json` startup load + live file watch/hot-reload pipeline.
+- ✅ Audit log correctness (filtered totals).
+- ✅ Frontend stderr-noise reduction for malformed/empty MCP stderr payloads:
+  - `apps/frontend/hooks/useConnection.ts`
+  - `apps/frontend/app/[locale]/(sidebar)/mcp-servers/[uuid]/page.tsx`
+  - `apps/frontend/app/[locale]/(sidebar)/namespaces/[uuid]/page.tsx`
+- ✅ Browser storage hardening (safe local/session storage access):
+  - `apps/frontend/lib/oauth-provider.ts`
+  - `apps/frontend/lib/stores/logs-store.ts`
 
----
+### Previously completed and still valid
 
-### High-confidence gaps found during source audit
-
-1. **tRPC contract wiring mismatch** (high priority, now resolved)
-	- This mismatch previously created drift between available code and active API surface.
-	- Status: resolved in current cycle by mounting the missing namespaces in shared contract and backend router wiring.
-
-2. **Placeholder/stubbed UI behavior in production pages** (high priority)
-	- `settings/page.tsx`: Docker image update is explicitly stubbed in frontend state.
-	- `scripts/page.tsx`: “Autonomous Agent Playground” includes instructional placeholder/simulated behavior instead of actual frontend execution path.
-	- `mcp-inspector/inspector-roots.tsx`: roots behavior is placeholder-only (no real protocol integration).
-	- `mcp-inspector/inspector-sampling.tsx`: simulated result path; not real MCP sampling execution.
-
-3. **Legacy/dead backend route file** (medium priority, now resolved)
-	- `apps/backend/src/routers/logs.ts` was removed to eliminate duplicate/mock route confusion.
-
-4. **UI discoverability and representation gap** (medium-high priority)
-	- Sidebar navigation exposes only a subset of existing pages, while additional pages/features exist under routes but are not represented in primary navigation.
-
-5. **Documentation drift** (high priority)
-	- Prior roadmap/docs marked some features as fully complete where implementation is partial, simulated, or not mounted.
+- ✅ Frontend router contract parity with mounted backend namespaces (`analytics`, `audit`, `autoDiscovery`, `autoReconnect`, `catalog`, `memories`, `registry`, `system`).
+- ✅ Legacy dead/mock backend route removed (`apps/backend/src/routers/logs.ts`).
+- ✅ Build health currently green (`backend` + `frontend` builds succeed).
 
 ---
 
-## Feature State by Domain
+## Current Feature Matrix
 
-### Core Hub / Proxy
+### Core proxy and middleware
 
-- ✅ Progressive disclosure meta-tool model (`search_tools`, `load_tool`, `run_code`, `run_agent`)
-- ✅ Middleware pipeline architecture exists and is active
-- 🟡 Some middleware typing/cleanup debt remains (e.g., TODO in functional middleware typing)
+- ✅ Progressive disclosure flow (`search_tools` → `load_tool` → use loaded tool).
+- ✅ Middleware chain active for tool calls.
+- 🟡 Typing cleanup remains in functional middleware (`apps/backend/src/lib/metamcp/metamcp-middleware/functional-middleware.ts`, TODO marker).
 
-### Logs, Audit, and Analytics
+### Logs / audit / observability
 
-- ✅ Live logs core path (`tool_call_logs` via `logs.impl.ts`) is wired
-- 🟡 Audit implementation exists but total-count handling is placeholder in `audit.impl.ts`
-- ✅ Analytics/Audit/System/Registry/Catalog/Discovery/Memories/Auto-Reconnect namespaces are now mounted in active tRPC router
-- ✅ Legacy additional router file `routers/logs.ts` removed
+- ✅ Logs route is mounted and active via tRPC implementation.
+- ✅ Audit list now uses real filtered totals via count query (`auditService.countLogs` + filtered `listLogs`).
+- 🟡 User-reported runtime drift still needs final end-to-end confirmation for logs-query reliability after clean restarts.
 
-### Agent and Code Mode
+### Agent / scripts / execution UX
 
-- ✅ Core backend agent execution path exists and is wired (`agent.impl.ts`)
-- 🟡 Frontend agent UX split:
-  - dedicated `/agent` page is functional against mounted router
-  - `/scripts` page “agent playground” remains instructional/simulated placeholder
-
-### Registry / Catalog / Discovery
-
-- 🟡 Registry and catalog implementations exist
-- ✅ Registry/catalog/discovery implementation modules are mounted in active backend tRPC router
-- 🟡 Frontend contains registry and auto-discovery UI; now requires end-to-end behavior hardening and UX polish
-
-### Auto-Reconnect / System / Memories
-
-- ✅ Implementations for `auto-reconnect`, `system`, and `memories` are now mounted in active tRPC router
-- 🟡 Needs runtime verification and complete UI representation for memory product direction
+- ✅ Backend `run_agent` flow exists and is mounted.
+- ✅ `/scripts` page now routes users to the real `/agent` execution flow (no fake execution simulation).
+- 🟡 `/agent` route works but UX and policy-scope clarity need polish.
 
 ### Inspector
 
-- ✅ Tools/resources/prompts interaction is broadly implemented
-- 🧪 Roots and sampling tabs currently expose placeholder/simulated behavior
-- 🟡 Tool schema compatibility currently depends on `@ts-expect-error` workarounds in inspector tools component
+- ✅ Core tabs/tools are implemented.
+- ✅ Roots tab is now explicit capability/read-only status (no simulated root CRUD actions).
+- 🟡 Sampling tab now attempts real `sampling/createMessage` request and reports unsupported capability when unavailable.
+- 🟡 Inspector tools still include schema mismatch suppressions with `@ts-expect-error` comments.
 
-### Settings and Config UX
+### Registry / catalog / discovery
 
-- ✅ Core auth/config switches and timeout controls are connected
-- 🧪 Docker image update control is currently frontend stub, not a real backend-managed setting
-- 🟡 Connection/retry options in `useConnection` still include TODOs for configurability
+- ✅ Backend routes mounted.
+- 🟡 Registry page still contains install defaults/placeholder behavior (`setServerArgs(["-y", "package-name"])`).
+- 🟡 End-to-end install correctness needs hardening and validation across template variants.
 
----
+### Settings and runtime reliability
 
-## Execution Order (Recommended)
-
-1. **Contract Unification (P0)**
-	- Make one authoritative frontend router contract and mount all intended implementations.
-	- Remove/replace dead or legacy route paths that are not mounted.
-
-2. **Runtime Safety + API Completeness (P0)**
-	- Replace placeholders in audit totals and related list/count semantics.
-	- Ensure every UI-visible feature has a non-simulated backend path.
-
-3. **UI Truthfulness and Coverage (P1)**
-	- Replace simulated inspector roots/sampling with explicit unsupported states or real implementations.
-	- Remove instructional placeholders where actions appear executable.
-	- Bring hidden but important pages/features into primary navigation or explicitly mark as experimental.
-
-4. **Documentation Realignment (P1)**
-	- Keep roadmap/dashboard/manual strictly aligned with mounted production behavior.
-	- Separate “implemented in code” vs “enabled and supported in product UX.”
-
-5. **Hardening and Polish (P2)**
-	- Eliminate `@ts-expect-error` compatibility patches where feasible.
-	- Add integration tests for every frontend route namespace used by UI.
+- 🧪 Settings Docker image management remains a frontend-only stub (no backend endpoint).
+- 🟡 Auth/session stability has improved but still needs runtime validation for logout persistence edge cases.
+- 🟡 Hydration mismatch warnings need final root-cause closure and regression coverage.
 
 ---
 
-## Planned Workstreams (Updated)
+## Priority Execution Order
 
-### Workstream A — Router and API Surface Convergence
-- [x] Wire or intentionally remove: `analytics`, `audit`, `auto-discovery`, `auto-reconnect`, `catalog`, `memories`, `registry`, `system`
-- [x] Align `packages/trpc/src/routers/frontend/index.ts` with backend mounting and frontend usage
-- [x] Delete or refactor `apps/backend/src/routers/logs.ts` (legacy mock route)
-
-### Workstream B — Replace Simulated UX Paths
-- [ ] Replace Settings Docker stub with real backend config endpoint (or remove control)
-- [ ] Replace `/scripts` “run_agent coming soon” simulation with real invocation flow or explicit readonly docs card
-- [ ] Implement real roots/sampling inspector logic or mark feature unavailable based on capabilities only
-
-### Workstream C — Observability & Security Correctness
-- [ ] Complete audit pagination/count semantics with accurate totals
-- [ ] Verify role/ownership scoping behavior for logs/audit access
-- [ ] Add feature-level tests for logs, audit, and system routes
-
-### Workstream D — UI Representation and Discoverability
-- [ ] Decide canonical IA: include/exclude pages (`agent`, `tool-sets`, `registry`, `system`, `audit`, `observability`, `scripts`, etc.)
-- [ ] Ensure visible nav mirrors supported features
-- [ ] Add “experimental” badges where behavior is intentionally incomplete
-
-### Workstream E — Documentation Quality Gate
-- [ ] Keep `ROADMAP.md`, `DASHBOARD.md`, `HANDOFF.md`, and `TODO.md` synchronized each implementation cycle
-- [ ] Add explicit “support matrix” docs: `implemented`, `mounted`, `UI-exposed`, `tested`
+1. **P0 — Replace simulated production UX paths**
+   - Remove/replace stubs in `settings`, `scripts`, inspector roots/sampling.
+2. **P0 — Correctness hardening for audit/logs**
+   - True totals and filtering semantics; verify runtime behavior after full clean restart.
+3. **P1 — Auth/hydration reliability closure**
+   - Resolve persistent logout reports and hydration mismatch edge cases.
+4. **P1 — Registry/discovery product hardening**
+   - Eliminate placeholder defaults and validate full install path behavior.
+5. **P2 — Typing and technical debt cleanup**
+   - Remove suppressions and middleware typing TODOs.
 
 ---
 
-## Notes for Implementor Models
+## Workstreams
 
-- Do not assume “file exists” means “feature shipped.”
-- Treat mounted router + UI + tests as the definition of feature completeness.
-- Prioritize removing product-level ambiguity before adding net-new capabilities.
+### Workstream A — Runtime Truthfulness
+
+- [x] Implement `mcp.json` startup + hot reload integration.
+- [x] Replace simulated inspector roots/sampling behavior with capability-driven real behavior or explicit unsupported state.
+- [x] Replace `/scripts` placeholder experience with real frontend invocation path to `/agent`.
+- [ ] Replace settings Docker stub with backend-backed persisted configuration.
+
+### Workstream B — Data Correctness
+
+- [x] Implement real audit totals/count query.
+- [x] Implement backend audit filters (`userId`, `action`) for list + count queries.
+- [ ] Finalize end-to-end verification of audit filter semantics in UI/runtime.
+- [ ] Confirm logs-query behavior in clean runtime and remove drift between observed SQL and active source.
+
+### Workstream C — Reliability
+
+- [x] Harden frontend storage access for restricted browser contexts.
+- [x] Suppress malformed empty stderr noise.
+- [ ] Close auth/session logout instability with explicit regression coverage.
+- [ ] Close hydration mismatch instability with deterministic reproduction + fix.
+
+### Workstream D — Documentation and Handoff Discipline
+
+- [ ] Keep `ROADMAP.md`, `TODO.md`, `HANDOFF.md`, and `DASHBOARD.md` synchronized after each implementation cycle.
+- [ ] Maintain a "simulated vs real" matrix to prevent product-status drift.
+
+---
+
+## Definition of Complete (per feature)
+
+A feature is complete only when all are true:
+
+1. Backend implementation exists and is mounted.
+2. Frontend representation is truthful (no hidden simulation unless explicitly labeled).
+3. End-to-end runtime behavior is verified after clean restart.
+4. Tests/diagnostics cover critical behavior.
+5. Docs and handoff artifacts reflect current reality.

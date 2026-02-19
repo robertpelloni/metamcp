@@ -3,18 +3,19 @@ import {
   ApiKeyType,
   ApiKeyUpdateInput,
 } from "@repo/zod-types";
+<<<<<<< HEAD
 import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
+=======
+import { ApiKeysJsonRepository } from "./api-keys-json.repo";
+>>>>>>> fix/detached-head-recovery
 
-import { db } from "../index";
-import { apiKeysTable } from "../schema";
-
-const nanoid = customAlphabet(
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-  64,
-);
+// Default to JSON repository for now. 
+// In the future, we can add a factory or config switch here.
+const jsonRepo = new ApiKeysJsonRepository();
 
 export class ApiKeysRepository {
+<<<<<<< HEAD
   /**
    * Generate a new API key with the specified format: sk_mt_{64-char-nanoid}
    */
@@ -75,10 +76,18 @@ export class ApiKeysRepository {
       .from(apiKeysTable)
       .where(eq(apiKeysTable.user_id, userId))
       .orderBy(desc(apiKeysTable.created_at));
+=======
+  async create(input: ApiKeyCreateInput) {
+    return jsonRepo.create(input);
   }
 
-  // Find all API keys (both public and user-owned)
+  async findByUserId(userId: string) {
+    return jsonRepo.findByUserId(userId);
+>>>>>>> fix/detached-head-recovery
+  }
+
   async findAll() {
+<<<<<<< HEAD
     return await db
       .select({
         uuid: apiKeysTable.uuid,
@@ -91,10 +100,13 @@ export class ApiKeysRepository {
       })
       .from(apiKeysTable)
       .orderBy(desc(apiKeysTable.created_at));
+=======
+    return jsonRepo.findAll();
+>>>>>>> fix/detached-head-recovery
   }
 
-  // Find public API keys (no user ownership)
   async findPublicApiKeys() {
+<<<<<<< HEAD
     return await db
       .select({
         uuid: apiKeysTable.uuid,
@@ -108,10 +120,13 @@ export class ApiKeysRepository {
       .from(apiKeysTable)
       .where(isNull(apiKeysTable.user_id))
       .orderBy(desc(apiKeysTable.created_at));
+=======
+    return jsonRepo.findPublicApiKeys();
+>>>>>>> fix/detached-head-recovery
   }
 
-  // Find API keys accessible to a specific user (public + user's own keys)
   async findAccessibleToUser(userId: string) {
+<<<<<<< HEAD
     return await db
       .select({
         uuid: apiKeysTable.uuid,
@@ -149,10 +164,17 @@ export class ApiKeysRepository {
       );
 
     return apiKey;
+=======
+    return jsonRepo.findAccessibleToUser(userId);
   }
 
-  // Find API key by UUID with access control (user can access their own keys + public keys)
+  async findByUuid(uuid: string, userId: string) {
+    return jsonRepo.findByUuid(uuid, userId);
+>>>>>>> fix/detached-head-recovery
+  }
+
   async findByUuidWithAccess(uuid: string, userId?: string) {
+<<<<<<< HEAD
     const [apiKey] = await db
       .select({
         uuid: apiKeysTable.uuid,
@@ -240,26 +262,20 @@ export class ApiKeysRepository {
     }
 
     return updatedApiKey;
+=======
+    return jsonRepo.findByUuidWithAccess(uuid, userId);
+  }
+
+  async validateApiKey(key: string) {
+    return jsonRepo.validateApiKey(key);
+  }
+
+  async update(uuid: string, userId: string, input: ApiKeyUpdateInput) {
+    return jsonRepo.update(uuid, userId, input);
+>>>>>>> fix/detached-head-recovery
   }
 
   async delete(uuid: string, userId: string) {
-    const [deletedApiKey] = await db
-      .delete(apiKeysTable)
-      .where(
-        and(
-          eq(apiKeysTable.uuid, uuid),
-          or(eq(apiKeysTable.user_id, userId), isNull(apiKeysTable.user_id)),
-        ),
-      )
-      .returning({
-        uuid: apiKeysTable.uuid,
-        name: apiKeysTable.name,
-      });
-
-    if (!deletedApiKey) {
-      throw new Error("Failed to delete API key or API key not found");
-    }
-
-    return deletedApiKey;
+    return jsonRepo.delete(uuid, userId);
   }
 }

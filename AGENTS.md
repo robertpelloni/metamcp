@@ -14,7 +14,14 @@ This file provides operational directives for **all AI agents** (coding assistan
 
 1. **Policy Middleware**: Always verify policy constraints before executing tools. Every tool call must flow through the policy middleware stack.
 2. **Sandbox Isolation**: Never attempt to break out of the `isolated-vm` sandbox. No filesystem, network, or process access from sandboxed code.
-3. **Secret Handling**: Never log, expose, or transmit API keys, tokens, or credentials. Environment variable references (`${VAR}`) are resolved at runtime — never hardcode secrets.
+
+---
+
+## 🛠️ Configuration & Storage (v3.7.0+)
+
+1. **Source of Truth**: `mcp.json` is the master record for MCP servers. Do not rely on valid DB state for server configurations.
+2. **File-Based Resilience**: API Keys (`api-keys.json`) and Memories (`memories.json`) persist to disk.
+3. **Dual-Write**: When modifying configuration via code, ensure `McpConfigService` syncs to both JSON and DB.
 4. **Input Validation**: All user-provided input must be validated via Zod schemas before processing.
 
 ---

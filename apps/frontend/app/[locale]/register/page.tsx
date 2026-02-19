@@ -39,19 +39,20 @@ function RegisterForm() {
 
   const router = useRouter();
 
-  // Function to check signup status
-  const checkSignupStatus = async () => {
+  const getSignupDisabledSafe = async (): Promise<boolean> => {
     try {
-      const isDisabled =
-        await vanillaTrpcClient.frontend.config.getSignupDisabled.query();
-      setIsSignupDisabled(isDisabled);
-    } catch (error) {
-      console.error("Failed to check signup status:", error);
-      // If we can't check, allow signup to proceed (fail open)
-      setIsSignupDisabled(false);
-    } finally {
-      setCheckingSignupStatus(false);
+      return await vanillaTrpcClient.frontend.config.getSignupDisabled.query();
+    } catch {
+      return false;
     }
+  };
+
+  // Function to check signup status
+  const checkSignupStatus = async (): Promise<boolean> => {
+    const isDisabled = await getSignupDisabledSafe();
+    setIsSignupDisabled(isDisabled);
+    setCheckingSignupStatus(false);
+    return isDisabled;
   };
 
   // Check signup status on mount
@@ -63,9 +64,9 @@ function RegisterForm() {
     e.preventDefault();
 
     // Re-check signup status before attempting to register
-    await checkSignupStatus();
+    const signupDisabled = await checkSignupStatus();
 
-    if (isSignupDisabled) {
+    if (signupDisabled) {
       setError(t("auth:registrationDisabledError"));
       return;
     }
@@ -94,43 +95,13 @@ function RegisterForm() {
       });
 
       if (error) {
-        // Check if signup is actually disabled by checking the current status
-        const currentSignupStatus =
-          await vanillaTrpcClient.frontend.config.getSignupDisabled.query();
-
-        if (currentSignupStatus) {
-          // Signup is actually disabled, show that message
-          setError(t("auth:registrationDisabledError"));
-          setIsSignupDisabled(true);
-        } else {
-          // Signup is enabled but registration failed for other reasons (validation, etc.)
-          // Show the actual error message from the backend
-          setError(error.message || t("auth:registrationFailed"));
-        }
+        setError(error.message || t("auth:registrationFailed"));
       } else {
         router.push("/");
         router.refresh();
       }
     } catch (err) {
-      // Handle any other errors
-      console.error("Registration error:", err);
-
-      // Check if signup is actually disabled
-      try {
-        const currentSignupStatus =
-          await vanillaTrpcClient.frontend.config.getSignupDisabled.query();
-
-        if (currentSignupStatus) {
-          setError(t("auth:registrationDisabledError"));
-          setIsSignupDisabled(true);
-        } else {
-          // Show the actual error message or a generic fallback
-          setError((err as Error)?.message || t("auth:registrationFailed"));
-        }
-      } catch (_statusCheckError) {
-        // If we can't check status, just show the original error
-        setError((err as Error)?.message || t("auth:registrationFailed"));
-      }
+      setError((err as Error)?.message || t("auth:registrationFailed"));
     } finally {
       setIsLoading(false);
     }

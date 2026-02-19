@@ -19,6 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+<<<<<<< HEAD
+=======
+import { formatDeterministicDateTime } from "@/lib/datetime";
+>>>>>>> fix/detached-head-recovery
 import { trpc } from "@/lib/trpc";
 
 export default function SystemPage() {
@@ -67,9 +71,13 @@ export default function SystemPage() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Build Date</span>
+<<<<<<< HEAD
               <span className="text-sm">
                 {new Date(info.buildDate).toLocaleString()}
               </span>
+=======
+              <span className="text-sm">{formatDeterministicDateTime(info.buildDate)}</span>
+>>>>>>> fix/detached-head-recovery
             </div>
           </CardContent>
         </Card>

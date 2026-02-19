@@ -48,6 +48,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 
 export function NamespacesList() {
@@ -202,13 +203,12 @@ export function NamespacesList() {
         );
       },
       cell: ({ row }) => {
-        const date = new Date(row.getValue("created_at"));
+        const date = formatDeterministicDateTime(
+          row.getValue("created_at") as string,
+        );
         return (
           <div className="px-3 py-2">
-            <div className="text-sm">{date.toLocaleDateString()}</div>
-            <div className="text-xs text-muted-foreground">
-              {date.toLocaleTimeString()}
-            </div>
+            <div className="text-sm">{date}</div>
           </div>
         );
       },

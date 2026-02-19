@@ -35,6 +35,7 @@ function McpInspectorContent() {
   const { t } = useTranslations();
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<NotificationEntry[]>([]);
+  const notificationCounterRef = React.useRef(0);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -58,8 +59,11 @@ function McpInspectorContent() {
   // Notification management functions using useMemoizedFn
   const addNotification = useMemoizedFn(
     (notification: Notification, type: "notification" | "stderr") => {
+      const notificationId = `${selectedServerUuid || "global"}-${notificationCounterRef.current}`;
+      notificationCounterRef.current += 1;
+
       const entry: NotificationEntry = {
-        id: `${Date.now()}-${Math.random()}`,
+        id: notificationId,
         notification,
         timestamp: new Date(),
         type,

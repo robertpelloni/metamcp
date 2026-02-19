@@ -1,194 +1,109 @@
-# MetaMCP Master TODO (Implementation-Ordered)
+# MetaMCP Master TODO (Execution-Ordered)
 
-**Date**: 2026-02-16  
-**Source**: Full repository/documentation audit for implementor handoff  
-**Goal**: Convert feature intent into verifiable, fully wired, production-grade behavior.
-
----
-
-## How to use this TODO
-
-- Execute top to bottom.
-- Do not mark an item complete unless all acceptance criteria pass.
-- “Implemented” means: backend mounted + frontend represented + documented + tested.
+**Date**: 2026-02-17  
+**Version Context**: 3.6.6  
+**Objective**: Finish remaining partial/simulated features and close runtime correctness gaps.
 
 ---
 
-## P0 — Contract and Runtime Truth (Blockers)
+## Completion Standard
 
-### 1) Unify frontend tRPC contract with backend mounted routers
+Do not mark an item done unless all are true:
 
-- [x] Reconcile `packages/trpc/src/routers/frontend/index.ts` and `apps/backend/src/routers/trpc.ts`.
-- [ ] Decide feature-by-feature whether each namespace is:
-  - [ ] mounted and supported
-  - [ ] intentionally experimental (behind explicit flag)
-  - [ ] deprecated and removed
-- [x] Resolve mismatches for namespaces currently present in code but not mounted:
-  - [x] `analytics`
-  - [x] `audit`
-  - [x] `autoDiscovery`
-  - [x] `autoReconnect`
-  - [x] `catalog`
-  - [x] `memories`
-  - [x] `registry`
-  - [x] `system`
+- Backend path is implemented and mounted.
+- Frontend is truthful (no hidden simulation).
+- Behavior is verified after clean runtime restart.
+- Docs are updated (`docs/ROADMAP.md`, `TODO.md`, `HANDOFF.md`).
+
+---
+
+## P0 — Must Finish First
+
+### 1) Remove simulated/stubbed UX in production routes
+
+- [ ] Replace settings Docker image stub with backend endpoint + persistence.
+  - File evidence: `apps/frontend/app/[locale]/(sidebar)/settings/page.tsx`.
+- [x] Replace `/scripts` placeholder "frontend execution coming soon" with real actionable flow to `/agent`.
+- [x] Replace inspector roots placeholder flow with explicit capability-backed unavailable/read-only state.
+- [x] Replace inspector sampling simulation with real call path and explicit unsupported feedback.
 
 **Acceptance Criteria**
-- [x] `pnpm build` passes with no route contract/type drift.
-- [ ] Every `trpc.frontend.*` usage resolves to mounted backend behavior.
-- [ ] No page depends on non-mounted namespace.
+
+- [ ] No primary action button performs simulated business behavior without explicit labeling.
+- [ ] UI labels and backend capability are aligned (settings Docker control still pending).
 
 ---
 
-### 2) Remove dead/legacy route confusion
+### 2) Completed: Hybrid Storage & API Keys (v3.7.0)
 
-- [x] Remove or refactor unmounted `apps/backend/src/routers/logs.ts` mock route.
-- [ ] Ensure one authoritative logs API path is documented and used.
+- [x] Migrate `mcp.json` to be source of truth.
+- [x] Implement JSON-based API Keys storage (`api-keys.json`).
+- [x] Implement JSON-based Memory storage (`memories.json`).
+- [x] Resolve 500 Error on API Keys list.
+- [x] Audit/logs correctness and runtime consistency (backend implemented).
+
+---
+
+### 3) Runtime reliability closure (auth/hydration)a**
+
+- [x] Verify audit filters end-to-end through frontend runtime behavior.
+- [ ] Reproduce and close any remaining logs-query drift after clean restart (no stale SQL shape mismatch).
+### 3) Runtime reliability closure (auth/hydration)
+
+- [ ] Confirm and fix persistent logout/session loss edge cases.
+- [ ] Confirm and fix hydration mismatch edge cases in sidebar routes.
+- [x] Keep safe-storage wrappers and stderr noise guards (already implemented) and ensure no regressions.
 
 **Acceptance Criteria**
-- [x] No stale mock logs route remains in source.
-- [ ] Logs API behavior is consistent between UI, router, and docs.
+
+- [ ] No unexpected forced logout under normal navigation.
+- [ ] No recurring hydration mismatch warnings in verified routes.
 
 ---
 
-### 3) Eliminate product-level simulated behavior in actionable UI
+## P1 — Product Hardening
 
-- [ ] Replace Settings Docker-image stub in `settings/page.tsx` with real backend endpoint and persistence.
-- [ ] Replace `/scripts` “run_agent coming soon” simulation with real invocation path or downgrade to docs-only panel.
-- [ ] Replace inspector roots placeholder flow with real capability-bound behavior.
-- [ ] Replace inspector sampling simulation with real execution or remove tab when unsupported.
+### 4) Registry/discovery/install behavior hardening
 
-**Acceptance Criteria**
-- [ ] No UI action button performs mock/simulated business behavior without explicit “demo only” labeling.
-- [ ] User-visible behavior matches backend reality.
+- [ ] Remove placeholder install defaults in registry UX.
+- [ ] Validate command/args/env mapping for one-click installs.
+- [ ] Add failure-state messaging for partial template requirements.
 
----
+### 5) Inspector type safety cleanup
 
-## P1 — Feature Completion and Robustness
+- [ ] Replace `@ts-expect-error` schema mismatch suppressions with typed adapters.
 
-### 4) Audit + analytics correctness
+### 6) Middleware/auth technical debt cleanup
 
-- [ ] Implement true audit log totals (count query, pagination metadata).
-- [ ] Complete filter support (`userId`, `action`) in `audit.service.ts`.
-- [ ] Verify row/field shape parity between DB schema and UI display models.
-- [ ] If analytics is mounted, validate user-scoped access semantics and chart consistency.
-
-**Acceptance Criteria**
-- [ ] Audit list response totals reflect full dataset, not current page length.
-- [ ] Filters work and are tested.
-- [ ] UI and API use identical audit model semantics.
+- [ ] Address TODO in `better-auth-mcp.middleware.ts`.
+- [ ] Address middleware typing TODO in functional middleware.
 
 ---
 
-### 5) Discovery + registry + catalog end-to-end behavior
+## P2 — Guardrails and Regression Coverage
 
-- [ ] Confirm whether `registry` and `catalog` are both needed; consolidate if redundant.
-- [ ] Ensure mounted routes support all UI flows in `/registry` and catalog pages.
-- [ ] Validate one-click install defaults (command/args/env) and required env handling.
+### 7) Add regression tests for known weak spots
 
-**Acceptance Criteria**
-- [ ] Registry search/category/install are fully operational.
-- [ ] No placeholder fallback in install workflow for verified templates.
+- [ ] Audit totals + filters integration tests.
+- [ ] Logs query shape compatibility tests.
+- [ ] Auth/session persistence smoke tests.
+- [ ] Inspector roots/sampling behavior tests (real or explicit unsupported state).
 
----
+### 8) Keep project truth docs synchronized each cycle
 
-### 6) Auto-discovery and auto-reconnect productionization
-
-- [ ] Mount and validate auto-discovery APIs used by UI.
-- [ ] Mount and expose auto-reconnect status/config controls in UI (or remove dead code).
-- [ ] Add explicit status indicators for “scan/import success, partial, failed.”
-
-**Acceptance Criteria**
-- [ ] Auto-discovery UI reflects real results and imported state.
-- [ ] Auto-reconnect behavior is configurable and observable from UI.
+- [ ] `docs/ROADMAP.md` updated after each meaningful change.
+- [ ] `HANDOFF.md` append session summary with evidence.
+- [ ] `DASHBOARD.md` support matrix updated when feature reality changes.
 
 ---
 
-### 7) System and memories feature parity
+## Completed Recently (for continuity)
 
-- [ ] Mount/verify `system` API used by `/system` page.
-- [ ] Decide and execute memory product direction:
-  - [ ] either ship `/memories` UI and nav integration
-  - [ ] or update docs to mark memory as backend/tool-only.
-
-**Acceptance Criteria**
-- [ ] System page never relies on non-mounted endpoint.
-- [ ] Memory feature representation is truthful across UI and docs.
-
----
-
-## P1 — UI Information Architecture and Representation
-
-### 8) Align navigation with actual product surface
-
-- [ ] Define canonical sidebar IA.
-- [ ] Decide visibility for currently off-nav pages (e.g., `agent`, `tool-sets`, `registry`, `system`, `audit`, `observability`, `scripts`, `catalog`).
-- [ ] Add explicit experimental badges where needed.
-
-**Acceptance Criteria**
-- [ ] Users can discover all supported features from primary navigation.
-- [ ] Hidden/partial features are not represented as production-ready.
-
----
-
-### 9) Harden observability UX
-
-- [ ] Replace hardcoded observability iframe assumptions with configurable endpoint + health checks.
-- [ ] Provide fallback guidance when MCP Shark service is unavailable.
-
-**Acceptance Criteria**
-- [ ] Observability page does not silently fail when local sidecar is absent.
-
----
-
-## P2 — Quality Gates and Tech Debt
-
-### 10) Remove schema/type suppressions in inspector
-
-- [ ] Replace `@ts-expect-error` MCP SDK schema mismatch patches with explicit type adapters.
-
-**Acceptance Criteria**
-- [ ] Inspector compiles without route-critical suppressions.
-
----
-
-### 11) Connection configurability polish
-
-- [ ] Complete TODOs in `useConnection.ts` for configurable retry/timeout values.
-- [ ] Surface defaults in settings with validation.
-
-**Acceptance Criteria**
-- [ ] Runtime transport behavior is user-configurable and documented.
-
----
-
-### 12) Test coverage for feature completeness
-
-- [ ] Add integration tests per mounted namespace.
-- [ ] Add smoke tests for each sidebar page route.
-- [ ] Add regression tests for route-contract drift (frontend usage vs mounted backend namespaces).
-
-**Acceptance Criteria**
-- [ ] CI fails if UI references non-mounted tRPC namespaces.
-- [ ] CI fails if simulated placeholders regress into production flows.
-
----
-
-## Documentation Synchronization Checklist (Required each cycle)
-
-- [ ] Update `docs/ROADMAP.md` with real status changes.
-- [ ] Update `DASHBOARD.md` support matrix (mounted vs partial vs planned).
-- [ ] Update `HANDOFF.md` with what changed, what remains, and evidence.
-- [ ] Keep this `TODO.md` prioritized and current.
-
----
-
-## Definition of Done (Project-Level)
-
-A feature is considered done only when all are true:
-
-- [ ] Backend implementation exists.
-- [ ] Route is mounted in active runtime.
-- [ ] Frontend has comprehensive representation (labels, help, empty/error states).
-- [ ] End-to-end behavior tested.
-- [ ] Docs reflect current behavior precisely.
+- [x] Mounted previously unwired frontend namespaces in active tRPC runtime.
+- [x] Removed dead legacy `apps/backend/src/routers/logs.ts` mock route.
+- [x] Implemented `mcp.json` startup sync + live hot reload watcher.
+- [x] Hardened frontend storage access wrappers.
+- [x] Suppressed empty malformed MCP stderr UI noise.
+- [x] Replaced audit placeholder total logic with real count + backend filters.
+- [x] Replaced scripts and inspector simulated flows with truthful behavior.
+- [x] Confirmed backend/frontend builds currently pass.

@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { useLogsStore } from "@/lib/stores/logs-store";
 
 export default function LiveLogsPage() {
@@ -67,7 +68,7 @@ export default function LiveLogsPage() {
   };
 
   const formatTimestamp = (timestamp: Date) => {
-    return new Date(timestamp).toLocaleString();
+    return formatDeterministicDateTime(timestamp);
   };
 
   return (

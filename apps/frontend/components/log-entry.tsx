@@ -4,6 +4,11 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { MetaMcpLogEntry } from "@repo/zod-types";
 
+<<<<<<< HEAD
+=======
+import { formatDeterministicDateTime } from "@/lib/datetime";
+
+>>>>>>> fix/detached-head-recovery
 type LogEntryData = Omit<MetaMcpLogEntry, "timestamp"> & {
   timestamp: Date | string;
 };
@@ -11,7 +16,11 @@ type LogEntryData = Omit<MetaMcpLogEntry, "timestamp"> & {
 export const LogEntry = ({ log }: { log: LogEntryData }) => {
   const [expanded, setExpanded] = useState(false);
   const formatTimestamp = (timestamp: Date | string) => {
+<<<<<<< HEAD
     return new Date(timestamp).toLocaleString();
+=======
+    return formatDeterministicDateTime(timestamp);
+>>>>>>> fix/detached-head-recovery
   };
 
   return (

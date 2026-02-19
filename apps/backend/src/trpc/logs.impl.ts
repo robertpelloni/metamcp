@@ -9,6 +9,28 @@ import { z } from "zod";
 import { db } from "../db";
 import { toolCallLogsTable } from "../db/schema";
 import { parseToolName } from "../lib/metamcp/tool-name-parser";
+<<<<<<< HEAD
+=======
+
+function isLogsStorageUnavailableError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  const causeMessage =
+    error.cause instanceof Error ? error.cause.message.toLowerCase() : "";
+
+  return (
+    message.includes('relation "tool_call_logs" does not exist') ||
+    message.includes("no such table: tool_call_logs") ||
+    message.includes("econnrefused") ||
+    causeMessage.includes('relation "tool_call_logs" does not exist') ||
+    causeMessage.includes("no such table: tool_call_logs") ||
+    causeMessage.includes("econnrefused")
+  );
+}
+>>>>>>> fix/detached-head-recovery
 
 export const logsImplementations = {
   getLogs: async (
@@ -78,7 +100,25 @@ export const logsImplementations = {
       if (error instanceof Error) {
         console.error("Stack trace:", error.stack);
       }
+<<<<<<< HEAD
       throw new Error(`Failed to get logs: ${error instanceof Error ? error.message : String(error)}`);
+=======
+
+      if (isLogsStorageUnavailableError(error)) {
+        console.warn(
+          "[logs.impl] logs storage unavailable; returning empty logs response",
+        );
+        return {
+          success: true as const,
+          data: [],
+          totalCount: 0,
+        };
+      }
+
+      throw new Error(
+        `Failed to get logs: ${error instanceof Error ? error.message : String(error)}`,
+      );
+>>>>>>> fix/detached-head-recovery
     }
   },
 
@@ -92,6 +132,17 @@ export const logsImplementations = {
       };
     } catch (error) {
       console.error("Error clearing logs:", error);
+<<<<<<< HEAD
+=======
+
+      if (isLogsStorageUnavailableError(error)) {
+        return {
+          success: true as const,
+          message: "Logs storage is unavailable; no logs were cleared",
+        };
+      }
+
+>>>>>>> fix/detached-head-recovery
       throw new Error("Failed to clear logs");
     }
   },

@@ -1,10 +1,20 @@
-// TODO resolve any issue with better-auth
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 
 import logger from "@/utils/logger";
 
 import { auth } from "../auth";
+
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: Record<string, unknown>;
+    session?: Record<string, unknown>;
+  }
+}
+
+interface SessionDataResponse {
+  user?: Record<string, unknown>;
+  session?: Record<string, unknown>;
+}
 
 /**
  * Better Auth middleware for MCP proxy routes
@@ -49,7 +59,7 @@ export const betterAuthMcpMiddleware = async (
       });
     }
 
-    const sessionData = (await sessionResponse.json()) as any;
+    const sessionData = (await sessionResponse.json()) as SessionDataResponse;
 
     if (!sessionData || !sessionData.user) {
       logger.info("Auth middleware - no valid user session found");
@@ -60,8 +70,8 @@ export const betterAuthMcpMiddleware = async (
     }
 
     // Add user info to request for downstream use
-    (req as any).user = sessionData.user;
-    (req as any).session = sessionData.session;
+    req.user = sessionData.user;
+    req.session = sessionData.session;
 
     next();
   } catch (error) {

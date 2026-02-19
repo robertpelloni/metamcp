@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { Notification } from "@/lib/notificationTypes";
 
 interface NotificationEntry {
@@ -109,9 +110,8 @@ export function NotificationsPanel({
     return { filteredNotifications: filtered, counts };
   }, [notifications, activeFilter]);
 
-  const formatTimestamp = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString();
-  };
+  const formatTimestamp = (timestamp: Date) =>
+    formatDeterministicDateTime(timestamp);
 
   const getNotificationTypeInfo = (notification: NotificationEntry) => {
     if (notification.type === "stderr") {

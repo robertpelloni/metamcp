@@ -5,6 +5,7 @@ import { initializeEnvironmentConfiguration } from "./bootstrap.service";
 import { metaMcpServerPool } from "./metamcp";
 import { mcpJsonHotReloadService } from "./metamcp/mcp-json-hot-reload.service";
 import { convertDbServerToParams } from "./metamcp/utils";
+import { mcpConfigService } from "./mcp-config.service";
 
 /**
  * Startup initialization that must happen before the HTTP server begins listening.
@@ -26,6 +27,15 @@ export async function initializeOnStartup(): Promise<void> {
     true,
   );
   const failHard = parseBool(process.env.BOOTSTRAP_FAIL_HARD, false);
+
+  // Initialize McpConfigService (JSON Storage)
+  try {
+    await mcpConfigService.init();
+    await mcpConfigService.syncWithDatabase();
+  } catch (err) {
+    console.error("❌ Error initializing McpConfigService:", err);
+    if (failHard) throw err;
+  }
 
   if (enableEnvBootstrap) {
     try {

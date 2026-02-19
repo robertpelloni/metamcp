@@ -54,7 +54,9 @@ export const apiKeysImplementations = {
       };
     } catch (error) {
       logger.error("Error fetching API keys:", error);
-      throw new Error("Failed to fetch API keys");
+      throw new Error(
+        error instanceof Error ? error.message : "Internal server error",
+      );
     }
   },
 

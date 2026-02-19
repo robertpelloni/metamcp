@@ -27,6 +27,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 
 interface InspectorToolsProps {
   makeRequest: <T extends z.ZodType>(
@@ -54,6 +55,18 @@ interface ArgumentInput {
   type: string;
   required: boolean;
   description?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toStringValue(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return "";
 }
 
 export function InspectorTools({
@@ -103,11 +116,6 @@ export function InspectorTools({
             count: response.tools.length,
           }),
         );
-        // Auto-select first tool if none selected
-        if (!selectedTool && response.tools.length > 0) {
-          // @ts-expect-error TODO resolve MCP SDK Tool schema mismatch
-          setSelectedTool(response.tools[0]);
-        }
       } else {
         toast.info(t("inspector:toolsComponent.noToolsFound"));
       }
@@ -136,39 +144,49 @@ export function InspectorTools({
       return;
     }
 
-    const properties = selectedTool.inputSchema?.properties || {};
-    const required = selectedTool.inputSchema?.required || [];
+    const rawProperties = selectedTool.inputSchema?.properties;
+    const properties = isRecord(rawProperties) ? rawProperties : {};
+    const rawRequired = selectedTool.inputSchema?.required;
+    const required = Array.isArray(rawRequired)
+      ? rawRequired.filter((item): item is string => typeof item === "string")
+      : [];
 
     const inputs: ArgumentInput[] = Object.entries(properties).map(
-      // @ts-expect-error TODO resolve MCP SDK Tool schema mismatch
-      ([key, schema]: [string, Record<string, unknown>]) => {
+      ([key, schema]) => {
+        const schemaRecord = isRecord(schema) ? schema : {};
+        const schemaType =
+          typeof schemaRecord.type === "string" ? schemaRecord.type : "";
         let defaultValue = "";
         let type = "text";
 
         // Determine input type and default value based on schema
-        if (schema.type === "string") {
+        if (schemaType === "string") {
           defaultValue =
-            (schema.default as string) || (schema.example as string) || "";
+            toStringValue(schemaRecord.default) ||
+            toStringValue(schemaRecord.example) ||
+            "";
           type = "text";
-        } else if (schema.type === "number" || schema.type === "integer") {
+        } else if (schemaType === "number" || schemaType === "integer") {
           defaultValue =
-            schema.default?.toString() || schema.example?.toString() || "0";
+            toStringValue(schemaRecord.default) ||
+            toStringValue(schemaRecord.example) ||
+            "0";
           type = "number";
-        } else if (schema.type === "boolean") {
-          defaultValue = schema.default?.toString() || "false";
+        } else if (schemaType === "boolean") {
+          defaultValue = toStringValue(schemaRecord.default) || "false";
           type = "boolean";
-        } else if (schema.type === "array" || schema.type === "object") {
+        } else if (schemaType === "array" || schemaType === "object") {
           defaultValue = JSON.stringify(
-            schema.default ||
-              schema.example ||
-              (schema.type === "array" ? [] : {}),
+            schemaRecord.default ??
+              schemaRecord.example ??
+              (schemaType === "array" ? [] : {}),
             null,
             2,
           );
           type = "json";
         } else {
           defaultValue = JSON.stringify(
-            schema.default || schema.example || null,
+            schemaRecord.default ?? schemaRecord.example ?? null,
             null,
             2,
           );
@@ -180,13 +198,23 @@ export function InspectorTools({
           value: defaultValue,
           type,
           required: required.includes(key),
-          description: schema.description as string | undefined,
+          description:
+            typeof schemaRecord.description === "string"
+              ? schemaRecord.description
+              : undefined,
         };
       },
     );
 
     setArgumentInputs(inputs);
   }, [selectedTool]);
+
+  useEffect(() => {
+    const firstTool = tools.at(0);
+    if (!selectedTool && firstTool) {
+      setSelectedTool(firstTool);
+    }
+  }, [tools, selectedTool]);
 
   // Execute the selected tool using the proper result schema from official inspector
   const executeTool = async () => {
@@ -540,7 +568,7 @@ export function InspectorTools({
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {execution.timestamp.toLocaleTimeString()}
+                      {formatDeterministicDateTime(execution.timestamp)}
                       {execution.duration &&
                         ` • ${formatDuration(execution.duration)}`}
                     </div>

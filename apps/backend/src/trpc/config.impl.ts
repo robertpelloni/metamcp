@@ -14,7 +14,14 @@ export const configImplementations = {
       return await configService.isSignupDisabled();
     } catch (error) {
       logError(error, "config.getSignupDisabled");
+<<<<<<< HEAD
       throw wrapError(error, "Failed to get signup disabled setting");
+=======
+      console.warn(
+        "[config.impl] getSignupDisabled failed; returning fallback false",
+      );
+      return false;
+>>>>>>> fix/detached-head-recovery
     }
   },
 
@@ -35,7 +42,14 @@ export const configImplementations = {
       return await configService.isSsoSignupDisabled();
     } catch (error) {
       logError(error, "config.getSsoSignupDisabled");
+<<<<<<< HEAD
       throw wrapError(error, "Failed to get SSO signup disabled setting");
+=======
+      console.warn(
+        "[config.impl] getSsoSignupDisabled failed; returning fallback false",
+      );
+      return false;
+>>>>>>> fix/detached-head-recovery
     }
   },
 
@@ -56,7 +70,14 @@ export const configImplementations = {
       return await configService.isBasicAuthDisabled();
     } catch (error) {
       logError(error, "config.getBasicAuthDisabled");
+<<<<<<< HEAD
       throw wrapError(error, "Failed to get basic auth disabled setting");
+=======
+      console.warn(
+        "[config.impl] getBasicAuthDisabled failed; returning fallback false",
+      );
+      return false;
+>>>>>>> fix/detached-head-recovery
     }
   },
 
@@ -300,7 +321,14 @@ export const configImplementations = {
       return await configService.getAuthProviders();
     } catch (error) {
       logError(error, "config.getAuthProviders");
+<<<<<<< HEAD
       throw wrapError(error, "Failed to get authentication providers");
+=======
+      console.warn(
+        "[config.impl] getAuthProviders failed; returning fallback []",
+      );
+      return [];
+>>>>>>> fix/detached-head-recovery
     }
   },
 

@@ -1,7 +1,10 @@
 "use client";
 
 import { CreateApiKeyFormSchema } from "@repo/zod-types";
+<<<<<<< HEAD
 import { format } from "date-fns";
+=======
+>>>>>>> fix/detached-head-recovery
 import {
   Copy,
   Eye,
@@ -52,6 +55,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 import { createTranslatedZodResolver } from "@/lib/zod-resolver";
 
@@ -216,7 +220,11 @@ export default function ApiKeysPage() {
                 </div>
               </TableCell>
               <TableCell>
+<<<<<<< HEAD
                 {format(new Date(apiKey.created_at), "MMM d, yyyy")}
+=======
+                {formatDeterministicDateTime(apiKey.created_at)}
+>>>>>>> fix/detached-head-recovery
               </TableCell>
               <TableCell>
                 <span

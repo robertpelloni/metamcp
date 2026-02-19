@@ -2,6 +2,10 @@
 
 import { SavedScript } from "@repo/zod-types";
 import { Bot, FileCode, Trash2 } from "lucide-react";
+<<<<<<< HEAD
+=======
+import Link from "next/link";
+>>>>>>> fix/detached-head-recovery
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -26,8 +30,11 @@ export default function ScriptsPage() {
 
   // Agent Test State
   const [agentDialogOpen, setAgentDialogOpen] = useState(false);
+<<<<<<< HEAD
   const agentResult =
     "To run the agent, please connect an MCP Client (like Claude Desktop) and use the `run_agent` tool. Frontend execution coming soon.";
+=======
+>>>>>>> fix/detached-head-recovery
 
   const fetchScripts = useCallback(async () => {
     try {
@@ -152,6 +159,7 @@ export default function ScriptsPage() {
           <DialogHeader>
             <DialogTitle>Autonomous Agent Playground</DialogTitle>
             <DialogDescription>
+<<<<<<< HEAD
               Test the `run_agent` tool. (Currently for instruction only).
             </DialogDescription>
           </DialogHeader>
@@ -179,6 +187,30 @@ export default function ScriptsPage() {
             </div>
           </div>
           <DialogFooter>
+=======
+              Run agents from the fully functional Agent page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 border rounded-md bg-secondary/10 text-sm space-y-2">
+              <p>
+                This page stores scripts only. For real autonomous execution,
+                use the dedicated <span className="font-semibold">Agent</span>{" "}
+                page.
+              </p>
+              <p className="text-muted-foreground">
+                There you can provide a task, optionally select a policy, run
+                the agent, and watch live activity/output.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button asChild>
+              <Link href="/agent" onClick={() => setAgentDialogOpen(false)}>
+                Open Agent Page
+              </Link>
+            </Button>
+>>>>>>> fix/detached-head-recovery
             <Button onClick={() => setAgentDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>

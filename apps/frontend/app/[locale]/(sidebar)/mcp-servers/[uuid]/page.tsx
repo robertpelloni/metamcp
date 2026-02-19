@@ -35,6 +35,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConnection } from "@/hooks/useConnection";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { trpc } from "@/lib/trpc";
 
 import { ToolManagement } from "./components/tool-management";
@@ -505,8 +506,7 @@ export default function McpServerDetailPage({
                     {t("mcp-servers:detail.created")}:
                   </span>
                   <p className="text-sm text-right flex-1 ml-6">
-                    {new Date(server.created_at).toLocaleDateString()}{" "}
-                    {new Date(server.created_at).toLocaleTimeString()}
+                    {formatDeterministicDateTime(server.created_at)}
                   </p>
                 </div>
                 <div className="flex justify-between items-center">

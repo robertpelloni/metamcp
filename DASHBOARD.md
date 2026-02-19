@@ -1,7 +1,7 @@
 # 📊 MetaMCP Dashboard
 
-**Version:** 3.6.0  
-**Last Updated:** 2026-02-16
+**Version:** 3.7.0  
+**Last Updated:** 2026-02-17
 
 ## 🏗️ Project Structure
 

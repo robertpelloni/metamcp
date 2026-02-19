@@ -1,6 +1,12 @@
 import { db } from "../../db";
 import { auditLogsTable } from "../../db/schema";
 import { randomUUID } from "crypto";
+<<<<<<< HEAD
+=======
+import { and, count, eq, SQL } from "drizzle-orm";
+
+type AuditFilters = { userId?: string; action?: string };
+>>>>>>> fix/detached-head-recovery
 
 export type AuditAction =
   | "CREATE_POLICY"
@@ -39,6 +45,7 @@ export class AuditService {
     }
   }
 
+<<<<<<< HEAD
   async listLogs(limit = 50, offset = 0, filters: { userId?: string; action?: string } = {}) {
     // Basic implementation, would use db.query.auditLogsTable.findMany in reality
     // For now, return empty or implement full query if needed
@@ -49,6 +56,52 @@ export class AuditService {
         // where: ... (implement filters)
     });
   }
+=======
+  private buildWhereClause(filters: AuditFilters): SQL | undefined {
+    const conditions: SQL[] = [];
+
+    if (filters.userId) {
+      conditions.push(eq(auditLogsTable.user_id, filters.userId));
+    }
+
+    if (filters.action) {
+      conditions.push(eq(auditLogsTable.action, filters.action));
+    }
+
+    if (conditions.length === 0) {
+      return undefined;
+    }
+
+    if (conditions.length === 1) {
+      return conditions[0];
+    }
+
+    return and(...conditions);
+  }
+
+  async listLogs(limit = 50, offset = 0, filters: AuditFilters = {}) {
+    const whereClause = this.buildWhereClause(filters);
+
+    return await db.query.auditLogsTable.findMany({
+      limit,
+      offset,
+      orderBy: (logs, { desc }) => [desc(logs.created_at)],
+      where: whereClause,
+    });
+  }
+
+  async countLogs(filters: AuditFilters = {}) {
+    const whereClause = this.buildWhereClause(filters);
+
+    const query = db.select({ total: count() }).from(auditLogsTable);
+
+    const [result] = whereClause
+      ? await query.where(whereClause)
+      : await query;
+
+    return result?.total ?? 0;
+  }
+>>>>>>> fix/detached-head-recovery
 }
 
 export const auditService = new AuditService();

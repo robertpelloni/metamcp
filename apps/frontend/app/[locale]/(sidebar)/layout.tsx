@@ -109,7 +109,11 @@ function LiveLogsMenuItem() {
 }
 
 function UserInfoFooter() {
+<<<<<<< HEAD
   const { t } = useTranslations();
+=======
+  const { t, locale } = useTranslations();
+>>>>>>> fix/detached-head-recovery
   const [user, setUser] = useState<SidebarUser | null>(null);
 
   // Get user info
@@ -123,8 +127,11 @@ function UserInfoFooter() {
   }, []);
 
   const handleSignOut = async () => {
-    await authClient.signOut();
-    window.location.href = "/login";
+    try {
+      await authClient.signOut();
+    } finally {
+      window.location.href = getLocalizedPath("/login", locale);
+    }
   };
 
   return (

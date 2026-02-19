@@ -51,6 +51,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "@/hooks/useTranslations";
+import { formatDeterministicDateTime } from "@/lib/datetime";
 import { getAppUrl } from "@/lib/env";
 import { trpc } from "@/lib/trpc";
 
@@ -128,7 +129,7 @@ export function EndpointsList({ onRefresh }: EndpointsListProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    return formatDeterministicDateTime(dateString);
   };
 
   // Define columns for the data table

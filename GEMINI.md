@@ -25,6 +25,7 @@
 - **Middleware**: Follow the functional middleware pattern in `metamcp-middleware/*.functional.ts`.
 - **Frontend**: Use shadcn/ui components, Radix primitives, and Tailwind CSS 4.
 - **State**: Frontend uses `@tanstack/react-query` via tRPC hooks, plus `zustand` for client state.
+- **Storage**: Aware of **Hybrid Storage** (v3.7.0). Check `mcp.json` before assuming DB state. API keys and memories are file-backed.
 
 ### Versioning Reminder
 

@@ -1,6 +1,10 @@
 {
   "name": "backend",
+<<<<<<< HEAD
   "version": "3.6.3",
+=======
+  "version": "3.6.30",
+>>>>>>> fix/detached-head-recovery
   "type": "module",
   "description": "Bare minimum Express 5.1 backend with TypeScript",
   "main": "dist/index.js",
@@ -14,6 +18,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "db:generate": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env -- drizzle-kit generate",
+<<<<<<< HEAD
     "db:generate:dev": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env.local -- drizzle-kit generate",
     "db:generate:sqlite": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit generate",
     "db:generate:sqlite:dev": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env.local -- drizzle-kit generate",
@@ -21,6 +26,15 @@
     "db:migrate:dev": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env.local -- drizzle-kit migrate",
     "db:migrate:sqlite": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit migrate",
     "db:migrate:sqlite:dev": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env.local -- drizzle-kit migrate"
+=======
+    "db:generate:dev": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env.local -e ../../.env -- drizzle-kit generate",
+    "db:generate:sqlite": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit generate",
+    "db:generate:sqlite:dev": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env.local -e ../../.env -- drizzle-kit generate",
+    "db:migrate": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env -- drizzle-kit migrate",
+    "db:migrate:dev": "cross-env DATABASE_TYPE=postgresql dotenv -e ../../.env.local -e ../../.env -- drizzle-kit migrate",
+    "db:migrate:sqlite": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env -- drizzle-kit migrate",
+    "db:migrate:sqlite:dev": "cross-env DATABASE_TYPE=sqlite dotenv -e ../../.env.local -e ../../.env -- drizzle-kit migrate"
+>>>>>>> fix/detached-head-recovery
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
@@ -50,8 +64,13 @@
     "@types/node": "^20.0.0",
     "@types/pg": "^8.15.4",
     "@types/shell-quote": "^1.7.5",
+<<<<<<< HEAD
     "cross-spawn": "^7.0.6",
     "cross-env": "^7.0.3",
+=======
+    "cross-env": "^7.0.3",
+    "cross-spawn": "^7.0.6",
+>>>>>>> fix/detached-head-recovery
     "dockerode": "^4.0.9",
     "dotenv-cli": "^8.0.0",
     "drizzle-kit": "^0.31.1",
@@ -62,7 +81,12 @@
     "spawn-rx": "^5.1.2",
     "tsup": "^8.5.0",
     "tsx": "^4.20.3",
+<<<<<<< HEAD
     "typescript": "^5.0.0"
+=======
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
+>>>>>>> fix/detached-head-recovery
   },
   "keywords": [],
   "author": "",

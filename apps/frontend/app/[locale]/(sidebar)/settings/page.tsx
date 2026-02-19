@@ -31,6 +31,7 @@ export default function SettingsPage() {
   const [isSessionLifetimeEnabled, setIsSessionLifetimeEnabled] =
     useState(false);
 
+<<<<<<< HEAD
   // Docker image state (stub - backend Docker tRPC endpoints not yet implemented)
   const [dockerImageInput, setDockerImageInput] = useState(
     "ghcr.io/metatool-ai/mcp-proxy:latest",
@@ -41,6 +42,14 @@ export default function SettingsPage() {
     isPending: false,
     mutateAsync: async (_input: { imageName: string }) => {},
   };
+=======
+  // Docker image state (backed by config tRPC endpoints)
+  const defaultDockerImage = "ghcr.io/metatool-ai/mcp-proxy:latest";
+  const [dockerImageInput, setDockerImageInput] = useState(
+    defaultDockerImage,
+  );
+  const [isDockerImageDirty, setIsDockerImageDirty] = useState(false);
+>>>>>>> fix/detached-head-recovery
 
   // Form setup
   const form = useForm<SettingsFormData>({
@@ -107,6 +116,12 @@ export default function SettingsPage() {
     isLoading: sessionLifetimeLoading,
     refetch: refetchSessionLifetime,
   } = trpc.frontend.config.getSessionLifetime.useQuery();
+
+  const {
+    data: dockerImageData,
+    isLoading: dockerImageLoading,
+    refetch: refetchDockerImage,
+  } = trpc.frontend.config.getDockerImage.useQuery();
 
   // Mutations
   const setSignupDisabledMutation =
@@ -200,6 +215,17 @@ export default function SettingsPage() {
       },
     });
 
+  const setDockerImageMutation = trpc.frontend.config.setDockerImage.useMutation(
+    {
+      onSuccess: (data) => {
+        if (data.success) {
+          refetchDockerImage();
+          setIsDockerImageDirty(false);
+        }
+      },
+    },
+  );
+
   // Update local state when data is loaded
   useEffect(() => {
     if (signupDisabled !== undefined) {
@@ -254,6 +280,12 @@ export default function SettingsPage() {
       form.setValue("sessionLifetime", lifetimeInMinutes);
     }
   }, [sessionLifetimeData, form]);
+
+  useEffect(() => {
+    if (dockerImageData !== undefined) {
+      setDockerImageInput(dockerImageData || defaultDockerImage);
+    }
+  }, [dockerImageData]);
 
   // Reset form with loaded data to establish proper baseline for change detection
   useEffect(() => {
@@ -405,6 +437,10 @@ export default function SettingsPage() {
   }, [isDirty]);
 
   // Check for Docker image changes
+<<<<<<< HEAD
+=======
+  const dockerImage = dockerImageData || defaultDockerImage;
+>>>>>>> fix/detached-head-recovery
   useEffect(() => {
     setIsDockerImageDirty(dockerImageInput !== dockerImage);
   }, [dockerImageInput, dockerImage]);
@@ -413,6 +449,10 @@ export default function SettingsPage() {
   const handleDockerImageUpdate = async () => {
     try {
       await setDockerImageMutation.mutateAsync({ imageName: dockerImageInput });
+<<<<<<< HEAD
+=======
+      toast.success(t("settings:saved"));
+>>>>>>> fix/detached-head-recovery
     } catch (error) {
       console.error("Failed to update Docker image:", error);
       toast.error(t("settings:dockerImageUpdateError"), {
@@ -429,7 +469,8 @@ export default function SettingsPage() {
     mcpTimeoutLoading ||
     mcpMaxTotalLoading ||
     mcpMaxAttemptsLoading ||
-    sessionLifetimeLoading;
+    sessionLifetimeLoading ||
+    dockerImageLoading;
 
   if (isLoading) {
     return (

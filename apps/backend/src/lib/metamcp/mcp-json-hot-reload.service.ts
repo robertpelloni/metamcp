@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import * as fs from "fs";
 import * as path from "path";
 import {
@@ -111,10 +112,16 @@ function needsUpdate(
     (existing.description ?? "") === desired.description
   );
 }
+=======
+import { McpConfig } from "@repo/zod-types";
+import logger from "@/utils/logger";
+import { mcpConfigService } from "../mcp-config.service";
+>>>>>>> fix/detached-head-recovery
 
 /**
  * Keeps project-root mcp.json synchronized with DB-backed public MCP servers.
  *
+<<<<<<< HEAD
  * Why this exists:
  * - The UI should reflect mcp.json changes without manual import actions.
  * - We debounce and serialize sync operations so editor save bursts do not race.
@@ -384,6 +391,27 @@ export class McpJsonHotReloadService {
     logger.info(
       `[mcp.json] invalidated ${namespaces.length} affected namespace session(s)`,
     );
+=======
+ * This service controls the "Hot Reload" feature by listening to 
+ * McpConfigService updates and triggering a DB sync.
+ */
+export class McpJsonHotReloadService {
+  async initialize() {
+    logger.info("[McpJsonHotReloadService] Initializing via McpConfigService...");
+
+    // Listen for updates from McpConfigService (which watches the file)
+    mcpConfigService.on("updated", async (config: McpConfig) => {
+      logger.info("[McpJsonHotReloadService] Config updated, syncing to DB...");
+      try {
+        await mcpConfigService.syncWithDatabase();
+      } catch (err) {
+        logger.error("[McpJsonHotReloadService] Failed to sync with database:", err);
+      }
+    });
+
+    // We don't need to do an initial sync here because startup.ts 
+    // explicitly calls mcpConfigService.syncWithDatabase() on boot.
+>>>>>>> fix/detached-head-recovery
   }
 }
 
