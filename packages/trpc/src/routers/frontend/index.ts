@@ -18,6 +18,7 @@ import { createMemoriesRouter } from "./memories";
 import { createRegistryRouter } from "./registry";
 import { createSystemRouter } from "./system";
 import { createAuditRouter } from "./audit";
+import { createOAuthClientsRouter } from "./oauth-clients";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -39,6 +40,7 @@ export { createMemoriesRouter };
 export { createRegistryRouter };
 export { createSystemRouter };
 export { createAuditRouter };
+export { createOAuthClientsRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -61,6 +63,7 @@ export const createFrontendRouter = (implementations: {
   registry: Parameters<typeof createRegistryRouter>[0];
   system: Parameters<typeof createSystemRouter>[0];
   audit: Parameters<typeof createAuditRouter>[0];
+  oauthClients: Parameters<typeof createOAuthClientsRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -83,5 +86,6 @@ export const createFrontendRouter = (implementations: {
     registry: createRegistryRouter(implementations.registry),
     system: createSystemRouter(implementations.system),
     audit: createAuditRouter(implementations.audit),
+    oauthClients: createOAuthClientsRouter(implementations.oauthClients),
   };
 };

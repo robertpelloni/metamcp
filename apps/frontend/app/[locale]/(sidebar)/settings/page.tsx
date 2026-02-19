@@ -17,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import Link from "next/link";
+import { Key } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 import { trpc } from "@/lib/trpc";
 
@@ -435,6 +437,14 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-between space-x-2 pb-4 border-b">
+               <Link href="/settings/oauth" className="w-full">
+                  <Button variant="outline" className="w-full justify-start">
+                      <Key className="mr-2 h-4 w-4" /> Manage OAuth Clients
+                  </Button>
+               </Link>
+            </div>
+
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="disable-signup" className="text-base">

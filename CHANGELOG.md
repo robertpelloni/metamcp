@@ -25,6 +25,15 @@ All notable changes to this project will be documented in this file.
   - **UI**: New "Cost & Usage" tab in Observability dashboard
   - **Integration**: Tracks usage for Agent (GPT-4o) and Embeddings (text-embedding-3-small)
 
+## [3.8.0] - 2026-01-26
+
+### Added
+
+- **OAuth Client Management**: Admin UI for managing OAuth 2.0 clients
+  - **Frontend**: `/settings/oauth` page for registering and managing apps
+  - **Backend**: `OAuthClientService` and `oauthClients` TRPC router
+  - **Features**: Create clients, view secrets (once), rotate secrets, delete clients
+
 ## [3.5.0] - 2026-01-26
 
 ### Added

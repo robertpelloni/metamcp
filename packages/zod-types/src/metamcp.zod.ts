@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { McpServerTypeEnum } from "./mcp-servers.zod";
-import { OAuthTokensSchema } from "./oauth.zod";
+import { OAuthTokensSchema } from "./oauth-types.zod";
 
 export const IOTypeSchema = z.enum(["overlapped", "pipe", "ignore", "inherit"]);
 

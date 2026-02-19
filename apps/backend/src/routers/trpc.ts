@@ -25,6 +25,7 @@ import { memoriesImplementations } from "../trpc/memories.impl";
 import { registryImplementations } from "../trpc/registry.impl";
 import { systemImplementations } from "../trpc/system.impl";
 import { auditImplementations } from "../trpc/audit.impl";
+import { oauthClientsImplementations } from "../trpc/oauth-clients.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -49,6 +50,7 @@ const appRouter = createAppRouter({
     analytics: analyticsImplementations,
     system: systemImplementations,
     audit: auditImplementations,
+    oauthClients: oauthClientsImplementations,
   },
 });
 

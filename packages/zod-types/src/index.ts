@@ -2,7 +2,7 @@ export * from "./api.zod";
 export * from "./mcp-servers.zod";
 export * from "./namespaces.zod";
 export * from "./endpoints.zod";
-export * from "./oauth.zod";
+
 export * from "./tools.zod";
 export * from "./logs.zod";
 export * from "./metamcp.zod";
@@ -22,3 +22,5 @@ export * from "./analytics.zod";
 export * from "./system.zod";
 export * from "./audit.zod";
 export * from "./cost.zod";
+export * from "./oauth-clients.zod";
+export * from "./oauth-types.zod";

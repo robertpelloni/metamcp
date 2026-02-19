@@ -28,6 +28,7 @@ export const createAppRouter = (implementations: {
       analytics: frontendRouters.analytics,
       system: frontendRouters.system,
       audit: frontendRouters.audit,
+      oauthClients: frontendRouters.oauthClients,
     }),
   });
 };

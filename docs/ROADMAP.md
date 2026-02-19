@@ -166,7 +166,7 @@
 - [ ] **Workflow Builder** - Visual tool chain builder
 - [ ] **Scheduled Tasks** - Cron-like tool execution
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
-- [ ] **OAuth Server Documentation** - Document existing OAuth 2.0 server capability
+- [x] **OAuth Client UI** - Admin UI for managing OAuth clients (v3.8.0)
 - [ ] **Template Marketplace** - Community-contributed server configurations
 
 ### Infrastructure
