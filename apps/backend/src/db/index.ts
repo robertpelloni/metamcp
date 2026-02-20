@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
 import * as schema from "./schema";
+import * as schedulerSchema from "./schema-scheduler";
 
 const { DATABASE_URL, POSTGRES_CA_CERT } = process.env;
 
@@ -28,4 +29,10 @@ pool.on("error", (err) => {
   console.error("PostgreSQL pool error (ignored):", err);
 });
 
-export const db = drizzle(pool, { schema });
+// Combine schemas
+const combinedSchema = { ...schema, ...schedulerSchema };
+
+export const db = drizzle(pool, { schema: combinedSchema });
+export * from "./schema";
+export * from "./schema-scheduler";
+export * from "./schema-notifications";

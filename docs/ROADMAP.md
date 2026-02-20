@@ -164,7 +164,7 @@
 
 - [ ] **Tool Personas** - Profile-based tool sets (like HyperTool)
 - [ ] **Workflow Builder** - Visual tool chain builder
-- [ ] **Scheduled Tasks** - Cron-like tool execution
+- [x] **Scheduled Tasks** - Cron-like tool execution (v3.9.0)
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
 - [x] **OAuth Client UI** - Admin UI for managing OAuth clients (v3.8.0)
 - [ ] **Template Marketplace** - Community-contributed server configurations

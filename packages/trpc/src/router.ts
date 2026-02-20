@@ -29,6 +29,8 @@ export const createAppRouter = (implementations: {
       system: frontendRouters.system,
       audit: frontendRouters.audit,
       oauthClients: frontendRouters.oauthClients,
+      scheduler: frontendRouters.scheduler,
+      notifications: frontendRouters.notifications,
     }),
   });
 };

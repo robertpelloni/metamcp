@@ -19,6 +19,8 @@ import { createRegistryRouter } from "./registry";
 import { createSystemRouter } from "./system";
 import { createAuditRouter } from "./audit";
 import { createOAuthClientsRouter } from "./oauth-clients";
+import { createSchedulerRouter } from "./scheduler";
+import { createNotificationsRouter } from "./notifications";
 
 export { createMcpServersRouter };
 export { createNamespacesRouter };
@@ -41,6 +43,8 @@ export { createRegistryRouter };
 export { createSystemRouter };
 export { createAuditRouter };
 export { createOAuthClientsRouter };
+export { createSchedulerRouter };
+export { createNotificationsRouter };
 
 export const createFrontendRouter = (implementations: {
   mcpServers: Parameters<typeof createMcpServersRouter>[0];
@@ -64,6 +68,8 @@ export const createFrontendRouter = (implementations: {
   system: Parameters<typeof createSystemRouter>[0];
   audit: Parameters<typeof createAuditRouter>[0];
   oauthClients: Parameters<typeof createOAuthClientsRouter>[0];
+  scheduler: Parameters<typeof createSchedulerRouter>[0];
+  notifications: Parameters<typeof createNotificationsRouter>[0];
 }) => {
   return {
     mcpServers: createMcpServersRouter(implementations.mcpServers),
@@ -87,5 +93,7 @@ export const createFrontendRouter = (implementations: {
     system: createSystemRouter(implementations.system),
     audit: createAuditRouter(implementations.audit),
     oauthClients: createOAuthClientsRouter(implementations.oauthClients),
+    scheduler: createSchedulerRouter(implementations.scheduler),
+    notifications: createNotificationsRouter(implementations.notifications),
   };
 };

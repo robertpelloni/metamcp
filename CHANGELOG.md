@@ -25,6 +25,20 @@ All notable changes to this project will be documented in this file.
   - **UI**: New "Cost & Usage" tab in Observability dashboard
   - **Integration**: Tracks usage for Agent (GPT-4o) and Embeddings (text-embedding-3-small)
 
+## [3.9.0] - 2026-01-26
+
+### Added
+
+- **Scheduled Tasks System**: Automate tool execution and agent tasks
+  - **Backend**: `SchedulerService` (node-cron), `scheduled_tasks` table
+  - **Frontend**: `/scheduler` page for managing CRON jobs
+  - **Features**: Support for Agent Tasks (prompts) and Tool Calls (future)
+
+- **Notification System**: Real-time user alerts
+  - **Backend**: `NotificationService`, `notifications` table
+  - **Frontend**: `NotificationBell` component in sidebar
+  - **Features**: Unread count badge, mark as read, auto-polling
+
 ## [3.8.0] - 2026-01-26
 
 ### Added

@@ -42,6 +42,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 import { useTranslations } from "@/hooks/useTranslations";
 import { authClient } from "@/lib/auth-client";
 import { getLocalizedPath, SupportedLocale } from "@/lib/i18n";
@@ -129,6 +130,11 @@ const getMenuItems = (t: (key: string) => string, locale: SupportedLocale) => [
     url: getLocalizedPath("/audit", locale),
     icon: ShieldCheck,
   },
+  {
+    title: "Scheduler", // TODO: Add translation key
+    url: getLocalizedPath("/scheduler", locale),
+    icon: CalendarClock,
+  },
 ];
 
 function LiveLogsMenuItem() {
@@ -172,6 +178,7 @@ function UserInfoFooter() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
+            <NotificationBell />
           </div>
           <p className="text-xs text-muted-foreground">v{packageJson.version}</p>
         </div>
