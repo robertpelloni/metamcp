@@ -1,6 +1,6 @@
 # MetaMCP Feature Roadmap
 
-**Current Version**: 3.6.0
+**Current Version**: 3.11.0
 **Last Updated**: 2026-01-26
 
 ---
@@ -17,6 +17,37 @@
 ---
 
 ## Completed Features (v3.x)
+
+### Rate Limiting & Security (v3.11.0) ✅
+
+- [x] **Dynamic Rate Limiting** - Configurable limits per user/tool
+- [x] **Management UI** - `/settings/rate-limits` for admin control
+- [x] **Middleware Integration** - Real-time enforcement
+- [x] **Audit Logging** - Comprehensive audit trail (v3.6.0)
+
+### Tool Personas (v3.10.0) ✅
+
+- [x] **Tool Sets (Profiles)** - Save/Load groups of tools
+- [x] **Enhanced UI** - Grid layout, icons, colors, descriptions
+- [x] **Metadata** - Icon, Color, Public visibility
+- [x] **Management** - Create, Edit, Delete Personas
+
+### Notifications & Scheduler (v3.9.0) ✅
+
+- [x] **Scheduled Tasks** - Cron-based task execution
+- [x] **Notification System** - Real-time notifications and history
+- [x] **UI Integration** - Scheduler dashboard and Notification bell
+
+### OAuth Management (v3.8.0) ✅
+
+- [x] **OAuth Client UI** - Manage registered OAuth clients
+- [x] **Dynamic Registration** - Register new clients via UI
+
+### Cost Tracking (v3.7.0) ✅
+
+- [x] **Token Usage** - Track input/output tokens per request
+- [x] **Cost Estimation** - Calculate USD cost based on model
+- [x] **Usage Dashboard** - Visual breakdown of costs
 
 ### Agent Memory (v3.5.0) ✅
 
@@ -39,10 +70,10 @@
 - [x] **Usage Metrics** - `AnalyticsService` for aggregating logs
 - [x] **Historical Data** - Daily activity tracking
 
-### Security & System (v3.6.0) ✅
+### System & Infrastructure (v3.6.0) ✅
 
-- [x] **Audit Logging** - Security event tracking (Policy, Auth, Config changes)
 - [x] **System Dashboard** - In-app project status, version, and submodule view
+- [x] **Project Structure** - Detailed visualization of monorepo layout (v3.11.0)
 - [x] **Database Schema** - `audit_logs` table with JSON details
 
 ### Core Architecture ✅
@@ -104,7 +135,7 @@
 
 ---
 
-## In Progress (v3.6.x) 🚧
+## In Progress (v3.11.x) 🚧
 
 ### Developer Experience
 
@@ -124,9 +155,6 @@
 
 ### Security Enhancements
 
-- [x] **Audit Logging** - Comprehensive audit trail (v3.6.0)
-- [ ] **Rate Limiting** - Per-user/per-tool rate limits
-- [ ] **Cost Tracking** - Token usage and API cost estimation
 - [ ] **Encryption at Rest** - Encrypted tool configurations
 
 ### Performance
@@ -162,11 +190,8 @@
 
 ### Advanced Features
 
-- [ ] **Tool Personas** - Profile-based tool sets (like HyperTool)
 - [ ] **Workflow Builder** - Visual tool chain builder
-- [x] **Scheduled Tasks** - Cron-like tool execution (v3.9.0)
 - [ ] **N-to-1 Orchestration** - Aggregate multiple servers (like NCP)
-- [x] **OAuth Client UI** - Admin UI for managing OAuth clients (v3.8.0)
 - [ ] **Template Marketplace** - Community-contributed server configurations
 
 ### Infrastructure
@@ -183,6 +208,11 @@
 
 | Version    | Date       | Highlights                                        |
 | :--------- | :--------- | :------------------------------------------------ |
+| **3.11.0** | 2026-01-26 | Dynamic Rate Limiting, Project Structure Dashboard|
+| **3.10.0** | 2026-01-26 | Tool Personas (Profiles) with enhanced UI         |
+| **3.9.0**  | 2026-01-26 | Scheduled Tasks, Notifications                    |
+| **3.8.0**  | 2026-01-26 | OAuth Client Management UI                        |
+| **3.7.0**  | 2026-01-26 | Cost Tracking & Usage Analytics                   |
 | **3.6.0**  | 2026-01-26 | Audit Logging, System Dashboard                   |
 | **3.5.0**  | 2026-01-26 | Agent Memory, MCP Registry, Analytics, Templates  |
 | **3.2.18** | 2026-01-11 | npm Global Package Scanning for MCP servers       |

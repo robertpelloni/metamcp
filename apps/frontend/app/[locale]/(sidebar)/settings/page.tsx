@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
-import { Key } from "lucide-react";
+import { Key, Gauge } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 import { trpc } from "@/lib/trpc";
 
@@ -438,11 +438,18 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between space-x-2 pb-4 border-b">
-               <Link href="/settings/oauth" className="w-full">
-                  <Button variant="outline" className="w-full justify-start">
-                      <Key className="mr-2 h-4 w-4" /> Manage OAuth Clients
-                  </Button>
-               </Link>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                   <Link href="/settings/oauth" className="w-full">
+                      <Button variant="outline" className="w-full justify-start">
+                          <Key className="mr-2 h-4 w-4" /> Manage OAuth Clients
+                      </Button>
+                   </Link>
+                   <Link href="/settings/rate-limits" className="w-full">
+                      <Button variant="outline" className="w-full justify-start">
+                          <Gauge className="mr-2 h-4 w-4" /> Manage Rate Limits
+                      </Button>
+                   </Link>
+               </div>
             </div>
 
             <div className="flex items-center justify-between">

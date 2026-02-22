@@ -44,3 +44,5 @@ yarn-error.log*
 # Docker Files
 docker-compose.override.yml
 compose.override.yml
+build_*.log
+dev_output_*.log

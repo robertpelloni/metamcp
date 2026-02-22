@@ -26,3 +26,4 @@ export * from "./oauth-clients.zod";
 export * from "./oauth-types.zod";
 export * from "./scheduler.zod";
 export * from "./notifications.zod";
+export * from "./rate-limits.zod";

@@ -18,6 +18,23 @@ Agents are equipped with long-term memory capabilities. You should actively use 
 *   **`list_memories`**: Use this to browse recent memories.
 *   **`delete_memory`**: Use this to remove outdated information.
 
+## Tool Personas (New in v3.10.0)
+
+Agents can now manage "Tool Personas" (Profiles) for users.
+
+*   **`save_tool_set`**: Use this to save the currently loaded tools as a reusable profile.
+    *   Example: `save_tool_set(name="web_dev_persona", description="Tools for web scraping and development")`
+*   **`load_tool_set`**: Use this to restore a previously saved environment.
+    *   Example: `load_tool_set(name="web_dev_persona")`
+*   **UI Management**: Users can manage these personas at `/tool-sets`.
+
+## Scheduling & Notifications (New in v3.9.0)
+
+*   **`schedule_task`**: Use this to automate recurring tasks using cron syntax.
+    *   Example: `schedule_task(name="daily_summary", cron="0 9 * * *", script_name="summarize_logs")`
+*   **`notify_user`**: Use this to send real-time alerts to the user's notification bell.
+    *   Example: `notify_user(title="Task Complete", message="Daily summary generated successfully.", type="success")`
+
 ## MCP Registry
 
 You have access to a central registry of MCP servers.
@@ -25,7 +42,8 @@ You have access to a central registry of MCP servers.
 *   **Registry Tools**: While there may not be direct tools to "install" from the registry as an agent, you can query the registry or instruct the user to install servers via the UI (`/registry`).
 *   **One-Click Install**: The Registry UI supports one-click installation for verified servers using templates.
 
-## Analytics
+## Analytics & Costs
 
 *   **Performance**: Be mindful of tool usage. High-frequency polling or excessive data retrieval can impact performance.
+*   **Cost Tracking**: Token usage is now tracked per request. Use `llm_usage_logs` context sparingly if costs are a concern.
 *   **Logs**: Your actions are logged and visible in the Observability Dashboard (`/observability`).

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.11.0] - 2026-01-26
+
+### Added
+
+- **Dynamic Rate Limiting**: Configurable request limits per user/tool
+  - **Backend**: `rate_limits` table and `RateLimitService`
+  - **Frontend**: `/settings/rate-limits` page for managing rules
+  - **Middleware**: Updated to use dynamic rules from database
+  - **Features**: Glob pattern matching, custom windows/limits, active toggle
+
+- **Tool Personas**: Enhanced Tool Sets (Profiles)
+  - **Backend**: `icon`, `color`, `is_public` fields added to `tool_sets` schema
+  - **Frontend**: New grid view with visual cards, Edit Dialog, and Search
+  - **Features**: Create, Update, Delete personas with custom icons and colors
+
+- **System Dashboard Enhancement**: Comprehensive project visibility
+  - **Backend**: Dynamic `.gitmodules` parsing to list all submodules and versions
+  - **Frontend**: New "Project Structure" tab explaining the monorepo layout
+
+## [3.10.0] - 2026-01-26
+
+### Added
+
+- **Tool Sets Foundation**: Initial implementation of Tool Sets (Profiles)
+  - **Backend**: `tool_sets` table and `ToolSetService`
+  - **Frontend**: Basic list view
+  - **Tools**: `save_tool_set` and `load_tool_set` meta-tools
+
 ## [3.6.0] - 2026-01-26
 
 ### Added
@@ -11,7 +39,7 @@ All notable changes to this project will be documented in this file.
   - **Frontend**: `/audit` page for viewing security events
   - **Features**: Tracks Policy changes, Server installations, Config updates, and Logins
 
-- **Rate Limiting**: Protection against abuse
+- **Rate Limiting Middleware**: Protection against abuse
   - **Service**: `RateLimiterService` using in-memory token bucket
   - **Middleware**: `rate-limit.functional.ts` integrated into Proxy
   - **Default**: 60 requests per minute per user/session

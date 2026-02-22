@@ -682,3 +682,29 @@ export const llmUsageLogsTable = pgTable(
     index("llm_usage_logs_created_at_idx").on(table.created_at),
   ],
 );
+
+export const rateLimitsTable = pgTable(
+  "rate_limits",
+  {
+    uuid: uuid("uuid").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    tool_pattern: text("tool_pattern").notNull().default("*"), // Glob pattern, e.g. "github__*" or "*"
+    max_requests: integer("max_requests").notNull(),
+    window_ms: integer("window_ms").notNull(),
+    user_id: text("user_id").references(() => usersTable.id, {
+      onDelete: "cascade",
+    }), // If null, applies globally (or default for all users if logic decides)
+    is_active: boolean("is_active").notNull().default(true),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("rate_limits_user_id_idx").on(table.user_id),
+    index("rate_limits_tool_pattern_idx").on(table.tool_pattern),
+    unique("rate_limits_unique_idx").on(table.user_id, table.name),
+  ],
+);

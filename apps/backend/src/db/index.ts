@@ -3,6 +3,7 @@ import { Pool } from "pg";
 
 import * as schema from "./schema";
 import * as schedulerSchema from "./schema-scheduler";
+import * as notificationsSchema from "./schema-notifications";
 
 const { DATABASE_URL, POSTGRES_CA_CERT } = process.env;
 
@@ -30,7 +31,7 @@ pool.on("error", (err) => {
 });
 
 // Combine schemas
-const combinedSchema = { ...schema, ...schedulerSchema };
+const combinedSchema = { ...schema, ...schedulerSchema, ...notificationsSchema };
 
 export const db = drizzle(pool, { schema: combinedSchema });
 export * from "./schema";

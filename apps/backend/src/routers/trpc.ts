@@ -28,6 +28,7 @@ import { auditImplementations } from "../trpc/audit.impl";
 import { oauthClientsImplementations } from "../trpc/oauth-clients.impl";
 import { schedulerImplementations } from "../trpc/scheduler.impl";
 import { notificationsImplementations } from "../trpc/notifications.impl";
+import { rateLimitsImplementations } from "../trpc/rate-limits.impl";
 
 // Create the app router with implementations
 const appRouter = createAppRouter({
@@ -55,6 +56,7 @@ const appRouter = createAppRouter({
     oauthClients: oauthClientsImplementations,
     scheduler: schedulerImplementations,
     notifications: notificationsImplementations,
+    rateLimits: rateLimitsImplementations,
   },
 });
 
